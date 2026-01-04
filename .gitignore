@@ -123,3 +123,6 @@ Thumbs.db
 
 # Local Node Binary (added for this project)
 .node_bin/
+
+# Vite
+.vite
