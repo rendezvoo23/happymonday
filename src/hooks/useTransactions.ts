@@ -1,7 +1,7 @@
-import { useMemo } from 'react';
+
 import { v4 as uuidv4 } from 'uuid';
 import { startOfMonth, endOfMonth, isWithinInterval, parseISO } from 'date-fns';
-import { Transaction, TransactionType } from '../types';
+import { Transaction } from '../types';
 import { useLocalStorage } from './useLocalStorage';
 
 export function useTransactions() {
