@@ -35,4 +35,7 @@ export default defineConfig({
             '@': path.resolve(__dirname, './src'),
         },
     },
+    server: {
+        allowedHosts: ['subtrifid-krystyna-suspensively.ngrok-free.dev'],
+    },
 });
