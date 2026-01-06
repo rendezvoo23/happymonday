@@ -31,7 +31,7 @@ export default function App() {
     return (
         <div className="min-h-screen bg-background text-gray-900 font-sans overflow-hidden">
             <AnimatePresence mode="wait">
-                <Routes location={location} key={location.pathname}>
+                <Routes location={location}>
                     <Route path="/" element={<LandingPage />} />
                     <Route
                         path="/dashboard"

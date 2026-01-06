@@ -22,7 +22,7 @@ export function HomePage() {
     const monthlyTransactions = getTransactionsByMonth(selectedDate);
 
     const handleOpenAdd = (type: TransactionType) => {
-        navigate(`/add?type=${type}`);
+        navigate(`/add?type=${type}&month=${selectedDate.getMonth() + 1}&year=${selectedDate.getFullYear()}`);
     };
 
     return (

@@ -38,6 +38,8 @@ export function TransactionForm({ onSubmit, initialData, initialType = 'expense'
     const { selectedDate } = useDate();
     const categories = type === 'expense' ? EXPENSE_CATEGORIES : INCOME_CATEGORIES;
 
+    console.log({ selectedDate });
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (!amount || !categoryId) return;

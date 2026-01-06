@@ -20,3 +20,4 @@ export function PageShell({ children, className }: PageShellProps) {
         </motion.div>
     );
 }
+
