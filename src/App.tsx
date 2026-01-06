@@ -84,7 +84,7 @@ export default function App() {
 
         // Always run auth check on mount to ensure valid session
         initAuth();
-    }, [setUser]);
+    }, []);
 
     if (authError) {
         return (
