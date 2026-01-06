@@ -5,11 +5,14 @@ import { useTransactions } from "@/hooks/useTransactions";
 import { TransactionType } from "@/types";
 
 export function AddTransactionPage() {
+    console.log("[AddTransactionPage]");
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const { addTransaction } = useTransactions();
 
     const initialType = (searchParams.get('type') as TransactionType) || 'expense';
+
+
 
     return (
         <PageShell className="pb-6">
