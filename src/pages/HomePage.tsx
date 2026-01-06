@@ -1,6 +1,4 @@
-
-
-
+import { useEffect } from "react";
 import { Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { PageShell } from "@/components/layout/PageShell";
@@ -10,16 +8,19 @@ import { useTransactions } from "@/hooks/useTransactions";
 import { TransactionType } from "@/types";
 import { MonthSelector } from "@/components/ui/MonthSelector";
 import { useDate } from "@/context/DateContext";
-
 import { DynamicBackground } from "@/components/layout/DynamicBackground";
 
 export function HomePage() {
     const navigate = useNavigate();
-    const { getTransactionsByMonth } = useTransactions();
+    const { transactions, loadTransactions, isLoading } = useTransactions();
     const { selectedDate } = useDate();
 
-    // Get filtered transactions for the selected month
-    const monthlyTransactions = getTransactionsByMonth(selectedDate);
+    useEffect(() => {
+        loadTransactions(selectedDate);
+    }, [selectedDate, loadTransactions]);
+
+    // Use loaded transactions directly as they are already filtered by month via API
+    const monthlyTransactions = transactions;
 
     const handleOpenAdd = (type: TransactionType) => {
         navigate(`/add?type=${type}&month=${selectedDate.getMonth() + 1}&year=${selectedDate.getFullYear()}`);
@@ -34,7 +35,11 @@ export function HomePage() {
                 </header>
 
                 <main className="flex flex-col items-center gap-8">
-                    <BubblesCluster transactions={monthlyTransactions} mode="cluster" />
+                    {isLoading ? (
+                        <div className="text-gray-500 mt-10">Loading transactions...</div>
+                    ) : (
+                        <BubblesCluster transactions={monthlyTransactions} mode="cluster" />
+                    )}
 
                     {/* Floating Action Button */}
                     <div className="relative">
@@ -66,3 +71,4 @@ export function HomePage() {
         </>
     );
 }
+
