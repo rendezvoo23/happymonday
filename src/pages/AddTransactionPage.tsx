@@ -23,8 +23,8 @@ export function AddTransactionPage() {
             <TransactionForm
                 initialType={initialType}
                 onCancel={() => navigate(-1)}
-                onSubmit={(data) => {
-                    addTransaction(data);
+                onSubmit={async (data) => {
+                    await addTransaction(data);
                     navigate(-1);
                 }}
             />
