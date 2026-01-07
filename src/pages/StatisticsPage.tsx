@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { startOfMonth, endOfMonth } from "date-fns";
 import { PageShell } from "@/components/layout/PageShell";
-import { BubblesCluster } from "@/components/finance/BubblesCluster";
 import { AnalyticsCharts } from "@/components/finance/AnalyticsCharts";
+import { CategoryDoughnutChart } from "@/components/finance/CategoryDoughnutChart";
 import { TransactionList } from "@/components/finance/TransactionList";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
@@ -16,7 +16,7 @@ import { supabase } from "@/lib/supabaseClient";
 export function StatisticsPage() {
     const navigate = useNavigate();
     const { transactions, loadTransactions, deleteTransaction, isLoading, getTotalIncome, getTotalExpenses } = useTransactionStore();
-    const { loadCategories, getCategoryById } = useCategoryStore();
+    const { loadCategories } = useCategoryStore();
     const { selectedDate } = useDate();
     const [spendByCategory, setSpendByCategory] = useState<any[]>([]);
 
@@ -64,9 +64,7 @@ export function StatisticsPage() {
         fetchSpendByCategory();
     }, [selectedDate, loadTransactions, loadCategories]);
 
-    // State for category modal
-    const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
-    const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
+
 
     // State for delete confirmation
     const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
@@ -89,17 +87,7 @@ export function StatisticsPage() {
         }
     };
 
-    const handleBubbleClick = (categoryId: string) => {
-        setSelectedCategoryId(categoryId);
-        setIsCategoryModalOpen(true);
-    };
 
-    // Filter transactions for the selected category
-    const categoryTransactions = selectedCategoryId
-        ? transactions.filter(t => t.category_id === selectedCategoryId)
-        : [];
-
-    const selectedCategory = selectedCategoryId ? getCategoryById(selectedCategoryId) : null;
 
     return (
         <PageShell>
@@ -123,31 +111,11 @@ export function StatisticsPage() {
 
                 {isLoading && <div className="text-gray-500">Loading...</div>}
 
-                {/* Separated Bubbles */}
-                {!isLoading && (
-                    <BubblesCluster
-                        transactions={transactions}
-                        mode="separated"
-                        height={500}
-                        onBubbleClick={handleBubbleClick}
-                    />
-                )}
+                {/* Category Doughnut Chart - at top */}
+                {!isLoading && <CategoryDoughnutChart spendByCategory={spendByCategory} />}
 
                 {/* Charts */}
                 <AnalyticsCharts transactions={transactions} />
-
-                {/* Spend By Category */}
-                <div className="w-full px-4 mb-4">
-                    <h3 className="text-sm font-medium text-gray-500 mb-2">Category Breakdown</h3>
-                    <div className="bg-white/50 backdrop-blur-sm rounded-xl p-4 space-y-2">
-                        {spendByCategory.map((cat: any) => (
-                            <div key={cat.categoryId} className="flex justify-between items-center">
-                                <span style={{ color: cat.color }} className="font-medium">{cat.label}</span>
-                                <span>${cat.amount.toLocaleString()}</span>
-                            </div>
-                        ))}
-                    </div>
-                </div>
 
                 {/* List */}
                 <TransactionList
@@ -157,23 +125,7 @@ export function StatisticsPage() {
                 />
             </main>
 
-            {/* Category Transactions Modal */}
-            <Modal
-                isOpen={isCategoryModalOpen}
-                onClose={() => setIsCategoryModalOpen(false)}
-                title={selectedCategory ? `${selectedCategory.name} Transactions` : 'Transactions'}
-            >
-                <div>
-                    <TransactionList
-                        transactions={categoryTransactions}
-                        onEdit={(t) => {
-                            setIsCategoryModalOpen(false);
-                            handleEdit(t);
-                        }}
-                        onDelete={handleDeleteRequest}
-                    />
-                </div>
-            </Modal>
+
 
             {/* Delete Confirmation Modal */}
             <Modal
