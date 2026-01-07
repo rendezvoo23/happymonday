@@ -9,7 +9,7 @@ import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import { MonthSelector } from "@/components/ui/MonthSelector";
 import { useTransactionStore } from "@/stores/transactionStore";
-import { useCategoryStore } from "@/stores/categoryStore";
+import { useCategoryStore, getCategoryColor } from "@/stores/categoryStore";
 import { useDate } from "@/context/DateContext";
 import { supabase } from "@/lib/supabaseClient";
 
@@ -49,7 +49,7 @@ export function StatisticsPage() {
                     grouped[catId] = {
                         amount: 0,
                         label: t.categories?.name || 'Unknown',
-                        color: t.categories?.color || '#000000',
+                        color: getCategoryColor(t.categories?.color, t.categories?.name),
                     };
                 }
                 grouped[catId].amount += t.amount;
