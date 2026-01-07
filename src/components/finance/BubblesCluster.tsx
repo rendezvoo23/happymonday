@@ -2,7 +2,7 @@ import { useMemo, useRef, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import type { Tables } from "@/types/supabase";
-import { useCategoryStore } from "@/stores/categoryStore";
+import { useCategoryStore, getCategoryColor } from "@/stores/categoryStore";
 import { packCircles } from "@/utils/circlePacking";
 
 type Transaction = Tables<'transactions'>;
@@ -63,9 +63,9 @@ export function BubblesCluster({ transactions, mode = 'cluster', height = 320, o
                     id: catId,
                     value: amount,
                     category: category ? {
-                        color: category.color || '#6B7280',
+                        color: getCategoryColor(category.color, category.name),
                         label: category.name || 'Unknown'
-                    } : { color: '#6B7280', label: 'Unknown' },
+                    } : { color: '#8E8E93', label: 'Unknown' },
                     percentage: total > 0 ? amount / total : 0
                 };
             })
