@@ -8,9 +8,10 @@ export type CategoryId =
     | 'services'
     | 'entertainment'
     | 'health'
-    | 'salary'      // Added for income
-    | 'investment'  // Added for income
-    | 'other';      // Generic fallback
+    | 'salary'
+    | 'investment'
+    | 'other'
+    | (string & {});
 
 export interface Category {
     id: CategoryId;

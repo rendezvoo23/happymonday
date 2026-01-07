@@ -4,31 +4,30 @@ import { useNavigate } from "react-router-dom";
 import { PageShell } from "@/components/layout/PageShell";
 import { BubblesCluster } from "@/components/finance/BubblesCluster";
 import { Button } from "@/components/ui/Button";
-import { useTransactions } from "@/hooks/useTransactions";
-import { TransactionType } from "@/types";
+import { useTransactionStore } from "@/stores/transactionStore";
 import { MonthSelector } from "@/components/ui/MonthSelector";
 import { useDate } from "@/context/DateContext";
 import { DynamicBackground } from "@/components/layout/DynamicBackground";
+import type { Enums } from "@/types/supabase";
+
+type TransactionDirection = Enums<'transaction_direction'>;
 
 export function HomePage() {
     const navigate = useNavigate();
-    const { transactions, loadTransactions, isLoading } = useTransactions();
+    const { transactions, loadTransactions, isLoading, getTotalIncome, getTotalExpenses } = useTransactionStore();
     const { selectedDate } = useDate();
 
     useEffect(() => {
         loadTransactions(selectedDate);
     }, [selectedDate, loadTransactions]);
 
-    // Use loaded transactions directly as they are already filtered by month via API
-    const monthlyTransactions = transactions;
-
-    const handleOpenAdd = (type: TransactionType) => {
+    const handleOpenAdd = (type: TransactionDirection) => {
         navigate(`/add?type=${type}&month=${selectedDate.getMonth() + 1}&year=${selectedDate.getFullYear()}`);
     };
 
     return (
         <>
-            <DynamicBackground transactions={monthlyTransactions} />
+            <DynamicBackground transactions={transactions} />
             <PageShell>
                 <header className="flex flex-col items-center pt-4 pb-8">
                     <MonthSelector />
@@ -38,7 +37,7 @@ export function HomePage() {
                     {isLoading ? (
                         <div className="text-gray-500 mt-10">Loading transactions...</div>
                     ) : (
-                        <BubblesCluster transactions={monthlyTransactions} mode="cluster" />
+                        <BubblesCluster transactions={transactions} mode="cluster" />
                     )}
 
                     {/* Floating Action Button */}
@@ -56,13 +55,13 @@ export function HomePage() {
                         <div className="bg-white/60 p-4 rounded-2xl backdrop-blur-md shadow-sm">
                             <p className="text-sm text-gray-500 mb-1">Income</p>
                             <p className="text-xl font-bold text-green-600">
-                                ${monthlyTransactions.filter(t => t.type === 'income').reduce((acc, t) => acc + t.amount, 0).toLocaleString()}
+                                ${getTotalIncome().toLocaleString()}
                             </p>
                         </div>
                         <div className="bg-white/60 p-4 rounded-2xl backdrop-blur-md shadow-sm">
                             <p className="text-sm text-gray-500 mb-1">Expenses</p>
                             <p className="text-xl font-bold text-red-500">
-                                ${monthlyTransactions.filter(t => t.type === 'expense').reduce((acc, t) => acc + t.amount, 0).toLocaleString()}
+                                ${getTotalExpenses().toLocaleString()}
                             </p>
                         </div>
                     </div>
@@ -71,4 +70,3 @@ export function HomePage() {
         </>
     );
 }
-

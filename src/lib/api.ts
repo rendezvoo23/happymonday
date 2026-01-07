@@ -6,10 +6,10 @@ import { Transaction, TransactionType, Category, CategoryId } from '../types';
 
 interface DbCategory {
     id: string;
-    label: string;
+    name: string;
     icon: string | null;
-    color: string;
-    type: TransactionType;
+    color: string | null;
+    type: 'expense' | 'income';
     sort_order: number;
 }
 
@@ -38,9 +38,9 @@ export const getCategories = async (type: TransactionType): Promise<Category[]> 
     // Note: Frontend uses specific string literals for IDs in types/index.ts.
     // We assume the DB IDs match these or we might need to adjust the frontend types to allow string.
     return (data || []).map((c: DbCategory) => ({
-        id: c.id as CategoryId, // Casting assuming DB ids match frontend known IDs
-        label: c.label,
-        color: c.color,
+        id: c.id as CategoryId,
+        label: c.name,
+        color: c.color || '#6B7280',
         icon: c.icon || undefined,
         type: c.type,
     }));
@@ -64,9 +64,9 @@ export const createTransaction = async (payload: {
             amount: payload.amount,
             category_id: payload.categoryId,
             occurred_at: payload.date,
-            description: payload.description || '',
-            type: payload.type,
-            currency: 'USD', // Defaulting to USD as per context constraints or lack thereof
+            note: payload.description || '',
+            direction: payload.type,
+            currency_code: 'USD', // Defaulting to USD as per context constraints or lack thereof
         });
 
     if (error) throw error;
@@ -109,7 +109,7 @@ export const getMonthSummary = async (fromISO: string, toISO: string) => {
     // Supabase/PostgreSQL aggregation
     const { data, error } = await supabase
         .from('transactions')
-        .select('amount, type')
+        .select('amount, direction')
         .gte('occurred_at', fromISO)
         .lt('occurred_at', toISO)
         .is('deleted_at', null);
@@ -121,9 +121,9 @@ export const getMonthSummary = async (fromISO: string, toISO: string) => {
         expense: 0,
     };
 
-    data?.forEach((t: { amount: number; type: string }) => {
-        if (t.type === 'income') summary.income += t.amount;
-        else if (t.type === 'expense') summary.expense += t.amount;
+    data?.forEach((t: { amount: number; direction: string }) => {
+        if (t.direction === 'income') summary.income += t.amount;
+        else if (t.direction === 'expense') summary.expense += t.amount;
     });
 
     return summary;
@@ -133,8 +133,8 @@ export const getMonthSummary = async (fromISO: string, toISO: string) => {
 export const getSpendByCategory = async (fromISO: string, toISO: string) => {
     const { data, error } = await supabase
         .from('transactions')
-        .select('amount, category_id, categories(label, color)')
-        .eq('type', 'expense')
+        .select('amount, category_id, categories(name, color)')
+        .eq('direction', 'expense')
         .gte('occurred_at', fromISO)
         .lt('occurred_at', toISO)
         .is('deleted_at', null);
@@ -148,7 +148,7 @@ export const getSpendByCategory = async (fromISO: string, toISO: string) => {
         if (!grouped[catId]) {
             grouped[catId] = {
                 amount: 0,
-                label: t.categories?.label || 'Unknown',
+                label: t.categories?.name || 'Unknown',
                 color: t.categories?.color || '#000000',
             };
         }

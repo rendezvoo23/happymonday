@@ -34,6 +34,7 @@ export const authenticateWithTelegram = async (): Promise<boolean> => {
 
         if (invokeError || !invokeData) {
             console.error('Auth function failed:', invokeError);
+            console.log({ invokeData, invokeError });
             return false;
         }
 

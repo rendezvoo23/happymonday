@@ -50,7 +50,7 @@ export const LandingPage = () => {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 1, duration: 0.8 }}
-                    onClick={() => navigate("/auth")}
+                    onClick={() => navigate("/dashboard")}
                     className="mt-24 px-8 py-3 bg-gray-900 text-white rounded-full font-medium text-lg hover:scale-105 active:scale-95 transition-transform duration-200 shadow-lg z-20"
                 >
                     Get Started

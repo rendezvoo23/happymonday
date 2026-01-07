@@ -1,18 +1,18 @@
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { PageShell } from "@/components/layout/PageShell";
 import { TransactionForm } from "@/components/finance/TransactionForm";
-import { useTransactions } from "@/hooks/useTransactions";
-import { TransactionType } from "@/types";
+import { useTransactionStore } from "@/stores/transactionStore";
+import type { Enums } from "@/types/supabase";
+
+type TransactionDirection = Enums<'transaction_direction'>;
 
 export function AddTransactionPage() {
     console.log("[AddTransactionPage]");
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
-    const { addTransaction } = useTransactions();
+    const addTransaction = useTransactionStore((state) => state.addTransaction);
 
-    const initialType = (searchParams.get('type') as TransactionType) || 'expense';
-
-
+    const initialType = (searchParams.get('type') as TransactionDirection) || 'expense';
 
     return (
         <PageShell className="pb-6">
@@ -24,7 +24,14 @@ export function AddTransactionPage() {
                 initialType={initialType}
                 onCancel={() => navigate(-1)}
                 onSubmit={async (data) => {
-                    await addTransaction(data);
+                    await addTransaction({
+                        amount: data.amount,
+                        category_id: data.categoryId,
+                        occurred_at: data.date,
+                        note: data.note,
+                        direction: data.type,
+                        currency_code: 'USD',
+                    });
                     navigate(-1);
                 }}
             />

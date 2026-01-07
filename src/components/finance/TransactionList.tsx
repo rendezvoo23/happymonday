@@ -1,9 +1,15 @@
-import { Transaction } from "@/types";
+import type { Tables } from "@/types/supabase";
 import { TransactionItem } from "./TransactionItem";
 
+type Transaction = Tables<'transactions'>;
+
+interface TransactionWithCategory extends Transaction {
+    categories: Pick<Tables<'categories'>, 'id' | 'name' | 'color' | 'icon'> | null;
+}
+
 interface TransactionListProps {
-    transactions: Transaction[];
-    onEdit: (t: Transaction) => void;
+    transactions: TransactionWithCategory[];
+    onEdit: (t: TransactionWithCategory) => void;
     onDelete: (id: string) => void;
 }
 
@@ -18,7 +24,7 @@ export function TransactionList({ transactions, onEdit, onDelete }: TransactionL
 
     // Sort by date desc
     const sorted = [...transactions].sort((a, b) =>
-        new Date(b.date).getTime() - new Date(a.date).getTime()
+        new Date(b.occurred_at).getTime() - new Date(a.occurred_at).getTime()
     );
 
     return (
