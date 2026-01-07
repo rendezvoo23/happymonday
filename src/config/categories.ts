@@ -2,7 +2,7 @@ import { Category, CategoryId } from '../types';
 
 export const CATEGORIES: Record<CategoryId, Category> = {
     food_drink: {
-        id: 'food_drink',
+        id: '27be5565-c758-4c30-92e5-5d9d51e421ee',
         label: 'Food & Drink',
         color: '#FF9F0A', // Orange
         type: 'expense'

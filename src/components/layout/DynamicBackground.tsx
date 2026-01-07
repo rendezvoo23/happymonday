@@ -1,21 +1,30 @@
 import { useMemo } from "react";
 import { motion } from "framer-motion";
-import { Transaction } from "@/types";
-import { getCategoryById } from "@/config/categories";
+import type { Tables } from "@/types/supabase";
+import { useCategoryStore } from "@/stores/categoryStore";
+
+type Transaction = Tables<'transactions'>;
+
+interface TransactionWithCategory extends Transaction {
+    categories: Pick<Tables<'categories'>, 'id' | 'name' | 'color' | 'icon'> | null;
+}
 
 interface DynamicBackgroundProps {
-    transactions: Transaction[];
+    transactions: TransactionWithCategory[];
 }
 
 export function DynamicBackground({ transactions }: DynamicBackgroundProps) {
+    const { getCategoryById } = useCategoryStore();
+
     const gradientColors = useMemo(() => {
         // 1. Filter expenses
-        const expenses = transactions.filter(t => t.type === 'expense');
+        const expenses = transactions.filter(t => t.direction === 'expense');
         if (expenses.length === 0) return ['#f3f4f6', '#e5e7eb']; // Default grays
 
         // 2. Group by category
         const byCategory = expenses.reduce((acc, t) => {
-            acc[t.categoryId] = (acc[t.categoryId] || 0) + t.amount;
+            const catId = t.category_id || 'uncategorized';
+            acc[catId] = (acc[catId] || 0) + t.amount;
             return acc;
         }, {} as Record<string, number>);
 
@@ -23,14 +32,19 @@ export function DynamicBackground({ transactions }: DynamicBackgroundProps) {
         const topCategories = Object.entries(byCategory)
             .sort((a, b) => b[1] - a[1])
             .slice(0, 3)
-            .map(([catId]) => getCategoryById(catId as any).color);
+            .map(([catId]) => {
+                // Try to get color from joined category data or store
+                const txWithCat = transactions.find(t => t.category_id === catId);
+                const category = txWithCat?.categories || getCategoryById(catId);
+                return category?.color || '#6B7280';
+            });
 
         // Ensure we have at least 2 colors for a gradient
         if (topCategories.length === 0) return ['#f3f4f6', '#e5e7eb'];
         if (topCategories.length === 1) return [topCategories[0], '#f3f4f6'];
 
         return topCategories;
-    }, [transactions]);
+    }, [transactions, getCategoryById]);
 
     return (
         <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">

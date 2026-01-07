@@ -8,31 +8,61 @@ import { TransactionList } from "@/components/finance/TransactionList";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import { MonthSelector } from "@/components/ui/MonthSelector";
-import { useTransactions } from "@/hooks/useTransactions";
+import { useTransactionStore } from "@/stores/transactionStore";
+import { useCategoryStore } from "@/stores/categoryStore";
 import { useDate } from "@/context/DateContext";
-import { Transaction } from "@/types";
-import { getCategoryById } from "@/config/categories";
-import { getMonthSummary, getSpendByCategory } from "@/lib/api";
+import { supabase } from "@/lib/supabaseClient";
 
 export function StatisticsPage() {
     const navigate = useNavigate();
-    const { transactions, loadTransactions, deleteTransaction, isLoading } = useTransactions();
+    const { transactions, loadTransactions, deleteTransaction, isLoading, getTotalIncome, getTotalExpenses } = useTransactionStore();
+    const { loadCategories, getCategoryById } = useCategoryStore();
     const { selectedDate } = useDate();
-    const [summary, setSummary] = useState({ income: 0, expense: 0 });
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [spendByCategory, setSpendByCategory] = useState<any[]>([]);
 
     useEffect(() => {
         loadTransactions(selectedDate);
+        loadCategories();
 
-        // Fetch API Reports
-        const start = startOfMonth(selectedDate).toISOString();
-        const end = endOfMonth(selectedDate).toISOString();
+        // Fetch spend by category using Supabase directly
+        const fetchSpendByCategory = async () => {
+            const start = startOfMonth(selectedDate).toISOString();
+            const end = endOfMonth(selectedDate).toISOString();
 
-        getMonthSummary(start, end).then(setSummary).catch(console.error);
-        getSpendByCategory(start, end).then(setSpendByCategory).catch(console.error);
+            const { data, error } = await supabase
+                .from('transactions')
+                .select('amount, category_id, categories(name, color)')
+                .eq('direction', 'expense')
+                .gte('occurred_at', start)
+                .lt('occurred_at', end)
+                .is('deleted_at', null);
 
-    }, [selectedDate, loadTransactions]);
+            if (error) {
+                console.error('Failed to load spend by category', error);
+                return;
+            }
+
+            const grouped: Record<string, { amount: number; label: string; color: string }> = {};
+            data?.forEach((t: any) => {
+                const catId = t.category_id;
+                if (!grouped[catId]) {
+                    grouped[catId] = {
+                        amount: 0,
+                        label: t.categories?.name || 'Unknown',
+                        color: t.categories?.color || '#000000',
+                    };
+                }
+                grouped[catId].amount += t.amount;
+            });
+
+            setSpendByCategory(Object.entries(grouped).map(([id, val]) => ({
+                categoryId: id,
+                ...val,
+            })));
+        };
+
+        fetchSpendByCategory();
+    }, [selectedDate, loadTransactions, loadCategories]);
 
     // State for category modal
     const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
@@ -42,7 +72,7 @@ export function StatisticsPage() {
     const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
-    const handleEdit = (transaction: Transaction) => {
+    const handleEdit = (transaction: any) => {
         navigate(`/edit/${transaction.id}`);
     };
 
@@ -64,27 +94,27 @@ export function StatisticsPage() {
         setIsCategoryModalOpen(true);
     };
 
-    // Filter transactions for the selected category (client side filter of loaded transactions)
+    // Filter transactions for the selected category
     const categoryTransactions = selectedCategoryId
-        ? transactions.filter(t => t.categoryId === selectedCategoryId)
+        ? transactions.filter(t => t.category_id === selectedCategoryId)
         : [];
 
-    const selectedCategory = selectedCategoryId ? getCategoryById(selectedCategoryId as any) : null;
+    const selectedCategory = selectedCategoryId ? getCategoryById(selectedCategoryId) : null;
 
     return (
         <PageShell>
             <header className="flex flex-col items-center pt-4 pb-6 gap-4">
                 <h1 className="text-xl font-semibold text-gray-900">Statistics</h1>
                 <MonthSelector />
-                {/* API Summary Cards */}
+                {/* Summary Cards */}
                 <div className="flex gap-4 w-full px-4">
                     <div className="flex-1 bg-green-50 p-4 rounded-xl text-center">
                         <p className="text-sm text-green-600 font-medium">Income</p>
-                        <p className="text-xl font-bold text-green-700">${summary.income.toLocaleString()}</p>
+                        <p className="text-xl font-bold text-green-700">${getTotalIncome().toLocaleString()}</p>
                     </div>
                     <div className="flex-1 bg-red-50 p-4 rounded-xl text-center">
                         <p className="text-sm text-red-600 font-medium">Expenses</p>
-                        <p className="text-xl font-bold text-red-700">${summary.expense.toLocaleString()}</p>
+                        <p className="text-xl font-bold text-red-700">${getTotalExpenses().toLocaleString()}</p>
                     </div>
                 </div>
             </header>
@@ -106,9 +136,9 @@ export function StatisticsPage() {
                 {/* Charts */}
                 <AnalyticsCharts transactions={transactions} />
 
-                {/* API Spend By Category */}
+                {/* Spend By Category */}
                 <div className="w-full px-4 mb-4">
-                    <h3 className="text-sm font-medium text-gray-500 mb-2">Category Breakdown (API)</h3>
+                    <h3 className="text-sm font-medium text-gray-500 mb-2">Category Breakdown</h3>
                     <div className="bg-white/50 backdrop-blur-sm rounded-xl p-4 space-y-2">
                         {spendByCategory.map((cat: any) => (
                             <div key={cat.categoryId} className="flex justify-between items-center">
@@ -131,7 +161,7 @@ export function StatisticsPage() {
             <Modal
                 isOpen={isCategoryModalOpen}
                 onClose={() => setIsCategoryModalOpen(false)}
-                title={selectedCategory ? `${selectedCategory.label} Transactions` : 'Transactions'}
+                title={selectedCategory ? `${selectedCategory.name} Transactions` : 'Transactions'}
             >
                 <div>
                     <TransactionList

@@ -1,11 +1,17 @@
 import { useMemo } from "react";
 import { AreaChart, Area, XAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval } from "date-fns";
-import { Transaction } from "@/types";
+import type { Tables } from "@/types/supabase";
 import { useDate } from "@/context/DateContext";
 
+type Transaction = Tables<'transactions'>;
+
+interface TransactionWithCategory extends Transaction {
+    categories: Pick<Tables<'categories'>, 'id' | 'name' | 'color' | 'icon'> | null;
+}
+
 interface AnalyticsChartsProps {
-    transactions: Transaction[];
+    transactions: TransactionWithCategory[];
 }
 
 export function AnalyticsCharts({ transactions }: AnalyticsChartsProps) {
@@ -18,15 +24,15 @@ export function AnalyticsCharts({ transactions }: AnalyticsChartsProps) {
 
         return days.map(day => {
             const dayStr = format(day, 'yyyy-MM-dd');
-            const dayTransactions = transactions.filter(t => t.date.startsWith(dayStr));
+            const dayTransactions = transactions.filter(t => t.occurred_at.startsWith(dayStr));
 
             return {
                 date: format(day, 'd'),
                 expense: dayTransactions
-                    .filter(t => t.type === 'expense')
+                    .filter(t => t.direction === 'expense')
                     .reduce((acc, t) => acc + t.amount, 0),
                 income: dayTransactions
-                    .filter(t => t.type === 'income')
+                    .filter(t => t.direction === 'income')
                     .reduce((acc, t) => acc + t.amount, 0),
             };
         });

@@ -1,12 +1,18 @@
 import { useMemo, useRef, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { Transaction } from "@/types";
-import { getCategoryById } from "@/config/categories";
+import type { Tables } from "@/types/supabase";
+import { useCategoryStore } from "@/stores/categoryStore";
 import { packCircles } from "@/utils/circlePacking";
 
+type Transaction = Tables<'transactions'>;
+
+interface TransactionWithCategory extends Transaction {
+    categories: Pick<Tables<'categories'>, 'id' | 'name' | 'color' | 'icon'> | null;
+}
+
 interface BubblesClusterProps {
-    transactions: Transaction[];
+    transactions: TransactionWithCategory[];
     mode?: 'cluster' | 'separated';
     height?: number;
     onBubbleClick?: (categoryId: string) => void;
@@ -16,6 +22,7 @@ export function BubblesCluster({ transactions, mode = 'cluster', height = 320, o
     const navigate = useNavigate();
     const containerRef = useRef<HTMLDivElement>(null);
     const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+    const { getCategoryById } = useCategoryStore();
 
     // Measure container size
     useEffect(() => {
@@ -38,32 +45,39 @@ export function BubblesCluster({ transactions, mode = 'cluster', height = 320, o
     const bubbles = useMemo(() => {
         if (dimensions.width === 0 || dimensions.height === 0) return [];
 
-        const expenses = transactions.filter(t => t.type === 'expense');
+        const expenses = transactions.filter(t => t.direction === 'expense');
         const total = expenses.reduce((acc, t) => acc + t.amount, 0);
 
         const aggregated = expenses.reduce((acc, t) => {
-            acc[t.categoryId] = (acc[t.categoryId] || 0) + t.amount;
+            const catId = t.category_id || 'uncategorized';
+            acc[catId] = (acc[catId] || 0) + t.amount;
             return acc;
         }, {} as Record<string, number>);
 
         const data = Object.entries(aggregated)
-            .map(([catId, amount]) => ({
-                id: catId,
-                value: amount,
-                category: getCategoryById(catId as any),
-                percentage: total > 0 ? amount / total : 0
-            }))
+            .map(([catId, amount]) => {
+                // Try to get category from the transaction's joined data or store
+                const txWithCat = transactions.find(t => t.category_id === catId);
+                const category = txWithCat?.categories || getCategoryById(catId);
+                return {
+                    id: catId,
+                    value: amount,
+                    category: category ? {
+                        color: category.color || '#6B7280',
+                        label: category.name || 'Unknown'
+                    } : { color: '#6B7280', label: 'Unknown' },
+                    percentage: total > 0 ? amount / total : 0
+                };
+            })
             .sort((a, b) => b.value - a.value);
 
         // Use circle packing
-        // mode 'cluster': tighter packing, smaller bubbles for home
-        // mode 'separated': looser packing, larger bubbles for stats
         const packed = packCircles(
             data.map(d => ({ id: d.id, value: d.value })),
             {
                 minRadius: mode === 'cluster' ? 40 : 60,
                 maxRadius: mode === 'cluster' ? 70 : 100,
-                padding: mode === 'cluster' ? -15 : 10 // Negative padding for overlap/gooey effect
+                padding: mode === 'cluster' ? -15 : 10
             }
         );
 
@@ -83,25 +97,13 @@ export function BubblesCluster({ transactions, mode = 'cluster', height = 320, o
         const contentWidth = maxX - minX;
         const contentHeight = maxY - minY;
 
-        // Container dimensions with padding
         const padding = 20;
         const containerWidth = dimensions.width - padding * 2;
         const containerHeight = dimensions.height - padding * 2;
 
-        // Calculate scale to fit content within container
-        // If content is smaller than container, we might not want to scale up too much, 
-        // but for now let's just ensure it fits.
-        // We add a small safety margin (0.95)
         const scaleX = contentWidth > 0 ? containerWidth / contentWidth : 1;
         const scaleY = contentHeight > 0 ? containerHeight / contentHeight : 1;
         const scale = Math.min(scaleX, scaleY, 1) * 0.95;
-
-        // Center offset
-        // The packing algorithm usually centers around 0,0 but not guaranteed to be perfectly centered in bounding box
-        // We want to center the bounding box in the container
-        // Actually, since we are positioning absolutely from center (left: 50%, top: 50%), 
-        // and the packing is around 0,0, we just need to scale coordinates.
-        // However, to be precise, we should center the bounding box.
 
         const contentCenterX = (minX + maxX) / 2;
         const contentCenterY = (minY + maxY) / 2;
@@ -110,15 +112,14 @@ export function BubblesCluster({ transactions, mode = 'cluster', height = 320, o
             const layout = packed.find(p => p.id === item.id)!;
             return {
                 ...item,
-                // Adjust coordinates to be relative to the center of the bounding box
                 x: (layout.x - contentCenterX) * scale,
                 y: (layout.y - contentCenterY) * scale,
                 r: layout.r * scale
             };
         });
-    }, [transactions, mode, dimensions]);
+    }, [transactions, mode, dimensions, getCategoryById]);
 
-    if (transactions.filter(t => t.type === 'expense').length === 0) {
+    if (transactions.filter(t => t.direction === 'expense').length === 0) {
         return (
             <div
                 className="flex items-center justify-center text-gray-400 text-sm"

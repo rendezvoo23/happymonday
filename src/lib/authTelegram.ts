@@ -1,7 +1,6 @@
 
 import { supabase } from './supabaseClient';
 
-const FUNCTION_URL = 'https://cqmroflpiyhruljtknrw.supabase.co/functions/v1/auth-telegram';
 
 export interface TelegramAuthResponse {
     session: {
@@ -15,6 +14,7 @@ export interface TelegramAuthResponse {
 
 export const authenticateWithTelegram = async (): Promise<boolean> => {
     try {
+        console.log("Authenticating with Telegram...")
         // 1. Initialise Telegram WebApp
         if (!window.Telegram?.WebApp) {
             console.error('Telegram WebApp not available');
@@ -28,36 +28,24 @@ export const authenticateWithTelegram = async (): Promise<boolean> => {
             return false;
         }
 
-        // 2. Call Edge Function
-        const response = await fetch(FUNCTION_URL, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ initData }),
+        const { data: invokeData, error: invokeError } = await supabase.functions.invoke<TelegramAuthResponse>('auth-telegram', {
+            body: { initData },
         });
 
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('Auth function failed:', response.status, errorText);
-            return false;
-        }
-
-        const data: TelegramAuthResponse = await response.json();
-
-        if (!data.session || !data.session.access_token) {
-            console.error('Invalid session data received', data);
+        if (invokeError || !invokeData) {
+            console.error('Auth function failed:', invokeError);
+            console.log({ invokeData, invokeError });
             return false;
         }
 
         // 3. Set Supabase Session
-        const { error } = await supabase.auth.setSession({
-            access_token: data.session.access_token,
-            refresh_token: data.session.refresh_token,
+        const { error: sessionError } = await supabase.auth.setSession({
+            access_token: invokeData.session.access_token,
+            refresh_token: invokeData.session.refresh_token,
         });
 
-        if (error) {
-            console.error('Failed to set Supabase session:', error);
+        if (sessionError) {
+            console.error('Failed to set Supabase session:', sessionError);
             return false;
         }
 
