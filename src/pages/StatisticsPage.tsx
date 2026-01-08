@@ -13,11 +13,13 @@ import { useCategoryStore, getCategoryColor } from "@/stores/categoryStore";
 import { useDate } from "@/context/DateContext";
 import { supabase } from "@/lib/supabaseClient";
 
+import { motion, PanInfo } from "framer-motion";
+
 export function StatisticsPage() {
     const navigate = useNavigate();
     const { transactions, loadTransactions, deleteTransaction, isLoading, getTotalIncome, getTotalExpenses } = useTransactionStore();
     const { loadCategories } = useCategoryStore();
-    const { selectedDate } = useDate();
+    const { selectedDate, nextMonth, prevMonth } = useDate();
     const [spendByCategory, setSpendByCategory] = useState<any[]>([]);
 
     useEffect(() => {
@@ -64,8 +66,6 @@ export function StatisticsPage() {
         fetchSpendByCategory();
     }, [selectedDate, loadTransactions, loadCategories]);
 
-
-
     // State for delete confirmation
     const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -87,7 +87,14 @@ export function StatisticsPage() {
         }
     };
 
-
+    const handlePanEnd = (_: any, info: PanInfo) => {
+        const threshold = 50;
+        if (info.offset.x < -threshold) {
+            nextMonth();
+        } else if (info.offset.x > threshold) {
+            prevMonth();
+        }
+    };
 
     return (
         <PageShell>
@@ -112,7 +119,14 @@ export function StatisticsPage() {
                 {isLoading && <div className="text-gray-500">Loading...</div>}
 
                 {/* Category Doughnut Chart - at top */}
-                {!isLoading && <CategoryDoughnutChart spendByCategory={spendByCategory} />}
+                {!isLoading && (
+                    <motion.div
+                        className="w-full"
+                        onPanEnd={handlePanEnd}
+                    >
+                        <CategoryDoughnutChart spendByCategory={spendByCategory} />
+                    </motion.div>
+                )}
 
                 {/* Charts */}
                 <AnalyticsCharts transactions={transactions} />

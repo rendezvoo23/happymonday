@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { useTransactionStore } from "@/stores/transactionStore";
 import { MonthSelector } from "@/components/ui/MonthSelector";
 import { useDate } from "@/context/DateContext";
-import { DynamicBackground } from "@/components/layout/DynamicBackground";
+import { motion, PanInfo } from "framer-motion";
 import type { Enums } from "@/types/supabase";
 
 type TransactionDirection = Enums<'transaction_direction'>;
@@ -15,7 +15,7 @@ type TransactionDirection = Enums<'transaction_direction'>;
 export function HomePage() {
     const navigate = useNavigate();
     const { transactions, loadTransactions, isLoading, getTotalIncome, getTotalExpenses } = useTransactionStore();
-    const { selectedDate } = useDate();
+    const { selectedDate, nextMonth, prevMonth } = useDate();
 
     useEffect(() => {
         loadTransactions(selectedDate);
@@ -25,9 +25,17 @@ export function HomePage() {
         navigate(`/add?type=${type}&month=${selectedDate.getMonth() + 1}&year=${selectedDate.getFullYear()}`);
     };
 
+    const handlePanEnd = (_: any, info: PanInfo) => {
+        const threshold = 50;
+        if (info.offset.x < -threshold) {
+            nextMonth();
+        } else if (info.offset.x > threshold) {
+            prevMonth();
+        }
+    };
+
     return (
         <>
-            <DynamicBackground transactions={transactions} />
             <PageShell>
                 <header className="flex flex-col items-center pt-4 pb-8">
                     <MonthSelector />
@@ -37,7 +45,12 @@ export function HomePage() {
                     {isLoading ? (
                         <div className="text-gray-500 mt-10">Loading transactions...</div>
                     ) : (
-                        <BubblesCluster transactions={transactions} mode="cluster" />
+                        <motion.div
+                            className="w-full flex justify-center"
+                            onPanEnd={handlePanEnd}
+                        >
+                            <BubblesCluster transactions={transactions} mode="cluster" />
+                        </motion.div>
                     )}
 
                     {/* Floating Action Button */}
