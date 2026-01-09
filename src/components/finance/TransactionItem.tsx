@@ -3,6 +3,7 @@ import { Edit2, Trash2 } from "lucide-react";
 import type { Tables } from "@/types/supabase";
 import { cn } from "@/lib/utils";
 import { getCategoryColor } from "@/stores/categoryStore";
+import { useCurrency } from "@/hooks/useCurrency";
 
 type Transaction = Tables<'transactions'>;
 
@@ -21,6 +22,7 @@ export function TransactionItem({ transaction, onEdit, onDelete }: TransactionIt
     const isExpense = transaction.direction === 'expense';
     const categoryLabel = category?.name || 'Unknown';
     const categoryColor = getCategoryColor(category?.color, category?.name);
+    const { formatAmount } = useCurrency();
 
     return (
         <div className="group flex items-center justify-between p-4 bg-white/60 backdrop-blur-md rounded-2xl mb-3 shadow-sm transition-all hover:bg-white/80 ring-1 ring-black/5">
@@ -47,7 +49,7 @@ export function TransactionItem({ transaction, onEdit, onDelete }: TransactionIt
                     "font-bold text-sm",
                     isExpense ? "text-gray-900" : "text-green-600"
                 )}>
-                    {isExpense ? '-' : '+'}${transaction.amount.toLocaleString()}
+                    {formatAmount(isExpense ? -transaction.amount : transaction.amount, { showSign: true })}
                 </span>
 
                 <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">

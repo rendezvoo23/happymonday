@@ -5,22 +5,26 @@ import type { Tables, TablesUpdate } from '../types/supabase';
 type Profile = Tables<'profiles'>;
 type UserSettings = Tables<'user_settings'>;
 type UserSettingsUpdate = TablesUpdate<'user_settings'>;
+type Currency = Tables<'currencies'>;
 
 interface UserState {
     profile: Profile | null;
     settings: UserSettings | null;
+    currencies: Currency[];
     isLoading: boolean;
     error: string | null;
 
     // Actions
     loadProfile: () => Promise<void>;
     loadSettings: () => Promise<void>;
+    loadCurrencies: () => Promise<void>;
     updateSettings: (updates: UserSettingsUpdate) => Promise<void>;
 }
 
-export const useUserStore = create<UserState>((set) => ({
+export const useUserStore = create<UserState>((set, get) => ({
     profile: null,
     settings: null,
+    currencies: [],
     isLoading: false,
     error: null,
 
@@ -54,12 +58,29 @@ export const useUserStore = create<UserState>((set) => ({
                 .from('user_settings')
                 .select('*')
                 .eq('user_id', userData.user.id)
-                .single();
+                .maybeSingle();
 
             if (error) throw error;
             set({ settings: data, isLoading: false });
         } catch (err: any) {
             console.error('Failed to load settings', err);
+            set({ error: err.message, isLoading: false });
+        }
+    },
+
+    loadCurrencies: async () => {
+        set({ isLoading: true, error: null });
+        try {
+            const { data, error } = await supabase
+                .from('currencies')
+                .select('*')
+                .eq('is_active', true)
+                .order('code');
+
+            if (error) throw error;
+            set({ currencies: data, isLoading: false });
+        } catch (err: any) {
+            console.error('Failed to load currencies', err);
             set({ error: err.message, isLoading: false });
         }
     },
@@ -70,21 +91,44 @@ export const useUserStore = create<UserState>((set) => ({
             const { data: userData, error: userError } = await supabase.auth.getUser();
             if (userError) throw userError;
 
+            const existingSettings = get().settings;
+            const default_currency = updates.default_currency || existingSettings?.default_currency || 'USD';
+
+            // Merge with existing settings to prevent overwriting missing fields
+            const upsertData = {
+                ...(existingSettings || {}),
+                ...updates,
+                user_id: userData.user.id,
+                default_currency,
+                updated_at: new Date().toISOString(),
+            };
+
             const { error } = await supabase
                 .from('user_settings')
-                .update(updates)
-                .eq('user_id', userData.user.id);
+                .upsert(upsertData, { onConflict: 'user_id' });
 
             if (error) throw error;
 
             // Optimistic update
             set((state) => ({
-                settings: state.settings ? { ...state.settings, ...updates } : null,
+                settings: state.settings
+                    ? { ...state.settings, ...updates, updated_at: new Date().toISOString() }
+                    : {
+                        user_id: userData.user.id,
+                        default_currency,
+                        language: updates.language || 'en',
+                        timezone: updates.timezone || 'UTC',
+                        week_start: updates.week_start || 0,
+                        created_at: new Date().toISOString(),
+                        updated_at: new Date().toISOString(),
+                        ...updates
+                    } as UserSettings,
                 isLoading: false,
             }));
         } catch (err: any) {
             console.error('Failed to update settings', err);
             set({ error: err.message, isLoading: false });
+            throw err;
         }
     },
 }));

@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
+import { useCurrency } from "@/hooks/useCurrency";
 
 interface CategorySpend {
     categoryId: string;
@@ -13,6 +14,7 @@ interface CategoryDoughnutChartProps {
 }
 
 export function CategoryDoughnutChart({ spendByCategory }: CategoryDoughnutChartProps) {
+    const { formatAmount } = useCurrency();
     // Sort by amount descending
     const sortedCategories = useMemo(() => {
         return [...spendByCategory].sort((a, b) => b.amount - a.amount);
@@ -65,10 +67,11 @@ export function CategoryDoughnutChart({ spendByCategory }: CategoryDoughnutChart
                             </Pie>
                         </PieChart>
                     </ResponsiveContainer>
-                    {/* Center Text */}
-                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                        <p className="text-xs text-gray-500">Total</p>
-                        <p className="text-2xl font-bold text-gray-900">${totalExpenses.toLocaleString()}</p>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none px-4">
+                        <p className="text-[10px] uppercase tracking-wider text-gray-400 font-medium">Total</p>
+                        <p className="text-xl font-bold text-gray-900 text-center leading-tight break-words max-w-full">
+                            {formatAmount(totalExpenses)}
+                        </p>
                     </div>
                 </div>
 
@@ -88,10 +91,9 @@ export function CategoryDoughnutChart({ spendByCategory }: CategoryDoughnutChart
                                 <span className="flex-1 font-medium text-gray-800 truncate">
                                     {cat.label}
                                 </span>
-
                                 {/* Amount and Percentage */}
                                 <div className="text-right">
-                                    <p className="font-semibold text-gray-900">${cat.amount.toLocaleString()}</p>
+                                    <p className="font-semibold text-gray-900">{formatAmount(cat.amount)}</p>
                                     <p className="text-xs text-gray-500">{percentage.toFixed(1)}%</p>
                                 </div>
                             </div>

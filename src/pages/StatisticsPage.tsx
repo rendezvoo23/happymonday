@@ -1,6 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { startOfMonth, endOfMonth } from "date-fns";
 import { PageShell } from "@/components/layout/PageShell";
 import { AnalyticsCharts } from "@/components/finance/AnalyticsCharts";
 import { CategoryDoughnutChart } from "@/components/finance/CategoryDoughnutChart";
@@ -11,7 +10,7 @@ import { MonthSelector } from "@/components/ui/MonthSelector";
 import { useTransactionStore } from "@/stores/transactionStore";
 import { useCategoryStore, getCategoryColor } from "@/stores/categoryStore";
 import { useDate } from "@/context/DateContext";
-import { supabase } from "@/lib/supabaseClient";
+import { useCurrency } from "@/hooks/useCurrency";
 
 import { motion, PanInfo } from "framer-motion";
 
@@ -20,51 +19,37 @@ export function StatisticsPage() {
     const { transactions, loadTransactions, deleteTransaction, isLoading, getTotalIncome, getTotalExpenses } = useTransactionStore();
     const { loadCategories } = useCategoryStore();
     const { selectedDate, nextMonth, prevMonth } = useDate();
-    const [spendByCategory, setSpendByCategory] = useState<any[]>([]);
+    const { formatAmount } = useCurrency();
 
     useEffect(() => {
         loadTransactions(selectedDate);
         loadCategories();
+    }, [selectedDate, loadTransactions, loadCategories]);
 
-        // Fetch spend by category using Supabase directly
-        const fetchSpendByCategory = async () => {
-            const start = startOfMonth(selectedDate).toISOString();
-            const end = endOfMonth(selectedDate).toISOString();
+    // Derived reactive spend by category data
+    const spendByCategory = useMemo(() => {
+        const expenses = transactions.filter(t => t.direction === 'expense');
+        const grouped: Record<string, { amount: number; label: string; color: string }> = {};
 
-            const { data, error } = await supabase
-                .from('transactions')
-                .select('amount, category_id, categories(name, color)')
-                .eq('direction', 'expense')
-                .gte('occurred_at', start)
-                .lt('occurred_at', end)
-                .is('deleted_at', null);
-
-            if (error) {
-                console.error('Failed to load spend by category', error);
-                return;
+        expenses.forEach((t) => {
+            const catId = t.category_id || 'unknown';
+            if (!grouped[catId]) {
+                grouped[catId] = {
+                    amount: 0,
+                    label: t.categories?.name || 'Unknown',
+                    color: getCategoryColor(t.categories?.color, t.categories?.name),
+                };
             }
+            grouped[catId].amount += t.amount;
+        });
 
-            const grouped: Record<string, { amount: number; label: string; color: string }> = {};
-            data?.forEach((t: any) => {
-                const catId = t.category_id;
-                if (!grouped[catId]) {
-                    grouped[catId] = {
-                        amount: 0,
-                        label: t.categories?.name || 'Unknown',
-                        color: getCategoryColor(t.categories?.color, t.categories?.name),
-                    };
-                }
-                grouped[catId].amount += t.amount;
-            });
-
-            setSpendByCategory(Object.entries(grouped).map(([id, val]) => ({
+        return Object.entries(grouped)
+            .map(([id, val]) => ({
                 categoryId: id,
                 ...val,
-            })));
-        };
-
-        fetchSpendByCategory();
-    }, [selectedDate, loadTransactions, loadCategories]);
+            }))
+            .sort((a, b) => b.amount - a.amount);
+    }, [transactions]);
 
     // State for delete confirmation
     const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
@@ -105,11 +90,11 @@ export function StatisticsPage() {
                 <div className="flex gap-4 w-full px-4">
                     <div className="flex-1 bg-green-50 p-4 rounded-xl text-center">
                         <p className="text-sm text-green-600 font-medium">Income</p>
-                        <p className="text-xl font-bold text-green-700">${getTotalIncome().toLocaleString()}</p>
+                        <p className="text-xl font-bold text-green-700">{formatAmount(getTotalIncome())}</p>
                     </div>
                     <div className="flex-1 bg-red-50 p-4 rounded-xl text-center">
                         <p className="text-sm text-red-600 font-medium">Expenses</p>
-                        <p className="text-xl font-bold text-red-700">${getTotalExpenses().toLocaleString()}</p>
+                        <p className="text-xl font-bold text-red-700">{formatAmount(getTotalExpenses())}</p>
                     </div>
                 </div>
             </header>

@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import type { Tables } from "@/types/supabase";
 import { useCategoryStore, getCategoryColor } from "@/stores/categoryStore";
+import { useCurrency } from "@/hooks/useCurrency";
 import { packCircles } from "@/utils/circlePacking";
 
 type Transaction = Tables<'transactions'>;
@@ -23,6 +24,7 @@ export function BubblesCluster({ transactions, mode = 'cluster', height = 320, o
     const containerRef = useRef<HTMLDivElement>(null);
     const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
     const { getCategoryById } = useCategoryStore();
+    const { formatAmount } = useCurrency();
 
     // Measure container size
     useEffect(() => {
@@ -210,7 +212,7 @@ export function BubblesCluster({ transactions, mode = 'cluster', height = 320, o
                             }}
                         >
                             <span className="text-white font-bold text-lg drop-shadow-md text-center leading-tight" style={{ fontSize: Math.max(10, bubble.r * 0.4) }}>
-                                ${bubble.value.toLocaleString()}
+                                {formatAmount(bubble.value, { hideFractions: true })}
                             </span>
                             {bubble.r > 30 && (
                                 <span className="text-white/90 font-medium drop-shadow-md mt-1 text-center leading-tight px-1" style={{ fontSize: Math.max(8, bubble.r * 0.25) }}>
