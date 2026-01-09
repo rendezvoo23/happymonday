@@ -3,6 +3,7 @@ import { AreaChart, Area, XAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { format, startOfMonth, endOfMonth, subMonths, getDaysInMonth } from "date-fns";
 import type { Tables } from "@/types/supabase";
 import { useDate } from "@/context/DateContext";
+import { useCurrency } from "@/hooks/useCurrency";
 import { supabase } from "@/lib/supabaseClient";
 
 type Transaction = Tables<'transactions'>;
@@ -22,6 +23,7 @@ interface MonthData {
 
 export function AnalyticsCharts({ transactions }: AnalyticsChartsProps) {
     const { selectedDate } = useDate();
+    const { formatAmount } = useCurrency();
     const [prevMonthTransactions, setPrevMonthTransactions] = useState<Transaction[]>([]);
 
     const prevMonth = subMonths(selectedDate, 1);
@@ -126,11 +128,11 @@ export function AnalyticsCharts({ transactions }: AnalyticsChartsProps) {
                 <div className="flex items-center justify-between mb-4 px-2">
                     <div>
                         <p className="text-xs text-gray-500">Current</p>
-                        <p className="text-lg font-bold text-gray-900">${currentTotal.toLocaleString()}</p>
+                        <p className="text-lg font-bold text-gray-900">{formatAmount(currentTotal)}</p>
                     </div>
                     <div className="text-right">
                         <p className="text-xs text-gray-500">Previous</p>
-                        <p className="text-lg font-bold text-gray-600">${prevTotal.toLocaleString()}</p>
+                        <p className="text-lg font-bold text-gray-600">{formatAmount(prevTotal)}</p>
                     </div>
                 </div>
 
@@ -162,10 +164,7 @@ export function AnalyticsCharts({ transactions }: AnalyticsChartsProps) {
                                     border: 'none',
                                     boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
                                 }}
-                                formatter={(value: number, name: string) => [
-                                    `$${value.toLocaleString()}`,
-                                    name === 'current' ? currentMonthLabel : prevMonthLabel
-                                ]}
+                                formatter={(value: number) => [formatAmount(value)]}
                                 labelFormatter={(label) => `Day ${label}`}
                             />
                             {/* Previous month behind (drawn first) */}
@@ -196,7 +195,7 @@ export function AnalyticsCharts({ transactions }: AnalyticsChartsProps) {
                     <div className="flex items-center justify-center gap-3">
                         <span className="text-sm text-gray-500">Change:</span>
                         <span className={`text-lg font-bold ${isIncrease ? 'text-red-500' : 'text-green-600'}`}>
-                            {isIncrease ? '+' : ''}${absoluteChange.toLocaleString()}
+                            {isIncrease ? '+' : ''}{formatAmount(absoluteChange)}
                         </span>
                         <span className={`text-sm font-medium px-2 py-0.5 rounded-full ${isIncrease ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'}`}>
                             {isIncrease ? '↑' : '↓'} {Math.abs(percentChange).toFixed(1)}%
