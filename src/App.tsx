@@ -13,9 +13,7 @@ import { StatisticsPage } from "@/pages/StatisticsPage";
 import { AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
-
-const DEV_MODE = false;
-const DEV_INIT_DATA = "user=%7B%22id%22%3A795760041%2C%22first_name%22%3A%22rndzvoo%22%2C%22last_name%22%3A%22%22%2C%22username%22%3A%22rndzvoo%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHrpxMrlN4QU5YJd0SpJKg-fLsaAEgzbp1Yr5suG_boE.svg%22%7D&chat_instance=5721725468243331563&chat_type=private&auth_date=1767902731&signature=6Rfzj06u1cTsIGSLsAvU_tfb2DQ3aDzBtS7_7fYlpS1j0NtTUSDfsP6bkeE2R2p5UJpz74KmmCYUN7BxtENGAg&hash=92fcf538945320398f68358630472b28ce768049c5b2264318694d2dc26cd212";
+import { env } from "./env";
 
 function ProtectedRoute({
   children,
@@ -70,17 +68,17 @@ export default function App() {
       setAuthError(null);
 
       // Strict Telegram Check
-      if (!window.Telegram?.WebApp?.initData && !DEV_MODE) {
+      if (!window.Telegram?.WebApp?.initData && !env.isDev) {
         setAuthError("Please open this application in Telegram.");
         setIsAuthLoading(false);
         return;
       }
 
-      if (DEV_MODE) {
+      if (env.isDev) {
         window.Telegram = {
           WebApp: {
-            initData: DEV_INIT_DATA,
-            initDataUnsafe: parseInitData(DEV_INIT_DATA),
+            initData: env.devInitData,
+            initDataUnsafe: parseInitData(env.devInitData),
             ready() {},
           },
         };
