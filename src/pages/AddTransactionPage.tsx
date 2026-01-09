@@ -27,6 +27,7 @@ export function AddTransactionPage() {
           await addTransaction({
             amount: data.amount,
             category_id: data.categoryId,
+            subcategory_id: data.subcategoryId || null,
             occurred_at: data.date,
             note: data.note,
             direction: data.type,

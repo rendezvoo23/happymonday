@@ -143,6 +143,51 @@ export type Database = {
         }
         Relationships: []
       }
+      subcategories: {
+        Row: {
+          category_id: string
+          created_at: string
+          icon: string | null
+          id: string
+          name: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          category_id: string
+          created_at?: string
+          icon?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          category_id?: string
+          created_at?: string
+          icon?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subcategories_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subcategories_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       transactions: {
         Row: {
           amount: number
@@ -154,6 +199,7 @@ export type Database = {
           id: string
           note: string | null
           occurred_at: string
+          subcategory_id: string | null
           updated_at: string
           user_id: string
         }
@@ -167,6 +213,7 @@ export type Database = {
           id?: string
           note?: string | null
           occurred_at: string
+          subcategory_id?: string | null
           updated_at?: string
           user_id: string
         }
@@ -180,6 +227,7 @@ export type Database = {
           id?: string
           note?: string | null
           occurred_at?: string
+          subcategory_id?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -197,6 +245,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "currencies"
             referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "transactions_subcategory_id_fkey"
+            columns: ["subcategory_id"]
+            isOneToOne: false
+            referencedRelation: "subcategories"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "transactions_user_id_fkey"
