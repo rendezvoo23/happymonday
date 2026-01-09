@@ -1,4 +1,4 @@
-import { Icons } from "@/components/icons";
+import { getIconComponent } from "@/components/icons";
 import { cn } from "@/lib/utils";
 import { getCategoryColor } from "@/stores/categoryStore";
 import { Tables } from "@/types/supabase";
@@ -12,6 +12,7 @@ interface TransactionWithCategory extends Transaction {
     Tables<"categories">,
     "id" | "name" | "color" | "icon"
   > | null;
+  subcategories: Pick<Tables<"subcategories">, "id" | "name" | "icon"> | null;
 }
 
 interface TransactionItemProps {
@@ -26,10 +27,17 @@ export function TransactionItem({
   onDelete,
 }: TransactionItemProps) {
   const category = transaction.categories;
+  const subcategory = transaction.subcategories;
   const isExpense = transaction.direction === "expense";
-  const categoryLabel = category?.name || "Unknown";
+  const categoryLabel = subcategory?.name || category?.name || "Unknown";
   const categoryColor = getCategoryColor(category?.color, category?.name);
-  const IconComponent = category?.icon ? Icons[category.icon] : null;
+
+  // Use subcategory icon if subcategoryId exists and subcategory has an icon, otherwise fall back to category icon
+  const iconToUse =
+    transaction.subcategory_id && subcategory?.icon
+      ? subcategory.icon
+      : category?.icon || null;
+  const iconComponent = getIconComponent(iconToUse);
 
   return (
     <div className="group flex items-center justify-between p-4 bg-white/60 backdrop-blur-md rounded-2xl mb-3 shadow-sm transition-all hover:bg-white/80 ring-1 ring-black/5">
@@ -40,9 +48,9 @@ export function TransactionItem({
         >
           {/* Glossy Effect on Circle */}
           <div className="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent pointer-events-none" />
-          {IconComponent ? (
+          {iconComponent ? (
             <div className="relative z-10 flex items-center justify-center">
-              <IconComponent />
+              {iconComponent}
             </div>
           ) : (
             <span className="relative z-10">

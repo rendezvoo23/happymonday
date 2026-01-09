@@ -1,8 +1,10 @@
 import React from "react";
+import { CarrotIcon } from "./carrot";
 import { ForkIcon } from "./fork";
 import styles from "./styles.module.css";
 
 export const Icons: Record<string, React.FC> = {
+  ":carrot:": CarrotIcon,
   ":fork:": ForkIcon,
 };
 
