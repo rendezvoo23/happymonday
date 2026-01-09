@@ -4,7 +4,9 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import { useDate } from "@/context/DateContext";
+import { useCurrency } from "@/hooks/useCurrency";
 import { getSubcategories, type Subcategory } from "@/lib/api";
+import { cn } from "@/lib/utils";
 import { useCategoryStore } from "@/stores/categoryStore";
 import { CategoryId, TransactionType } from "@/types";
 import { CategorySelector } from "./CategorySelector";
@@ -56,6 +58,7 @@ export function TransactionForm({
   );
 
   const { selectedDate } = useDate();
+  const { symbol, isSymbolPrefix } = useCurrency();
   const {
     isLoading: categoriesLoading,
     loadCategories,
@@ -172,18 +175,28 @@ export function TransactionForm({
       <div className="space-y-2">
         <label className="text-sm font-medium text-gray-500 ml-1">Amount</label>
         <div className="relative">
-          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl font-semibold text-gray-400">
-            $
-          </span>
+          {isSymbolPrefix && (
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl font-semibold text-gray-400">
+              {symbol}
+            </span>
+          )}
           <Input
             type="number"
             inputMode="decimal"
             placeholder="0.00"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
-            className="pl-8 text-2xl font-semibold"
+            className={cn(
+              "text-2xl font-semibold",
+              isSymbolPrefix ? "pl-10" : "pr-10"
+            )}
             autoFocus
           />
+          {!isSymbolPrefix && (
+            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xl font-semibold text-gray-400">
+              {symbol}
+            </span>
+          )}
         </div>
       </div>
 

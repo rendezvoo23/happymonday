@@ -1,7 +1,7 @@
 import { Icons } from "@/components/icons";
 import { cn } from "@/lib/utils";
 import { getCategoryColor } from "@/stores/categoryStore";
-import type { Tables } from "@/types/supabase";
+import { Tables } from "@/types/supabase";
 import { format, parseISO } from "date-fns";
 import { Edit2, Trash2 } from "lucide-react";
 

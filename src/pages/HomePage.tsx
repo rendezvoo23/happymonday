@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { useTransactionStore } from "@/stores/transactionStore";
 import { MonthSelector } from "@/components/ui/MonthSelector";
 import { useDate } from "@/context/DateContext";
+import { useCurrency } from "@/hooks/useCurrency";
 import { motion, PanInfo } from "framer-motion";
 import type { Enums } from "@/types/supabase";
 
@@ -16,6 +17,7 @@ export function HomePage() {
     const navigate = useNavigate();
     const { transactions, loadTransactions, isLoading, getTotalIncome, getTotalExpenses } = useTransactionStore();
     const { selectedDate, nextMonth, prevMonth } = useDate();
+    const { formatAmount } = useCurrency();
 
     useEffect(() => {
         loadTransactions(selectedDate);
@@ -68,13 +70,13 @@ export function HomePage() {
                         <div className="bg-white/60 p-4 rounded-2xl backdrop-blur-md shadow-sm">
                             <p className="text-sm text-gray-500 mb-1">Income</p>
                             <p className="text-xl font-bold text-green-600">
-                                ${getTotalIncome().toLocaleString()}
+                                {formatAmount(getTotalIncome())}
                             </p>
                         </div>
                         <div className="bg-white/60 p-4 rounded-2xl backdrop-blur-md shadow-sm">
                             <p className="text-sm text-gray-500 mb-1">Expenses</p>
                             <p className="text-xl font-bold text-red-500">
-                                ${getTotalExpenses().toLocaleString()}
+                                {formatAmount(getTotalExpenses())}
                             </p>
                         </div>
                     </div>

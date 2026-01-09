@@ -10,6 +10,7 @@ import { HomePage } from "@/pages/HomePage";
 import { LandingPage } from "@/pages/LandingPage";
 import { ProfilePage } from "@/pages/ProfilePage";
 import { StatisticsPage } from "@/pages/StatisticsPage";
+import { useUserStore } from "@/stores/userStore";
 import { AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
@@ -47,6 +48,7 @@ export default function App() {
   const location = useLocation();
   const [isAuthLoading, setIsAuthLoading] = useState(true);
   const [authError, setAuthError] = useState<string | null>(null);
+  const { loadProfile, loadSettings, loadCurrencies } = useUserStore();
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -84,8 +86,6 @@ export default function App() {
         };
 
         console.log("window.Telegram [mocked]", window.Telegram);
-
-        setIsAuthLoading(false);
       }
 
       const success = authenticateWithTelegram();
@@ -106,6 +106,10 @@ export default function App() {
             avatarUrl: telegramUser?.photo_url,
           });
         }
+
+        // Load user data globally
+        await Promise.all([loadProfile(), loadSettings(), loadCurrencies()]);
+
         setIsAuthLoading(false);
       } else {
         setAuthError("Authentication with Telegram failed.");
