@@ -1,18 +1,21 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import { useDate } from "@/context/DateContext";
+import { getSubcategories, type Subcategory } from "@/lib/api";
 import { useCategoryStore } from "@/stores/categoryStore";
 import { CategoryId, TransactionType } from "@/types";
 import { CategorySelector } from "./CategorySelector";
+import { SubcategorySelector } from "./SubcategorySelector";
 
 interface TransactionFormProps {
   onSubmit: (data: {
     type: TransactionType;
     amount: number;
     categoryId: CategoryId;
+    subcategoryId?: string | null;
     note: string;
     date: string;
   }) => void;
@@ -20,6 +23,7 @@ interface TransactionFormProps {
     type: TransactionType;
     amount: number;
     categoryId: CategoryId;
+    subcategoryId?: string | null;
     note: string;
     date?: string;
   };
@@ -40,7 +44,16 @@ export function TransactionForm({
   const [categoryId, setCategoryId] = useState<CategoryId>(
     initialData?.categoryId || ""
   );
+  const [subcategoryId, setSubcategoryId] = useState<string | null>(
+    initialData?.subcategoryId || null
+  );
   const [note, setNote] = useState(initialData?.note || "");
+  const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
+  const [isLoadingSubcategories, setIsLoadingSubcategories] = useState(false);
+  const previousCategoryIdRef = useRef<CategoryId | null>(null);
+  const initialSubcategoryIdRef = useRef<string | null>(
+    initialData?.subcategoryId || null
+  );
 
   const { selectedDate } = useDate();
   const {
@@ -71,6 +84,49 @@ export function TransactionForm({
     }
   }, [categories, categoryId]);
 
+  // Load subcategories when categoryId changes
+  useEffect(() => {
+    if (!categoryId) {
+      setSubcategories([]);
+      setSubcategoryId(null);
+      previousCategoryIdRef.current = null;
+      return;
+    }
+
+    const categoryChanged =
+      previousCategoryIdRef.current !== null &&
+      previousCategoryIdRef.current !== categoryId;
+    const isInitialLoad = previousCategoryIdRef.current === null;
+    previousCategoryIdRef.current = categoryId;
+
+    setIsLoadingSubcategories(true);
+    getSubcategories(categoryId)
+      .then((data) => {
+        setSubcategories(data);
+
+        if (categoryChanged) {
+          // Category changed - reset subcategory selection
+          setSubcategoryId(null);
+        } else if (isInitialLoad) {
+          // Initial load - try to preserve initial subcategory if valid
+          const initialSubId = initialSubcategoryIdRef.current;
+          if (initialSubId && data.some((s) => s.id === initialSubId)) {
+            setSubcategoryId(initialSubId);
+          } else {
+            setSubcategoryId(null);
+          }
+        }
+        // If neither changed nor initial load, keep current subcategoryId state
+      })
+      .catch((error) => {
+        console.error("Failed to load subcategories", error);
+        setSubcategories([]);
+      })
+      .finally(() => {
+        setIsLoadingSubcategories(false);
+      });
+  }, [categoryId]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!amount || !categoryId) return;
@@ -79,6 +135,7 @@ export function TransactionForm({
       type,
       amount: parseFloat(amount),
       categoryId,
+      subcategoryId: subcategoryId || null,
       note,
       date: initialData?.date || selectedDate.toISOString(),
     });
@@ -97,6 +154,9 @@ export function TransactionForm({
       setCategoryId(validCategories[0].id);
     }
   };
+
+  // Get the selected category to pass its color to SubcategorySelector
+  const selectedCategory = categories.find((c) => c.id === categoryId);
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -158,6 +218,23 @@ export function TransactionForm({
           onChange={(e) => setNote(e.target.value)}
         />
       </div>
+
+      {categoryId && (
+        <div className="space-y-2">
+          {isLoadingSubcategories ? (
+            <div className="text-center py-4 text-gray-400 text-sm">
+              Loading subcategories...
+            </div>
+          ) : (
+            <SubcategorySelector
+              subcategories={subcategories}
+              selectedId={subcategoryId}
+              onSelect={setSubcategoryId}
+              categoryColor={selectedCategory?.color}
+            />
+          )}
+        </div>
+      )}
 
       <div className="pt-4 flex gap-3">
         <Button
