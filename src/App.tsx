@@ -49,7 +49,6 @@ export default function App() {
   const { loadProfile, loadSettings, loadCurrencies } = useUserStore();
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [, setUser] = useLocalStorage<{
     name: string;
     email: string;
@@ -62,6 +61,7 @@ export default function App() {
     !location.pathname.startsWith("/add") &&
     !location.pathname.startsWith("/edit");
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: only run on mount
   useEffect(() => {
     const initAuth = async () => {
       setIsAuthLoading(true);
@@ -117,7 +117,7 @@ export default function App() {
 
     // Always run auth check on mount to ensure valid session
     initAuth();
-  }, [loadProfile, loadSettings, loadCurrencies, setUser]);
+  }, []);
 
   if (authError) {
     return (
