@@ -19,11 +19,16 @@ type TransactionWithCategory = Transaction & {
 
 interface TransactionState {
   transactions: TransactionWithCategory[];
+  historyTransactions: TransactionWithCategory[]; // Separate list for full history
   isLoading: boolean;
   error: string | null;
 
   // Actions
   loadTransactions: (date: Date) => Promise<void>;
+  loadHistory: (
+    page: number,
+    pageSize: number
+  ) => Promise<{ hasMore: boolean }>;
   addTransaction: (
     transaction: Omit<TransactionInsert, "user_id">
   ) => Promise<void>;
@@ -38,6 +43,7 @@ interface TransactionState {
 
 export const useTransactionStore = create<TransactionState>((set, get) => ({
   transactions: [],
+  historyTransactions: [],
   isLoading: false,
   error: null,
 
@@ -79,6 +85,63 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
           err instanceof Error ? err.message : "Failed to load transactions",
         isLoading: false,
       });
+    }
+  },
+
+  loadHistory: async (page: number, pageSize: number) => {
+    // optimize: do not set global loading if it's pagination?
+    // User wants "no long loading time", so we rely on appending.
+    if (page === 0)
+      set({ isLoading: true, error: null, historyTransactions: [] });
+    else set({ isLoading: true, error: null }); // Keep existing history
+
+    try {
+      const start = page * pageSize;
+      const end = start + pageSize - 1;
+
+      const { data, error } = await supabase
+        .from("transactions")
+        .select(
+          `
+                    *,
+                    categories (
+                        id,
+                        name,
+                        color,
+                        icon
+                    ),
+                    subcategories (
+                        id,
+                        name,
+                        icon
+                    )
+                `
+        )
+        .is("deleted_at", null)
+        .order("occurred_at", { ascending: false })
+        .range(start, end);
+
+      if (error) throw error;
+
+      const newTransactions = data || [];
+      const hasMore = newTransactions.length === pageSize;
+
+      set((state) => ({
+        historyTransactions:
+          page === 0
+            ? newTransactions
+            : [...state.historyTransactions, ...newTransactions],
+        isLoading: false,
+      }));
+
+      return { hasMore };
+    } catch (err: unknown) {
+      console.error("Failed to load history", err);
+      set({
+        error: err instanceof Error ? err.message : "Failed to load history",
+        isLoading: false,
+      });
+      return { hasMore: false };
     }
   },
 

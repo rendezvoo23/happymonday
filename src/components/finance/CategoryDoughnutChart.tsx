@@ -1,3 +1,4 @@
+import { getIconComponent } from "@/components/icons";
 import { useCurrency } from "@/hooks/useCurrency";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown, ChevronRight } from "lucide-react";
@@ -110,11 +111,13 @@ export function CategoryDoughnutChart({
                   }
                   className="flex items-center gap-3 w-full py-1"
                 >
-                  {/* Color Dot */}
-                  <div
-                    className="w-3 h-3 rounded-full flex-shrink-0"
-                    style={{ backgroundColor: cat.color }}
-                  />
+                  {/* Color Dot Container for alignment */}
+                  <div className="w-5 h-5 flex items-center justify-center flex-shrink-0">
+                    <div
+                      className="w-3 h-3 rounded-full"
+                      style={{ backgroundColor: cat.color }}
+                    />
+                  </div>
 
                   {/* Category Name */}
                   <span className="flex-1 font-medium text-gray-800 truncate text-left">
@@ -158,12 +161,29 @@ export function CategoryDoughnutChart({
                           {cat.subcategories
                             .sort((a, b) => b.amount - a.amount)
                             .map((sub) => {
+                              const SubIcon = getIconComponent(sub.icon);
                               return (
                                 <div
                                   key={sub.id}
                                   className="flex items-center gap-3 text-sm"
                                 >
-                                  <span className="flex-1 text-gray-600 truncate pl-6">
+                                  {/* Subcategory Icon */}
+                                  <div
+                                    className="w-5 h-5 rounded-full flex items-center justify-center text-white flex-shrink-0"
+                                    style={{ backgroundColor: cat.color }}
+                                  >
+                                    {SubIcon ? (
+                                      <div className="transform scale-[0.6]">
+                                        {SubIcon}
+                                      </div>
+                                    ) : (
+                                      <span className="text-[9px] font-bold">
+                                        {sub.label[0]}
+                                      </span>
+                                    )}
+                                  </div>
+
+                                  <span className="flex-1 text-gray-600 truncate">
                                     {sub.label}
                                   </span>
                                   <span className="font-medium text-gray-900 pr-6">

@@ -15,13 +15,21 @@ interface TransactionListProps {
   transactions: TransactionWithCategory[];
   onEdit: (t: TransactionWithCategory) => void;
   onDelete: (id: string) => void;
+  limit?: number;
+  disableLimit?: boolean;
 }
+
+import { Button } from "@/components/ui/Button";
+import { useNavigate } from "react-router-dom";
 
 export function TransactionList({
   transactions,
   onEdit,
   onDelete,
+  limit,
+  disableLimit,
 }: TransactionListProps) {
+  const navigate = useNavigate();
   if (transactions.length === 0) {
     return (
       <div className="text-center py-10 text-gray-400">
@@ -36,10 +44,12 @@ export function TransactionList({
       new Date(b.occurred_at).getTime() - new Date(a.occurred_at).getTime()
   );
 
+  const displayed = disableLimit || !limit ? sorted : sorted.slice(0, limit);
+
   return (
     <div className="w-full pb-20">
       <h3 className="text-lg font-semibold mb-4 px-1">Recent Transactions</h3>
-      {sorted.map((t) => (
+      {displayed.map((t) => (
         <TransactionItem
           key={t.id}
           transaction={t}
@@ -47,6 +57,16 @@ export function TransactionList({
           onDelete={onDelete}
         />
       ))}
+      {!disableLimit && limit && sorted.length > limit && (
+        <Button
+          variant="secondary"
+          fullWidth
+          className="mt-4"
+          onClick={() => navigate("/history")}
+        >
+          View All Transactions
+        </Button>
+      )}
     </div>
   );
 }

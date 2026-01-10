@@ -6,6 +6,7 @@ import { parseInitData } from "@/lib/utils";
 import { AddTransactionPage } from "@/pages/AddTransactionPage";
 import { AiPage } from "@/pages/AiPage";
 import { EditTransactionPage } from "@/pages/EditTransactionPage";
+import { HistoryPage } from "@/pages/HistoryPage";
 import { HomePage } from "@/pages/HomePage";
 import { LandingPage } from "@/pages/LandingPage";
 import { ProfilePage } from "@/pages/ProfilePage";
@@ -137,6 +138,14 @@ export default function App() {
       <AnimatePresence mode="wait">
         <Routes location={location}>
           <Route path="/" element={<LandingPage />} />
+          <Route
+            path="/history"
+            element={
+              <ProtectedRoute isLoading={isAuthLoading}>
+                <HistoryPage />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/dashboard"
             element={

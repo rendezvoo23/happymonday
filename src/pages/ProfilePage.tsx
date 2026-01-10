@@ -1,9 +1,7 @@
 import { PageShell } from "@/components/layout/PageShell";
-import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Modal } from "@/components/ui/Modal";
 import { useTheme } from "@/context/ThemeContext";
-import { supabase } from "@/lib/supabaseClient";
 import { useUserStore } from "@/stores/userStore";
 import {
   Bell,
@@ -11,7 +9,6 @@ import {
   ChevronRight,
   DollarSign,
   Globe,
-  LogOut,
   Monitor,
   Moon,
   Settings,
@@ -19,10 +16,8 @@ import {
 } from "lucide-react";
 import type * as React from "react";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 export function ProfilePage() {
-  const navigate = useNavigate();
   const { profile, settings, currencies, updateSettings, isLoading } =
     useUserStore();
   const { theme, setTheme } = useTheme();
@@ -33,11 +28,6 @@ export function ProfilePage() {
   useEffect(() => {
     // We can still trigger re-loads if needed, but App.tsx ensures initial data is there.
   }, []);
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    navigate("/auth");
-  };
 
   const handleCurrencySelect = async (code: string) => {
     await updateSettings({ default_currency: code });
@@ -144,16 +134,6 @@ export function ProfilePage() {
           <SettingsRow icon={Bell} label="Notifications" value="On" />
           <SettingsRow icon={Settings} label="App Settings" />
         </div>
-
-        <Button
-          variant="danger"
-          fullWidth
-          onClick={handleLogout}
-          className="mt-4"
-        >
-          <LogOut className="w-4 h-4 mr-2" />
-          Log Out
-        </Button>
       </main>
 
       {/* Currency Selection Modal */}
