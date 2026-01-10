@@ -79,6 +79,7 @@ export function HistoryPage() {
 
         {hasMore && (
           <button
+            type="button"
             onClick={handleLoadMore}
             disabled={loadingMore}
             className="w-full py-4 text-center text-blue-600 font-medium disabled:opacity-50 mt-4"
