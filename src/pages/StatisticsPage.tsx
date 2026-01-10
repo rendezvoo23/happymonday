@@ -31,7 +31,7 @@ export function StatisticsPage() {
   useEffect(() => {
     loadTransactions(selectedDate);
     loadCategories();
-  }, [selectedDate, loadTransactions, loadCategories]);
+  }, [selectedDate]);
 
   // Derived reactive spend by category data
   const spendByCategory = useMemo(() => {
