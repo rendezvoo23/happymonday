@@ -1,10 +1,5 @@
 import type { Tables } from "@/types/supabase";
-import type {
-  Category,
-  CategoryId,
-  Transaction,
-  TransactionType,
-} from "../types";
+import type { Category, CategoryId, Transaction, TransactionType } from "../types";
 import { supabase } from "./supabaseClient";
 
 // Database Row Interfaces
@@ -29,19 +24,14 @@ interface DbTransactionForSpend {
 
 // 1. Settings
 export const getSettings = async () => {
-  const { data, error } = await supabase
-    .from("user_settings")
-    .select("*")
-    .single();
+  const { data, error } = await supabase.from("user_settings").select("*").single();
 
   if (error) throw error;
   return data;
 };
 
 // 2. Categories
-export const getCategories = async (
-  type: TransactionType
-): Promise<Category[]> => {
+export const getCategories = async (type: TransactionType): Promise<Category[]> => {
   const { data, error } = await supabase
     .from("categories")
     .select("*")
@@ -71,9 +61,7 @@ export interface Subcategory {
   user_id: string | null;
 }
 
-export const getSubcategories = async (
-  categoryId: string
-): Promise<Subcategory[]> => {
+export const getSubcategories = async (categoryId: string): Promise<Subcategory[]> => {
   const { data: userData, error: userError } = await supabase.auth.getUser();
   if (userError) throw userError;
 
@@ -113,10 +101,7 @@ export const createTransaction = async (payload: {
 };
 
 // 4. List Transactions
-export const listTransactions = async (
-  fromISO: string,
-  toISO: string
-): Promise<Transaction[]> => {
+export const listTransactions = async (fromISO: string, toISO: string): Promise<Transaction[]> => {
   const { data, error } = await supabase
     .from("transactions")
     .select(
@@ -186,10 +171,7 @@ export const getSpendByCategory = async (fromISO: string, toISO: string) => {
 
   if (error) throw error;
 
-  const grouped: Record<
-    string,
-    { amount: number; label: string; color: string }
-  > = {};
+  const grouped: Record<string, { amount: number; label: string; color: string }> = {};
 
   data?.forEach((t: DbTransactionForSpend) => {
     const catId = t.category_id;
@@ -220,10 +202,7 @@ export const deleteTransaction = async (id: string) => {
   if (error) throw error;
 };
 
-export const updateTransaction = async (
-  id: string,
-  payload: Partial<Transaction>
-) => {
+export const updateTransaction = async (id: string, payload: Partial<Transaction>) => {
   // Map frontend fields to DB fields if necessary
   const dbPayload: {
     amount?: number;
@@ -233,16 +212,12 @@ export const updateTransaction = async (
     direction?: TransactionType;
   } = {};
   if (payload.amount !== undefined) dbPayload.amount = payload.amount;
-  if (payload.categoryId !== undefined)
-    dbPayload.category_id = payload.categoryId;
+  if (payload.categoryId !== undefined) dbPayload.category_id = payload.categoryId;
   if (payload.date !== undefined) dbPayload.occurred_at = payload.date;
   if (payload.note !== undefined) dbPayload.note = payload.note;
   if (payload.type !== undefined) dbPayload.direction = payload.type;
 
-  const { error } = await supabase
-    .from("transactions")
-    .update(dbPayload)
-    .eq("id", id);
+  const { error } = await supabase.from("transactions").update(dbPayload).eq("id", id);
 
   if (error) throw error;
 };
