@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { Category, CategoryId } from "@/types";
+import type { Category, CategoryId } from "@/types";
 import { motion } from "framer-motion";
 import { Check } from "lucide-react";
 
@@ -9,11 +9,7 @@ interface CategorySelectorProps {
   onSelect: (id: CategoryId) => void;
 }
 
-export function CategorySelector({
-  categories,
-  selectedId,
-  onSelect,
-}: CategorySelectorProps) {
+export function CategorySelector({ categories, selectedId, onSelect }: CategorySelectorProps) {
   return (
     <div className="grid grid-cols-4 gap-4 py-4">
       {categories.map((category) => {
@@ -21,6 +17,7 @@ export function CategorySelector({
 
         return (
           <button
+            type="button"
             key={category.id}
             onClick={() => onSelect(category.id)}
             className="flex flex-col items-center gap-2 group"

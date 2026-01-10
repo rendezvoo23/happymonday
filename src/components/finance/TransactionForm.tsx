@@ -5,10 +5,10 @@ import { Input } from "@/components/ui/Input";
 import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import { useDate } from "@/context/DateContext";
 import { useCurrency } from "@/hooks/useCurrency";
-import { getSubcategories, type Subcategory } from "@/lib/api";
+import { type Subcategory, getSubcategories } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { useCategoryStore } from "@/stores/categoryStore";
-import { CategoryId, TransactionType } from "@/types";
+import type { CategoryId, TransactionType } from "@/types";
 import { CategorySelector } from "./CategorySelector";
 import { SubcategorySelector } from "./SubcategorySelector";
 
@@ -39,13 +39,9 @@ export function TransactionForm({
   initialType = "expense",
   onCancel,
 }: TransactionFormProps) {
-  const [type, setType] = useState<TransactionType>(
-    initialData?.type || initialType
-  );
+  const [type, setType] = useState<TransactionType>(initialData?.type || initialType);
   const [amount, setAmount] = useState(initialData?.amount?.toString() || "");
-  const [categoryId, setCategoryId] = useState<CategoryId>(
-    initialData?.categoryId || ""
-  );
+  const [categoryId, setCategoryId] = useState<CategoryId>(initialData?.categoryId || "");
   const [subcategoryId, setSubcategoryId] = useState<string | null>(
     initialData?.subcategoryId || null
   );
@@ -53,9 +49,7 @@ export function TransactionForm({
   const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
   const [isLoadingSubcategories, setIsLoadingSubcategories] = useState(false);
   const previousCategoryIdRef = useRef<CategoryId | null>(null);
-  const initialSubcategoryIdRef = useRef<string | null>(
-    initialData?.subcategoryId || null
-  );
+  const initialSubcategoryIdRef = useRef<string | null>(initialData?.subcategoryId || null);
 
   const { selectedDate } = useDate();
   const { symbol, isSymbolPrefix } = useCurrency();
@@ -72,8 +66,7 @@ export function TransactionForm({
   }, [loadCategories]);
 
   // Get categories filtered by type
-  const categories =
-    type === "expense" ? getExpenseCategories() : getIncomeCategories();
+  const categories = type === "expense" ? getExpenseCategories() : getIncomeCategories();
 
   // Set default category when categories are loaded or type changes
   useEffect(() => {
@@ -97,8 +90,7 @@ export function TransactionForm({
     }
 
     const categoryChanged =
-      previousCategoryIdRef.current !== null &&
-      previousCategoryIdRef.current !== categoryId;
+      previousCategoryIdRef.current !== null && previousCategoryIdRef.current !== categoryId;
     const isInitialLoad = previousCategoryIdRef.current === null;
     previousCategoryIdRef.current = categoryId;
 
@@ -136,7 +128,7 @@ export function TransactionForm({
 
     onSubmit({
       type,
-      amount: parseFloat(amount),
+      amount: Number.parseFloat(amount),
       categoryId,
       subcategoryId: subcategoryId || null,
       note,
@@ -148,12 +140,8 @@ export function TransactionForm({
   const handleTypeChange = (newType: string) => {
     const t = newType as TransactionType;
     setType(t);
-    const validCategories =
-      t === "expense" ? getExpenseCategories() : getIncomeCategories();
-    if (
-      validCategories.length > 0 &&
-      !validCategories.find((c) => c.id === categoryId)
-    ) {
+    const validCategories = t === "expense" ? getExpenseCategories() : getIncomeCategories();
+    if (validCategories.length > 0 && !validCategories.find((c) => c.id === categoryId)) {
       setCategoryId(validCategories[0].id);
     }
   };
@@ -173,7 +161,9 @@ export function TransactionForm({
       />
 
       <div className="space-y-2">
-        <label className="text-sm font-medium text-gray-500 ml-1">Amount</label>
+        <label htmlFor="amount-input" className="text-sm font-medium text-gray-500 ml-1">
+          Amount
+        </label>
         <div className="relative">
           {isSymbolPrefix && (
             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl font-semibold text-gray-400">
@@ -181,15 +171,13 @@ export function TransactionForm({
             </span>
           )}
           <Input
+            id="amount-input"
             type="number"
             inputMode="decimal"
             placeholder="0.00"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
-            className={cn(
-              "text-2xl font-semibold",
-              isSymbolPrefix ? "pl-10" : "pr-10"
-            )}
+            className={cn("text-2xl font-semibold", isSymbolPrefix ? "pl-10" : "pr-10")}
             autoFocus
           />
           {!isSymbolPrefix && (
@@ -201,17 +189,11 @@ export function TransactionForm({
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-medium text-gray-500 ml-1">
-          Category
-        </label>
+        <div className="text-sm font-medium text-gray-500 ml-1">Category</div>
         {categoriesLoading ? (
-          <div className="text-center py-8 text-gray-400">
-            Loading categories...
-          </div>
+          <div className="text-center py-8 text-gray-400">Loading categories...</div>
         ) : categories.length === 0 ? (
-          <div className="text-center py-8 text-gray-400">
-            No categories available
-          </div>
+          <div className="text-center py-8 text-gray-400">No categories available</div>
         ) : (
           <CategorySelector
             categories={categories}
@@ -222,10 +204,11 @@ export function TransactionForm({
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-medium text-gray-500 ml-1">
+        <label htmlFor="note-input" className="text-sm font-medium text-gray-500 ml-1">
           Note (Optional)
         </label>
         <Input
+          id="note-input"
           placeholder="What was this for?"
           value={note}
           onChange={(e) => setNote(e.target.value)}
@@ -235,9 +218,7 @@ export function TransactionForm({
       {categoryId && (
         <div className="space-y-2">
           {isLoadingSubcategories ? (
-            <div className="text-center py-4 text-gray-400 text-sm">
-              Loading subcategories...
-            </div>
+            <div className="text-center py-4 text-gray-400 text-sm">Loading subcategories...</div>
           ) : (
             <SubcategorySelector
               subcategories={subcategories}
@@ -250,12 +231,7 @@ export function TransactionForm({
       )}
 
       <div className="pt-4 flex gap-3">
-        <Button
-          type="button"
-          variant="secondary"
-          className="flex-1"
-          onClick={onCancel}
-        >
+        <Button type="button" variant="secondary" className="flex-1" onClick={onCancel}>
           Cancel
         </Button>
         <Button type="submit" className="flex-[2]" disabled={!amount}>

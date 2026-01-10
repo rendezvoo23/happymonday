@@ -9,8 +9,7 @@ import { useNavigate, useParams } from "react-router-dom";
 export function EditTransactionPage() {
   const navigate = useNavigate();
   const { id } = useParams();
-  const { transactions, updateTransaction, loadTransactions, isLoading } =
-    useTransactionStore();
+  const { transactions, updateTransaction, loadTransactions, isLoading } = useTransactionStore();
   const { selectedDate } = useDate();
 
   // Load transactions if not already loaded
@@ -38,6 +37,7 @@ export function EditTransactionPage() {
         <div className="flex flex-col items-center justify-center h-[60vh]">
           <p className="text-gray-500">Transaction not found</p>
           <button
+            type="button"
             onClick={() => navigate(-1)}
             className="mt-4 text-blue-600 font-medium"
           >
@@ -61,9 +61,7 @@ export function EditTransactionPage() {
   return (
     <PageShell className="pb-6">
       <header className="flex flex-col items-center pt-4 pb-6">
-        <h1 className="text-xl font-semibold text-gray-900">
-          Edit Transaction
-        </h1>
+        <h1 className="text-xl font-semibold text-gray-900">Edit Transaction</h1>
       </header>
 
       <TransactionForm

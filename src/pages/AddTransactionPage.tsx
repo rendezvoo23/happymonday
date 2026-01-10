@@ -11,8 +11,7 @@ export function AddTransactionPage() {
   const [searchParams] = useSearchParams();
   const addTransaction = useTransactionStore((state) => state.addTransaction);
 
-  const initialType =
-    (searchParams.get("type") as TransactionDirection) || "expense";
+  const initialType = (searchParams.get("type") as TransactionDirection) || "expense";
 
   return (
     <PageShell className="pb-6">

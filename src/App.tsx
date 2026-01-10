@@ -27,7 +27,7 @@ function ProtectedRoute({
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-screen flex items-center justify-center bg-[var(--background)] text-gray-900 dark:text-gray-100 transition-colors duration-200">
         Loading...
       </div>
     );
@@ -51,7 +51,6 @@ export default function App() {
   const { loadProfile, loadSettings, loadCurrencies } = useUserStore();
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [, setUser] = useLocalStorage<{
     name: string;
     email: string;
@@ -64,6 +63,7 @@ export default function App() {
     !location.pathname.startsWith("/add") &&
     !location.pathname.startsWith("/edit");
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: only run on mount
   useEffect(() => {
     const initAuth = async () => {
       setIsAuthLoading(true);
@@ -100,7 +100,7 @@ export default function App() {
           const telegramUser = window?.Telegram?.WebApp?.initDataUnsafe?.user;
           console.log("telegramUser", telegramUser);
           setUser({
-            name: telegramUser?.first_name + " " + telegramUser?.last_name,
+            name: `${telegramUser?.first_name} ${telegramUser?.last_name}`,
             email: sbUser.email || "",
             joinDate: sbUser.created_at,
             avatarUrl: telegramUser?.photo_url,
@@ -123,8 +123,8 @@ export default function App() {
 
   if (authError) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-red-50 p-4">
-        <div className="text-center text-red-600">
+      <div className="min-h-screen flex items-center justify-center bg-red-50 dark:bg-red-900/20 p-4 transition-colors duration-200">
+        <div className="text-center text-red-600 dark:text-red-400">
           <h2 className="text-xl font-bold mb-2">Access Denied</h2>
           <p>{authError}</p>
         </div>
@@ -133,7 +133,7 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-gray-900 font-sans overflow-hidden">
+    <div className="min-h-screen bg-[var(--background)] text-gray-900 dark:text-gray-100 font-sans overflow-hidden transition-colors duration-200">
       <AnimatePresence mode="wait">
         <Routes location={location}>
           <Route path="/" element={<LandingPage />} />

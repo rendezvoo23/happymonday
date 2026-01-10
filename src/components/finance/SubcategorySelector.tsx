@@ -23,11 +23,10 @@ export function SubcategorySelector({
 
   return (
     <div className="space-y-2">
-      <label className="text-sm font-medium text-gray-500 ml-1">
-        Subcategory (Optional)
-      </label>
+      <div className="text-sm font-medium text-gray-500 ml-1">Subcategory (Optional)</div>
       <div className="grid grid-cols-4 gap-3 py-2">
         <button
+          type="button"
           onClick={() => onSelect(null)}
           className={cn(
             "flex flex-col items-center gap-2 group p-2 rounded-lg border-2 transition-colors",
@@ -36,15 +35,14 @@ export function SubcategorySelector({
               : "border-gray-200 hover:border-gray-300"
           )}
         >
-          <div className="text-xs font-medium text-center leading-tight">
-            None
-          </div>
+          <div className="text-xs font-medium text-center leading-tight">None</div>
         </button>
         {subcategories.map((subcategory) => {
           const isSelected = selectedId === subcategory.id;
           const IconComponent = getIconComponent(subcategory.icon);
           return (
             <button
+              type="button"
               key={subcategory.id}
               onClick={() => onSelect(subcategory.id)}
               className="flex flex-col items-center gap-2 group"
@@ -69,11 +67,7 @@ export function SubcategorySelector({
                   )}
                   {!isSelected && subcategory.icon && (
                     <div className="text-white text-lg flex items-center justify-center">
-                      {IconComponent ? (
-                        IconComponent
-                      ) : (
-                        <span>{subcategory.icon}</span>
-                      )}
+                      {IconComponent ? IconComponent : <span>{subcategory.icon}</span>}
                     </div>
                   )}
                 </motion.div>

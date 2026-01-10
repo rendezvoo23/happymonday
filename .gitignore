@@ -127,3 +127,6 @@ Thumbs.db
 
 # Vite
 .vite
+
+# Development build output
+dev-dist

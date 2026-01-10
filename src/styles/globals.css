@@ -3,21 +3,36 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --background: #f5f5f7;
+    --surface: rgba(255, 255, 255, 0.7);
+    --surface-glass: rgba(255, 255, 255, 0.8);
+  }
+
+  .dark {
+    --background: #1c1c1e;
+    --surface: rgba(28, 28, 30, 0.7);
+    --surface-glass: rgba(28, 28, 30, 0.8);
+  }
+
   body {
-    @apply bg-background text-gray-900 font-sans antialiased;
+    @apply bg-[var(--background)] text-gray-900 dark:text-gray-100 font-sans antialiased;
     -webkit-tap-highlight-color: transparent;
+    transition: background-color 0.2s ease, color 0.2s ease;
   }
 }
 
 @layer components {
   .glass-panel {
-    @apply bg-surface backdrop-blur-xl border border-white/20 shadow-soft;
+    @apply bg-[var(--surface)] backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-soft dark:shadow-none;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
   }
-  
+
   .glass-card {
-    @apply bg-white/70 backdrop-blur-xl border border-white/40 shadow-sm;
+    @apply bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl border border-white/40 dark:border-white/10 shadow-sm;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
   }
-  
+
   .btn-press {
     @apply active:scale-95 transition-transform duration-200;
   }
@@ -30,6 +45,6 @@
 
 /* Hide scrollbar for IE, Edge and Firefox */
 .no-scrollbar {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
 }
