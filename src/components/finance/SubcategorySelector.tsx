@@ -23,9 +23,7 @@ export function SubcategorySelector({
 
   return (
     <div className="space-y-2">
-      <div className="text-sm font-medium text-gray-500 ml-1">
-        Subcategory (Optional)
-      </div>
+      <div className="text-sm font-medium text-gray-500 ml-1">Subcategory (Optional)</div>
       <div className="grid grid-cols-4 gap-3 py-2">
         <button
           type="button"
@@ -37,9 +35,7 @@ export function SubcategorySelector({
               : "border-gray-200 hover:border-gray-300"
           )}
         >
-          <div className="text-xs font-medium text-center leading-tight">
-            None
-          </div>
+          <div className="text-xs font-medium text-center leading-tight">None</div>
         </button>
         {subcategories.map((subcategory) => {
           const isSelected = selectedId === subcategory.id;
@@ -71,11 +67,7 @@ export function SubcategorySelector({
                   )}
                   {!isSelected && subcategory.icon && (
                     <div className="text-white text-lg flex items-center justify-center">
-                      {IconComponent ? (
-                        IconComponent
-                      ) : (
-                        <span>{subcategory.icon}</span>
-                      )}
+                      {IconComponent ? IconComponent : <span>{subcategory.icon}</span>}
                     </div>
                   )}
                 </motion.div>

@@ -13,16 +13,9 @@ interface SegmentedControlProps {
   className?: string;
 }
 
-export function SegmentedControl({
-  options,
-  value,
-  onChange,
-  className,
-}: SegmentedControlProps) {
+export function SegmentedControl({ options, value, onChange, className }: SegmentedControlProps) {
   return (
-    <div
-      className={cn("flex p-1 bg-gray-200/50 rounded-full relative", className)}
-    >
+    <div className={cn("flex p-1 bg-gray-200/50 rounded-full relative", className)}>
       {options.map((option) => {
         const isActive = value === option.value;
         return (

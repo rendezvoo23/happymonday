@@ -27,9 +27,7 @@ function ProtectedRoute({
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        Loading...
-      </div>
+      <div className="min-h-screen flex items-center justify-center bg-background">Loading...</div>
     );
   }
 

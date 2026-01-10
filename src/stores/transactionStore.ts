@@ -74,7 +74,11 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
       set({ transactions: data || [], isLoading: false });
     } catch (err: unknown) {
       console.error("Failed to load transactions", err);
-      set({ error: err instanceof Error ? err.message : "Failed to load transactions", isLoading: false });
+      set({
+        error:
+          err instanceof Error ? err.message : "Failed to load transactions",
+        isLoading: false,
+      });
     }
   },
 
@@ -97,7 +101,8 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
       await get().loadTransactions(date);
     } catch (err: unknown) {
       console.error("Failed to add transaction", err);
-      const errorMessage = err instanceof Error ? err.message : "Failed to add transaction";
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to add transaction";
       set({ error: errorMessage, isLoading: false });
       throw err;
     }
@@ -122,7 +127,11 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
       }));
     } catch (err: unknown) {
       console.error("Failed to update transaction", err);
-      set({ error: err instanceof Error ? err.message : "Failed to update transaction", isLoading: false });
+      set({
+        error:
+          err instanceof Error ? err.message : "Failed to update transaction",
+        isLoading: false,
+      });
     }
   },
 
@@ -144,7 +153,11 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
       }));
     } catch (err: unknown) {
       console.error("Failed to delete transaction", err);
-      set({ error: err instanceof Error ? err.message : "Failed to delete transaction", isLoading: false });
+      set({
+        error:
+          err instanceof Error ? err.message : "Failed to delete transaction",
+        isLoading: false,
+      });
     }
   },
 

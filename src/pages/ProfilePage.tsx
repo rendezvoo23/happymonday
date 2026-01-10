@@ -1,3 +1,4 @@
+import type * as React from "react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Settings, LogOut, ChevronRight, Bell, DollarSign, Globe, Check } from "lucide-react";
@@ -102,6 +103,7 @@ export function ProfilePage() {
                 <div className="space-y-1 max-h-[60vh] overflow-y-auto no-scrollbar">
                     {currencies.map((currency) => (
                         <button
+                            type="button"
                             key={currency.code}
                             onClick={() => handleCurrencySelect(currency.code)}
                             className="w-full flex items-center justify-between p-4 rounded-xl hover:bg-gray-50 transition-colors"
@@ -130,13 +132,14 @@ function SettingsRow({
     value,
     onClick
 }: {
-    icon: any,
+    icon: React.ComponentType<{ className?: string }>,
     label: string,
     value?: string,
     onClick?: () => void
 }) {
     return (
         <button
+            type="button"
             onClick={onClick}
             className="w-full flex items-center justify-between p-4 bg-white/60 backdrop-blur-sm rounded-2xl hover:bg-white/80 transition-colors"
         >

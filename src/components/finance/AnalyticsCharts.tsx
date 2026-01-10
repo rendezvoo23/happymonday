@@ -2,23 +2,14 @@ import { useDate } from "@/context/DateContext";
 import { useCurrency } from "@/hooks/useCurrency";
 import { supabase } from "@/lib/supabaseClient";
 import type { Tables } from "@/types/supabase";
-import {
-  endOfMonth,
-  format,
-  getDaysInMonth,
-  startOfMonth,
-  subMonths,
-} from "date-fns";
+import { endOfMonth, format, getDaysInMonth, startOfMonth, subMonths } from "date-fns";
 import { useEffect, useMemo, useState } from "react";
 import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis } from "recharts";
 
 type Transaction = Tables<"transactions">;
 
 interface TransactionWithCategory extends Transaction {
-  categories: Pick<
-    Tables<"categories">,
-    "id" | "name" | "color" | "icon"
-  > | null;
+  categories: Pick<Tables<"categories">, "id" | "name" | "color" | "icon"> | null;
 }
 
 interface AnalyticsChartsProps {
@@ -33,9 +24,7 @@ interface MonthData {
 export function AnalyticsCharts({ transactions }: AnalyticsChartsProps) {
   const { selectedDate } = useDate();
   const { formatAmount } = useCurrency();
-  const [prevMonthTransactions, setPrevMonthTransactions] = useState<
-    Transaction[]
-  >([]);
+  const [prevMonthTransactions, setPrevMonthTransactions] = useState<Transaction[]>([]);
 
   const prevMonth = subMonths(selectedDate, 1);
 
@@ -132,15 +121,11 @@ export function AnalyticsCharts({ transactions }: AnalyticsChartsProps) {
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-[#FF453A]" />
-              <span className="text-sm font-medium text-gray-700">
-                {currentMonthLabel}
-              </span>
+              <span className="text-sm font-medium text-gray-700">{currentMonthLabel}</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-[#8E8E93]" />
-              <span className="text-sm font-medium text-gray-500">
-                {prevMonthLabel}
-              </span>
+              <span className="text-sm font-medium text-gray-500">{prevMonthLabel}</span>
             </div>
           </div>
         </div>
@@ -149,15 +134,11 @@ export function AnalyticsCharts({ transactions }: AnalyticsChartsProps) {
         <div className="flex items-center justify-between mb-4 px-2">
           <div>
             <p className="text-xs text-gray-500">Current</p>
-            <p className="text-lg font-bold text-gray-900">
-              {formatAmount(currentTotal)}
-            </p>
+            <p className="text-lg font-bold text-gray-900">{formatAmount(currentTotal)}</p>
           </div>
           <div className="text-right">
             <p className="text-xs text-gray-500">Previous</p>
-            <p className="text-lg font-bold text-gray-600">
-              {formatAmount(prevTotal)}
-            </p>
+            <p className="text-lg font-bold text-gray-600">{formatAmount(prevTotal)}</p>
           </div>
         </div>
 
@@ -166,13 +147,7 @@ export function AnalyticsCharts({ transactions }: AnalyticsChartsProps) {
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={combinedData}>
               <defs>
-                <linearGradient
-                  id="colorCurrentMonth"
-                  x1="0"
-                  y1="0"
-                  x2="0"
-                  y2="1"
-                >
+                <linearGradient id="colorCurrentMonth" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#FF453A" stopOpacity={0.4} />
                   <stop offset="95%" stopColor="#FF453A" stopOpacity={0.05} />
                 </linearGradient>
@@ -225,19 +200,13 @@ export function AnalyticsCharts({ transactions }: AnalyticsChartsProps) {
         <div className="mt-4 pt-4 border-t border-gray-200/50">
           <div className="flex items-center justify-center gap-3">
             <span className="text-sm text-gray-500">Change:</span>
-            <span
-              className={`text-lg font-bold ${
-                isIncrease ? "text-red-500" : "text-green-600"
-              }`}
-            >
+            <span className={`text-lg font-bold ${isIncrease ? "text-red-500" : "text-green-600"}`}>
               {isIncrease ? "+" : ""}
               {formatAmount(absoluteChange)}
             </span>
             <span
               className={`text-sm font-medium px-2 py-0.5 rounded-full ${
-                isIncrease
-                  ? "bg-red-100 text-red-600"
-                  : "bg-green-100 text-green-600"
+                isIncrease ? "bg-red-100 text-red-600" : "bg-green-100 text-green-600"
               }`}
             >
               {isIncrease ? "↑" : "↓"} {Math.abs(percentChange).toFixed(1)}%

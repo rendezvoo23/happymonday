@@ -1,11 +1,6 @@
 export const PlaneIcon = () => {
   return (
-    <svg
-      version="1.1"
-      viewBox="0 0 19.7743 19.7547"
-      role="img"
-      aria-label="Plane icon"
-    >
+    <svg version="1.1" viewBox="0 0 19.7743 19.7547" role="img" aria-label="Plane icon">
       <g>
         <rect height="19.7547" opacity="0" width="19.7743" x="0" y="0" />
         <path

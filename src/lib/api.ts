@@ -1,4 +1,10 @@
-import type { Category, CategoryId, Transaction, TransactionType } from "../types";
+import type { Tables } from "@/types/supabase";
+import type {
+  Category,
+  CategoryId,
+  Transaction,
+  TransactionType,
+} from "../types";
 import { supabase } from "./supabaseClient";
 
 // Database Row Interfaces
@@ -12,28 +18,9 @@ interface DbCategory {
   sort_order: number;
 }
 
-interface DbTransactionRow {
-  id: string;
-  type: TransactionType;
-  amount: number;
-  category_id: string;
-  occurred_at: string;
-  description: string | null;
-}
-
-interface DbTransactionWithCategory extends DbTransactionRow {
-  categories: {
-    id: string;
-    label?: string;
-    name?: string;
-    color: string | null;
-    icon: string | null;
-  } | null;
-}
-
 interface DbTransactionForSpend {
   amount: number;
-  category_id: string;
+  category_id: string | null;
   categories: {
     name: string;
     color: string | null;
@@ -137,7 +124,7 @@ export const listTransactions = async (
       *,
       categories (
         id,
-        label,
+        name,
         color,
         icon
       )
@@ -150,13 +137,13 @@ export const listTransactions = async (
 
   if (error) throw error;
 
-  return (data || []).map((t: DbTransactionWithCategory) => ({
+  return (data || []).map((t: Tables<"transactions">) => ({
     id: t.id,
-    type: t.type,
+    type: t.direction,
     amount: t.amount,
-    categoryId: t.category_id as CategoryId,
+    categoryId: (t.category_id || "other") as CategoryId,
     date: t.occurred_at,
-    note: t.description || "",
+    note: t.note || "",
     // We could attach category details if the frontend needed them inline,
     // but the Transaction interface primarily uses categoryId.
   }));
@@ -206,6 +193,7 @@ export const getSpendByCategory = async (fromISO: string, toISO: string) => {
 
   data?.forEach((t: DbTransactionForSpend) => {
     const catId = t.category_id;
+    if (!catId) return; // Skip transactions without category
     if (!grouped[catId]) {
       grouped[catId] = {
         amount: 0,
@@ -241,15 +229,15 @@ export const updateTransaction = async (
     amount?: number;
     category_id?: string;
     occurred_at?: string;
-    description?: string;
-    type?: TransactionType;
+    note?: string;
+    direction?: TransactionType;
   } = {};
   if (payload.amount !== undefined) dbPayload.amount = payload.amount;
   if (payload.categoryId !== undefined)
     dbPayload.category_id = payload.categoryId;
   if (payload.date !== undefined) dbPayload.occurred_at = payload.date;
-  if (payload.note !== undefined) dbPayload.description = payload.note;
-  if (payload.type !== undefined) dbPayload.type = payload.type;
+  if (payload.note !== undefined) dbPayload.note = payload.note;
+  if (payload.type !== undefined) dbPayload.direction = payload.type;
 
   const { error } = await supabase
     .from("transactions")

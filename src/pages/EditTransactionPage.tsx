@@ -38,6 +38,7 @@ export function EditTransactionPage() {
         <div className="flex flex-col items-center justify-center h-[60vh]">
           <p className="text-gray-500">Transaction not found</p>
           <button
+            type="button"
             onClick={() => navigate(-1)}
             className="mt-4 text-blue-600 font-medium"
           >

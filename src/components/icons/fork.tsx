@@ -1,11 +1,6 @@
 export const ForkIcon = () => {
   return (
-    <svg
-      version="1.1"
-      viewBox="0 0 13.7741 24.0918"
-      role="img"
-      aria-label="Fork icon"
-    >
+    <svg version="1.1" viewBox="0 0 13.7741 24.0918" role="img" aria-label="Fork icon">
       <g>
         <rect height="24.0918" opacity="0" width="13.7741" x="0" y="0" />
         <path

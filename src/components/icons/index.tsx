@@ -15,9 +15,7 @@ export const Icons: Record<string, React.FC> = {
  * @param icon - The icon string (e.g., ":fork:")
  * @returns The React node (JSX) if found in Icons map, null otherwise
  */
-export const getIconComponent = (
-  icon: string | null | undefined
-): React.ReactNode => {
+export const getIconComponent = (icon: string | null | undefined): React.ReactNode => {
   if (!icon) return null;
   const Component = Icons[icon] as React.FC | undefined;
   if (!Component) return null;
