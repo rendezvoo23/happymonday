@@ -1,4 +1,4 @@
-import { Category, CategoryId, Transaction, TransactionType } from "../types";
+import type { Category, CategoryId, Transaction, TransactionType } from "../types";
 import { supabase } from "./supabaseClient";
 
 // Database Row Interfaces
@@ -10,6 +10,34 @@ interface DbCategory {
   color: string | null;
   type: "expense" | "income";
   sort_order: number;
+}
+
+interface DbTransactionRow {
+  id: string;
+  type: TransactionType;
+  amount: number;
+  category_id: string;
+  occurred_at: string;
+  description: string | null;
+}
+
+interface DbTransactionWithCategory extends DbTransactionRow {
+  categories: {
+    id: string;
+    label?: string;
+    name?: string;
+    color: string | null;
+    icon: string | null;
+  } | null;
+}
+
+interface DbTransactionForSpend {
+  amount: number;
+  category_id: string;
+  categories: {
+    name: string;
+    color: string | null;
+  } | null;
 }
 
 // 1. Settings
@@ -122,13 +150,13 @@ export const listTransactions = async (
 
   if (error) throw error;
 
-  return (data || []).map((t: any) => ({
+  return (data || []).map((t: DbTransactionWithCategory) => ({
     id: t.id,
     type: t.type,
     amount: t.amount,
     categoryId: t.category_id as CategoryId,
     date: t.occurred_at,
-    note: t.description,
+    note: t.description || "",
     // We could attach category details if the frontend needed them inline,
     // but the Transaction interface primarily uses categoryId.
   }));
@@ -176,7 +204,7 @@ export const getSpendByCategory = async (fromISO: string, toISO: string) => {
     { amount: number; label: string; color: string }
   > = {};
 
-  data?.forEach((t: any) => {
+  data?.forEach((t: DbTransactionForSpend) => {
     const catId = t.category_id;
     if (!grouped[catId]) {
       grouped[catId] = {
@@ -209,7 +237,13 @@ export const updateTransaction = async (
   payload: Partial<Transaction>
 ) => {
   // Map frontend fields to DB fields if necessary
-  const dbPayload: any = {};
+  const dbPayload: {
+    amount?: number;
+    category_id?: string;
+    occurred_at?: string;
+    description?: string;
+    type?: TransactionType;
+  } = {};
   if (payload.amount !== undefined) dbPayload.amount = payload.amount;
   if (payload.categoryId !== undefined)
     dbPayload.category_id = payload.categoryId;

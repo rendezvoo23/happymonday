@@ -84,7 +84,10 @@ export function BubblesCluster({ transactions, mode = 'cluster', height = 320, o
         );
 
         // Calculate bounding box of the packed circles
-        let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+        let minX = Number.POSITIVE_INFINITY;
+        let maxX = Number.NEGATIVE_INFINITY;
+        let minY = Number.POSITIVE_INFINITY;
+        let maxY = Number.NEGATIVE_INFINITY;
         if (packed.length > 0) {
             packed.forEach(p => {
                 minX = Math.min(minX, p.x - p.r);
@@ -111,7 +114,16 @@ export function BubblesCluster({ transactions, mode = 'cluster', height = 320, o
         const contentCenterY = (minY + maxY) / 2;
 
         return data.map(item => {
-            const layout = packed.find(p => p.id === item.id)!;
+            const layout = packed.find(p => p.id === item.id);
+            if (!layout) {
+                // Fallback if layout not found (shouldn't happen, but TypeScript safety)
+                return {
+                    ...item,
+                    x: 0,
+                    y: 0,
+                    r: 0
+                };
+            }
             return {
                 ...item,
                 x: (layout.x - contentCenterX) * scale,
@@ -148,7 +160,7 @@ export function BubblesCluster({ transactions, mode = 'cluster', height = 320, o
         >
             {/* Gooey Filter - Only for cluster mode */}
             {mode === 'cluster' && (
-                <svg style={{ position: 'absolute', width: 0, height: 0 }}>
+                <svg style={{ position: 'absolute', width: 0, height: 0 }} aria-hidden="true">
                     <defs>
                         <filter id="goo">
                             <feGaussianBlur in="SourceGraphic" stdDeviation="15" result="blur" colorInterpolationFilters="sRGB" />

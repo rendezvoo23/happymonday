@@ -1,15 +1,15 @@
 
 import { supabase } from './supabaseClient';
-
+import type { User } from '@supabase/supabase-js';
 
 export interface TelegramAuthResponse {
     session: {
         access_token: string;
         refresh_token: string;
         expires_in: number;
-        user: any;
+        user: User;
     };
-    user: any;
+    user: User;
 }
 
 export const authenticateWithTelegram = async (): Promise<boolean> => {

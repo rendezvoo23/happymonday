@@ -23,11 +23,12 @@ export function SubcategorySelector({
 
   return (
     <div className="space-y-2">
-      <label className="text-sm font-medium text-gray-500 ml-1">
+      <div className="text-sm font-medium text-gray-500 ml-1">
         Subcategory (Optional)
-      </label>
+      </div>
       <div className="grid grid-cols-4 gap-3 py-2">
         <button
+          type="button"
           onClick={() => onSelect(null)}
           className={cn(
             "flex flex-col items-center gap-2 group p-2 rounded-lg border-2 transition-colors",
@@ -45,6 +46,7 @@ export function SubcategorySelector({
           const IconComponent = getIconComponent(subcategory.icon);
           return (
             <button
+              type="button"
               key={subcategory.id}
               onClick={() => onSelect(subcategory.id)}
               className="flex flex-col items-center gap-2 group"

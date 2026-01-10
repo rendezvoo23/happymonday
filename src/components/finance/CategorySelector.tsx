@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { Category, CategoryId } from "@/types";
+import type { Category, CategoryId } from "@/types";
 import { motion } from "framer-motion";
 import { Check } from "lucide-react";
 
@@ -21,6 +21,7 @@ export function CategorySelector({
 
         return (
           <button
+            type="button"
             key={category.id}
             onClick={() => onSelect(category.id)}
             className="flex flex-col items-center gap-2 group"

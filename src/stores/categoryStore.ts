@@ -86,9 +86,9 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
 
       if (error) throw error;
       set({ categories: data || [], isLoading: false });
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Failed to load categories", err);
-      set({ error: err.message, isLoading: false });
+      set({ error: err instanceof Error ? err.message : "Failed to load categories", isLoading: false });
     }
   },
 

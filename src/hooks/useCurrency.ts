@@ -112,7 +112,7 @@ export function useCurrency() {
         // If the user wants RU separators for USD (e.g. $100,00), we would need transformToParts logic.
         // But usually using the currency's native separators is preferred for financial accuracy.
 
-        let fmt;
+        let fmt: Intl.NumberFormat;
         if (showSign) {
             fmt = hideFractions ? wholeNumberSignFormatter : signFormatter;
         } else {

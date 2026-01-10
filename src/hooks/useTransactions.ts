@@ -1,7 +1,7 @@
 
 import { useState, useCallback } from 'react';
 import { startOfMonth, endOfMonth, parseISO } from 'date-fns';
-import { Transaction } from '../types';
+import type { Transaction } from '../types';
 import * as api from '../lib/api';
 
 export function useTransactions() {
@@ -17,9 +17,9 @@ export function useTransactions() {
             const end = endOfMonth(date);
             const data = await api.listTransactions(start.toISOString(), end.toISOString());
             setTransactions(data);
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Failed to load transactions', err);
-            setError(err.message);
+            setError(err instanceof Error ? err.message : 'Failed to load transactions');
         } finally {
             setIsLoading(false);
         }
@@ -41,9 +41,10 @@ export function useTransactions() {
             // simpler to just reload or let the user navigate back and reload
             const date = parseISO(transaction.date);
             await loadTransactions(date);
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Failed to add transaction', err);
-            setError(err.message);
+            const errorMessage = err instanceof Error ? err.message : 'Failed to add transaction';
+            setError(errorMessage);
             throw err;
         } finally {
             setIsLoading(false);
@@ -56,9 +57,9 @@ export function useTransactions() {
             await api.deleteTransaction(id);
             // Remove from local state immediately for UI responsiveness
             setTransactions(prev => prev.filter(t => t.id !== id));
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Failed to delete transaction', err);
-            setError(err.message);
+            setError(err instanceof Error ? err.message : 'Failed to delete transaction');
         } finally {
             setIsLoading(false);
         }
@@ -72,9 +73,9 @@ export function useTransactions() {
             // Simple: reload. Or map.
             // Mapping is faster.
             setTransactions(prev => prev.map(t => t.id === id ? { ...t, ...updates } : t));
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Failed to update transaction', err);
-            setError(err.message);
+            setError(err instanceof Error ? err.message : 'Failed to update transaction');
         } finally {
             setIsLoading(false);
         }

@@ -42,9 +42,9 @@ export const useUserStore = create<UserState>((set, get) => ({
 
             if (error) throw error;
             set({ profile: data, isLoading: false });
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Failed to load profile', err);
-            set({ error: err.message, isLoading: false });
+            set({ error: err instanceof Error ? err.message : 'Failed to load profile', isLoading: false });
         }
     },
 
@@ -62,9 +62,9 @@ export const useUserStore = create<UserState>((set, get) => ({
 
             if (error) throw error;
             set({ settings: data, isLoading: false });
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Failed to load settings', err);
-            set({ error: err.message, isLoading: false });
+            set({ error: err instanceof Error ? err.message : 'Failed to load settings', isLoading: false });
         }
     },
 
@@ -79,9 +79,9 @@ export const useUserStore = create<UserState>((set, get) => ({
 
             if (error) throw error;
             set({ currencies: data, isLoading: false });
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Failed to load currencies', err);
-            set({ error: err.message, isLoading: false });
+            set({ error: err instanceof Error ? err.message : 'Failed to load currencies', isLoading: false });
         }
     },
 
@@ -125,9 +125,10 @@ export const useUserStore = create<UserState>((set, get) => ({
                     } as UserSettings,
                 isLoading: false,
             }));
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Failed to update settings', err);
-            set({ error: err.message, isLoading: false });
+            const errorMessage = err instanceof Error ? err.message : 'Failed to update settings';
+            set({ error: errorMessage, isLoading: false });
             throw err;
         }
     },

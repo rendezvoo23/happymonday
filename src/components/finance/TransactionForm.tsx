@@ -8,7 +8,7 @@ import { useCurrency } from "@/hooks/useCurrency";
 import { getSubcategories, type Subcategory } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { useCategoryStore } from "@/stores/categoryStore";
-import { CategoryId, TransactionType } from "@/types";
+import type { CategoryId, TransactionType } from "@/types";
 import { CategorySelector } from "./CategorySelector";
 import { SubcategorySelector } from "./SubcategorySelector";
 
@@ -136,7 +136,7 @@ export function TransactionForm({
 
     onSubmit({
       type,
-      amount: parseFloat(amount),
+      amount: Number.parseFloat(amount),
       categoryId,
       subcategoryId: subcategoryId || null,
       note,
@@ -173,7 +173,12 @@ export function TransactionForm({
       />
 
       <div className="space-y-2">
-        <label className="text-sm font-medium text-gray-500 ml-1">Amount</label>
+        <label
+          htmlFor="amount-input"
+          className="text-sm font-medium text-gray-500 ml-1"
+        >
+          Amount
+        </label>
         <div className="relative">
           {isSymbolPrefix && (
             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl font-semibold text-gray-400">
@@ -181,6 +186,7 @@ export function TransactionForm({
             </span>
           )}
           <Input
+            id="amount-input"
             type="number"
             inputMode="decimal"
             placeholder="0.00"
@@ -201,9 +207,7 @@ export function TransactionForm({
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-medium text-gray-500 ml-1">
-          Category
-        </label>
+        <div className="text-sm font-medium text-gray-500 ml-1">Category</div>
         {categoriesLoading ? (
           <div className="text-center py-8 text-gray-400">
             Loading categories...
@@ -222,10 +226,14 @@ export function TransactionForm({
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-medium text-gray-500 ml-1">
+        <label
+          htmlFor="note-input"
+          className="text-sm font-medium text-gray-500 ml-1"
+        >
           Note (Optional)
         </label>
         <Input
+          id="note-input"
           placeholder="What was this for?"
           value={note}
           onChange={(e) => setNote(e.target.value)}

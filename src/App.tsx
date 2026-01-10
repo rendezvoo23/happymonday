@@ -100,7 +100,7 @@ export default function App() {
           const telegramUser = window?.Telegram?.WebApp?.initDataUnsafe?.user;
           console.log("telegramUser", telegramUser);
           setUser({
-            name: telegramUser?.first_name + " " + telegramUser?.last_name,
+            name: `${telegramUser?.first_name} ${telegramUser?.last_name}`,
             email: sbUser.email || "",
             joinDate: sbUser.created_at,
             avatarUrl: telegramUser?.photo_url,
@@ -119,7 +119,7 @@ export default function App() {
 
     // Always run auth check on mount to ensure valid session
     initAuth();
-  }, []);
+  }, [loadProfile, loadSettings, loadCurrencies, setUser]);
 
   if (authError) {
     return (

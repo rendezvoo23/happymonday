@@ -1,4 +1,4 @@
-import React from "react";
+import type React from "react";
 import { CarrotIcon } from "./carrot";
 import { ForkIcon } from "./fork";
 import { PlaneIcon } from "./plane";

@@ -8,7 +8,7 @@ import { useTransactionStore } from "@/stores/transactionStore";
 import { MonthSelector } from "@/components/ui/MonthSelector";
 import { useDate } from "@/context/DateContext";
 import { useCurrency } from "@/hooks/useCurrency";
-import { motion, PanInfo } from "framer-motion";
+import { motion, type PanInfo } from "framer-motion";
 import type { Enums } from "@/types/supabase";
 
 type TransactionDirection = Enums<'transaction_direction'>;

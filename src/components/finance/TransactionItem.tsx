@@ -1,7 +1,7 @@
 import { getIconComponent } from "@/components/icons";
 import { cn } from "@/lib/utils";
 import { getCategoryColor } from "@/stores/categoryStore";
-import { Tables } from "@/types/supabase";
+import type { Tables } from "@/types/supabase";
 import { format, parseISO } from "date-fns";
 import { Edit2, Trash2 } from "lucide-react";
 
@@ -81,12 +81,14 @@ export function TransactionItem({
 
         <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
           <button
+            type="button"
             onClick={() => onEdit(transaction)}
             className="p-1.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded-full transition-colors"
           >
             <Edit2 className="w-3.5 h-3.5" />
           </button>
           <button
+            type="button"
             onClick={() => onDelete(transaction.id)}
             className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors"
           >

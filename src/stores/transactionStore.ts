@@ -72,9 +72,9 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
 
       if (error) throw error;
       set({ transactions: data || [], isLoading: false });
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Failed to load transactions", err);
-      set({ error: err.message, isLoading: false });
+      set({ error: err instanceof Error ? err.message : "Failed to load transactions", isLoading: false });
     }
   },
 
@@ -95,9 +95,10 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
       // Reload for the month of the new transaction
       const date = new Date(transaction.occurred_at);
       await get().loadTransactions(date);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Failed to add transaction", err);
-      set({ error: err.message, isLoading: false });
+      const errorMessage = err instanceof Error ? err.message : "Failed to add transaction";
+      set({ error: errorMessage, isLoading: false });
       throw err;
     }
   },
@@ -119,9 +120,9 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
         ),
         isLoading: false,
       }));
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Failed to update transaction", err);
-      set({ error: err.message, isLoading: false });
+      set({ error: err instanceof Error ? err.message : "Failed to update transaction", isLoading: false });
     }
   },
 
@@ -141,9 +142,9 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
         transactions: state.transactions.filter((t) => t.id !== id),
         isLoading: false,
       }));
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Failed to delete transaction", err);
-      set({ error: err.message, isLoading: false });
+      set({ error: err instanceof Error ? err.message : "Failed to delete transaction", isLoading: false });
     }
   },
 

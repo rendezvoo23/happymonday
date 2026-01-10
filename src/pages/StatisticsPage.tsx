@@ -12,7 +12,7 @@ import { useCategoryStore, getCategoryColor } from "@/stores/categoryStore";
 import { useDate } from "@/context/DateContext";
 import { useCurrency } from "@/hooks/useCurrency";
 
-import { motion, PanInfo } from "framer-motion";
+import { motion, type PanInfo } from "framer-motion";
 
 export function StatisticsPage() {
     const navigate = useNavigate();

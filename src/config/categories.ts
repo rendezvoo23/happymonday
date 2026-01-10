@@ -1,4 +1,4 @@
-import { Category, CategoryId } from '../types';
+import type { Category, CategoryId } from '../types';
 
 export const CATEGORIES: Record<CategoryId, Category> = {
     food_drink: {
