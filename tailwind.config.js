@@ -5,6 +5,7 @@ export default {
     extend: {
       fontFamily: {
         sans: [
+          "Google Sans",
           "SF Pro Display",
           "SF Pro Text",
           "-apple-system",
