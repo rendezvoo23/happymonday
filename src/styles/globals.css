@@ -13,11 +13,11 @@
   .glass-panel {
     @apply bg-surface backdrop-blur-xl border border-white/20 shadow-soft;
   }
-  
+
   .glass-card {
     @apply bg-white/70 backdrop-blur-xl border border-white/40 shadow-sm;
   }
-  
+
   .btn-press {
     @apply active:scale-95 transition-transform duration-200;
   }
@@ -30,6 +30,6 @@
 
 /* Hide scrollbar for IE, Edge and Firefox */
 .no-scrollbar {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
 }
