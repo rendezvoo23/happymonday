@@ -34,11 +34,20 @@ export function StatisticsPage() {
   }, [selectedDate]);
 
   // Derived reactive spend by category data
+  // Derived reactive spend by category data
   const spendByCategory = useMemo(() => {
     const expenses = transactions.filter((t) => t.direction === "expense");
     const grouped: Record<
       string,
-      { amount: number; label: string; color: string }
+      {
+        amount: number;
+        label: string;
+        color: string;
+        subcategories: Record<
+          string,
+          { label: string; amount: number; icon?: string }
+        >;
+      }
     > = {};
 
     expenses.forEach((t) => {
@@ -48,15 +57,37 @@ export function StatisticsPage() {
           amount: 0,
           label: t.categories?.name || "Unknown",
           color: getCategoryColor(t.categories?.color, t.categories?.name),
+          subcategories: {},
         };
       }
       grouped[catId].amount += t.amount;
+
+      // Aggregate subcategory data
+      if (t.subcategories) {
+        const subId = t.subcategories.id;
+        if (!grouped[catId].subcategories[subId]) {
+          grouped[catId].subcategories[subId] = {
+            label: t.subcategories.name,
+            amount: 0,
+            icon: t.subcategories.icon || undefined,
+          };
+        }
+        grouped[catId].subcategories[subId].amount += t.amount;
+      }
     });
 
     return Object.entries(grouped)
       .map(([id, val]) => ({
         categoryId: id,
-        ...val,
+        amount: val.amount,
+        label: val.label,
+        color: val.color,
+        subcategories: Object.entries(val.subcategories).map(
+          ([subId, subVal]) => ({
+            id: subId,
+            ...subVal,
+          })
+        ),
       }))
       .sort((a, b) => b.amount - a.amount);
   }, [transactions]);
