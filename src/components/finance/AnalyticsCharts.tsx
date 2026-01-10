@@ -37,7 +37,13 @@ export function AnalyticsCharts({ transactions }: AnalyticsChartsProps) {
     Transaction[]
   >([]);
 
-  const prevMonth = subMonths(selectedDate, 1);
+  // Use string representation for stable comparison
+  const selectedDateKey = useMemo(
+    () => format(selectedDate, "yyyy-MM"),
+    [selectedDate]
+  );
+
+  const prevMonth = useMemo(() => subMonths(selectedDate, 1), [selectedDate]);
 
   // Load previous month transactions
   useEffect(() => {
@@ -58,7 +64,9 @@ export function AnalyticsCharts({ transactions }: AnalyticsChartsProps) {
       }
     };
     loadPrevMonth();
-  }, [prevMonth]);
+    // Only re-run when the month/year changes (selectedDateKey is a string, compared by value)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedDateKey]);
 
   // Current month data
   const currentMonthData = useMemo(() => {
