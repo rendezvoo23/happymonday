@@ -9,7 +9,9 @@ export function cn(...inputs: ClassValue[]) {
  * Parses Telegram initData URL-encoded string into a JSON object.
  * Values that are valid JSON (like the `user` field) are automatically parsed.
  */
-export function parseInitData(initData: string): Record<string, unknown> & { user: TelegramUser } {
+export function parseInitData(
+  initData: string
+): Record<string, unknown> & { user: TelegramUser } {
   const params = new URLSearchParams(initData);
   const result: Record<string, unknown> = {};
 

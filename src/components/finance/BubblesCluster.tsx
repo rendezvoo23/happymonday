@@ -9,7 +9,10 @@ import { useNavigate } from "react-router-dom";
 type Transaction = Tables<"transactions">;
 
 interface TransactionWithCategory extends Transaction {
-  categories: Pick<Tables<"categories">, "id" | "name" | "color" | "icon"> | null;
+  categories: Pick<
+    Tables<"categories">,
+    "id" | "name" | "color" | "icon"
+  > | null;
 }
 
 interface BubblesClusterProps {
@@ -148,7 +151,10 @@ export function BubblesCluster({
 
   if (transactions.filter((t) => t.direction === "expense").length === 0) {
     return (
-      <div className="flex items-center justify-center text-gray-400 text-sm" style={{ height }}>
+      <div
+        className="flex items-center justify-center text-gray-400 text-sm"
+        style={{ height }}
+      >
         No expenses yet
       </div>
     );
@@ -170,7 +176,10 @@ export function BubblesCluster({
     >
       {/* Gooey Filter - Only for cluster mode */}
       {mode === "cluster" && (
-        <svg style={{ position: "absolute", width: 0, height: 0 }} aria-hidden="true">
+        <svg
+          style={{ position: "absolute", width: 0, height: 0 }}
+          aria-hidden="true"
+        >
           <defs>
             <filter id="goo">
               <feGaussianBlur

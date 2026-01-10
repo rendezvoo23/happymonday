@@ -1,5 +1,12 @@
 import { useLocalStorage } from "@/hooks/useLocalStorage";
-import { type ReactNode, createContext, useCallback, useContext, useEffect, useState } from "react";
+import {
+  type ReactNode,
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 
 type Theme = "light" | "dark" | "system";
 
@@ -15,7 +22,9 @@ function getSystemTheme(): "light" | "dark" {
   if (typeof window === "undefined") {
     return "light";
   }
-  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  return window.matchMedia("(prefers-color-scheme: dark)").matches
+    ? "dark"
+    : "light";
 }
 
 function applyTheme(theme: "light" | "dark") {
@@ -28,8 +37,13 @@ function applyTheme(theme: "light" | "dark") {
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [storedTheme, setStoredTheme] = useLocalStorage<Theme>("theme", "system");
-  const [systemTheme, setSystemTheme] = useState<"light" | "dark">(() => getSystemTheme());
+  const [storedTheme, setStoredTheme] = useLocalStorage<Theme>(
+    "theme",
+    "system"
+  );
+  const [systemTheme, setSystemTheme] = useState<"light" | "dark">(() =>
+    getSystemTheme()
+  );
   const actualTheme = storedTheme === "system" ? systemTheme : storedTheme;
 
   // Apply theme on mount and when theme changes

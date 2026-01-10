@@ -36,7 +36,10 @@ export function StatisticsPage() {
   // Derived reactive spend by category data
   const spendByCategory = useMemo(() => {
     const expenses = transactions.filter((t) => t.direction === "expense");
-    const grouped: Record<string, { amount: number; label: string; color: string }> = {};
+    const grouped: Record<
+      string,
+      { amount: number; label: string; color: string }
+    > = {};
 
     expenses.forEach((t) => {
       const catId = t.category_id || "unknown";
@@ -97,11 +100,15 @@ export function StatisticsPage() {
         <div className="flex gap-4 w-full px-4">
           <div className="flex-1 bg-green-50 p-4 rounded-xl text-center">
             <p className="text-sm text-green-600 font-medium">Income</p>
-            <p className="text-xl font-bold text-green-700">{formatAmount(getTotalIncome())}</p>
+            <p className="text-xl font-bold text-green-700">
+              {formatAmount(getTotalIncome())}
+            </p>
           </div>
           <div className="flex-1 bg-red-50 p-4 rounded-xl text-center">
             <p className="text-sm text-red-600 font-medium">Expenses</p>
-            <p className="text-xl font-bold text-red-700">{formatAmount(getTotalExpenses())}</p>
+            <p className="text-xl font-bold text-red-700">
+              {formatAmount(getTotalExpenses())}
+            </p>
           </div>
         </div>
       </header>
@@ -135,10 +142,15 @@ export function StatisticsPage() {
       >
         <div className="space-y-4">
           <p className="text-gray-600">
-            Are you sure you want to delete this transaction? This action cannot be undone.
+            Are you sure you want to delete this transaction? This action cannot
+            be undone.
           </p>
           <div className="flex gap-3">
-            <Button variant="secondary" fullWidth onClick={() => setIsDeleteModalOpen(false)}>
+            <Button
+              variant="secondary"
+              fullWidth
+              onClick={() => setIsDeleteModalOpen(false)}
+            >
               Cancel
             </Button>
             <Button variant="danger" fullWidth onClick={confirmDelete}>

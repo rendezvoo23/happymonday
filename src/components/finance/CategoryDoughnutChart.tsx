@@ -13,7 +13,9 @@ interface CategoryDoughnutChartProps {
   spendByCategory: CategorySpend[];
 }
 
-export function CategoryDoughnutChart({ spendByCategory }: CategoryDoughnutChartProps) {
+export function CategoryDoughnutChart({
+  spendByCategory,
+}: CategoryDoughnutChartProps) {
   const { formatAmount } = useCurrency();
   // Sort by amount descending
   const sortedCategories = useMemo(() => {
@@ -62,13 +64,18 @@ export function CategoryDoughnutChart({ spendByCategory }: CategoryDoughnutChart
                 strokeWidth={0}
               >
                 {chartData.map((entry) => (
-                  <Cell key={`${entry.name}-${entry.color}`} fill={entry.color} />
+                  <Cell
+                    key={`${entry.name}-${entry.color}`}
+                    fill={entry.color}
+                  />
                 ))}
               </Pie>
             </PieChart>
           </ResponsiveContainer>
           <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none px-4">
-            <p className="text-[10px] uppercase tracking-wider text-gray-400 font-medium">Total</p>
+            <p className="text-[10px] uppercase tracking-wider text-gray-400 font-medium">
+              Total
+            </p>
             <p className="text-xl font-bold text-gray-900 text-center leading-tight break-words max-w-full">
               {formatAmount(totalExpenses)}
             </p>
@@ -78,7 +85,8 @@ export function CategoryDoughnutChart({ spendByCategory }: CategoryDoughnutChart
         {/* Category Breakdown List */}
         <div className="mt-4 pt-4 border-t border-gray-200/50 space-y-3">
           {sortedCategories.map((cat) => {
-            const percentage = totalExpenses > 0 ? (cat.amount / totalExpenses) * 100 : 0;
+            const percentage =
+              totalExpenses > 0 ? (cat.amount / totalExpenses) * 100 : 0;
             return (
               <div key={cat.categoryId} className="flex items-center gap-3">
                 {/* Color Dot */}
@@ -88,11 +96,17 @@ export function CategoryDoughnutChart({ spendByCategory }: CategoryDoughnutChart
                 />
 
                 {/* Category Name */}
-                <span className="flex-1 font-medium text-gray-800 truncate">{cat.label}</span>
+                <span className="flex-1 font-medium text-gray-800 truncate">
+                  {cat.label}
+                </span>
                 {/* Amount and Percentage */}
                 <div className="text-right">
-                  <p className="font-semibold text-gray-900">{formatAmount(cat.amount)}</p>
-                  <p className="text-xs text-gray-500">{percentage.toFixed(1)}%</p>
+                  <p className="font-semibold text-gray-900">
+                    {formatAmount(cat.amount)}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {percentage.toFixed(1)}%
+                  </p>
                 </div>
               </div>
             );

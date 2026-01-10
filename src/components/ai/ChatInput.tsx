@@ -25,7 +25,11 @@ export function ChatInput({ onSend }: ChatInputProps) {
         placeholder="Ask your assistant..."
         className="border-none bg-transparent focus-visible:ring-0 h-10"
       />
-      <Button size="icon" variant="ghost" className="text-gray-400 hover:text-blue-500">
+      <Button
+        size="icon"
+        variant="ghost"
+        className="text-gray-400 hover:text-blue-500"
+      >
         <Mic className="w-5 h-5" />
       </Button>
       <Button

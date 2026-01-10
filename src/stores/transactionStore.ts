@@ -10,7 +10,10 @@ type TransactionUpdate = TablesUpdate<"transactions">;
 
 // Extended type with joined category and subcategory
 type TransactionWithCategory = Transaction & {
-  categories: Pick<Tables<"categories">, "id" | "name" | "color" | "icon"> | null;
+  categories: Pick<
+    Tables<"categories">,
+    "id" | "name" | "color" | "icon"
+  > | null;
   subcategories: Pick<Tables<"subcategories">, "id" | "name" | "icon"> | null;
 };
 
@@ -21,7 +24,9 @@ interface TransactionState {
 
   // Actions
   loadTransactions: (date: Date) => Promise<void>;
-  addTransaction: (transaction: Omit<TransactionInsert, "user_id">) => Promise<void>;
+  addTransaction: (
+    transaction: Omit<TransactionInsert, "user_id">
+  ) => Promise<void>;
   updateTransaction: (id: string, updates: TransactionUpdate) => Promise<void>;
   deleteTransaction: (id: string) => Promise<void>;
 
@@ -70,7 +75,8 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
     } catch (err: unknown) {
       console.error("Failed to load transactions", err);
       set({
-        error: err instanceof Error ? err.message : "Failed to load transactions",
+        error:
+          err instanceof Error ? err.message : "Failed to load transactions",
         isLoading: false,
       });
     }
@@ -79,7 +85,8 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
   addTransaction: async (transaction) => {
     set({ isLoading: true, error: null });
     try {
-      const { data: userData, error: userError } = await supabase.auth.getUser();
+      const { data: userData, error: userError } =
+        await supabase.auth.getUser();
       if (userError) throw userError;
 
       const { error } = await supabase.from("transactions").insert({
@@ -94,7 +101,8 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
       await get().loadTransactions(date);
     } catch (err: unknown) {
       console.error("Failed to add transaction", err);
-      const errorMessage = err instanceof Error ? err.message : "Failed to add transaction";
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to add transaction";
       set({ error: errorMessage, isLoading: false });
       throw err;
     }
@@ -103,19 +111,25 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
   updateTransaction: async (id, updates) => {
     set({ isLoading: true, error: null });
     try {
-      const { error } = await supabase.from("transactions").update(updates).eq("id", id);
+      const { error } = await supabase
+        .from("transactions")
+        .update(updates)
+        .eq("id", id);
 
       if (error) throw error;
 
       // Optimistic update
       set((state) => ({
-        transactions: state.transactions.map((t) => (t.id === id ? { ...t, ...updates } : t)),
+        transactions: state.transactions.map((t) =>
+          t.id === id ? { ...t, ...updates } : t
+        ),
         isLoading: false,
       }));
     } catch (err: unknown) {
       console.error("Failed to update transaction", err);
       set({
-        error: err instanceof Error ? err.message : "Failed to update transaction",
+        error:
+          err instanceof Error ? err.message : "Failed to update transaction",
         isLoading: false,
       });
     }
@@ -140,7 +154,8 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
     } catch (err: unknown) {
       console.error("Failed to delete transaction", err);
       set({
-        error: err instanceof Error ? err.message : "Failed to delete transaction",
+        error:
+          err instanceof Error ? err.message : "Failed to delete transaction",
         isLoading: false,
       });
     }

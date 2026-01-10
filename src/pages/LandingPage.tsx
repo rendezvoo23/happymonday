@@ -39,7 +39,9 @@ export const LandingPage = () => {
                 className="absolute"
               >
                 <div className="relative px-12 py-3 bg-white/40 dark:bg-gray-800/40 backdrop-blur-xl rounded-full shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] dark:shadow-none border border-white/50 dark:border-white/10 min-w-[280px] flex justify-center items-center transition-colors duration-200">
-                  <span className="text-gray-900 dark:text-gray-100">{words[index]}</span>
+                  <span className="text-gray-900 dark:text-gray-100">
+                    {words[index]}
+                  </span>
                 </div>
               </motion.div>
             </AnimatePresence>

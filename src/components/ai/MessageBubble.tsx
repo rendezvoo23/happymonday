@@ -13,7 +13,10 @@ export function MessageBubble({ role, content }: MessageBubbleProps) {
     <motion.div
       initial={{ opacity: 0, y: 10, scale: 0.9 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      className={cn("flex w-full mb-4", isUser ? "justify-end" : "justify-start")}
+      className={cn(
+        "flex w-full mb-4",
+        isUser ? "justify-end" : "justify-start"
+      )}
     >
       <div
         className={cn(

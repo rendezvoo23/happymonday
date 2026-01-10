@@ -15,8 +15,13 @@ type TransactionDirection = Enums<"transaction_direction">;
 
 export function HomePage() {
   const navigate = useNavigate();
-  const { transactions, loadTransactions, isLoading, getTotalIncome, getTotalExpenses } =
-    useTransactionStore();
+  const {
+    transactions,
+    loadTransactions,
+    isLoading,
+    getTotalIncome,
+    getTotalExpenses,
+  } = useTransactionStore();
   const { selectedDate, nextMonth, prevMonth } = useDate();
   const { formatAmount } = useCurrency();
 
@@ -50,7 +55,10 @@ export function HomePage() {
           {isLoading ? (
             <div className="text-gray-500 mt-10">Loading transactions...</div>
           ) : (
-            <motion.div className="w-full flex justify-center" onPanEnd={handlePanEnd}>
+            <motion.div
+              className="w-full flex justify-center"
+              onPanEnd={handlePanEnd}
+            >
               <BubblesCluster transactions={transactions} mode="cluster" />
             </motion.div>
           )}
@@ -69,11 +77,15 @@ export function HomePage() {
           <div className="w-full grid grid-cols-2 gap-4 px-4">
             <div className="bg-white/60 p-4 rounded-2xl backdrop-blur-md shadow-sm">
               <p className="text-sm text-gray-500 mb-1">Income</p>
-              <p className="text-xl font-bold text-green-600">{formatAmount(getTotalIncome())}</p>
+              <p className="text-xl font-bold text-green-600">
+                {formatAmount(getTotalIncome())}
+              </p>
             </div>
             <div className="bg-white/60 p-4 rounded-2xl backdrop-blur-md shadow-sm">
               <p className="text-sm text-gray-500 mb-1">Expenses</p>
-              <p className="text-xl font-bold text-red-500">{formatAmount(getTotalExpenses())}</p>
+              <p className="text-xl font-bold text-red-500">
+                {formatAmount(getTotalExpenses())}
+              </p>
             </div>
           </div>
         </main>

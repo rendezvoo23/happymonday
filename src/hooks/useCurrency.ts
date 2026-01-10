@@ -22,7 +22,10 @@ export function useCurrency() {
       return { code: "USD", symbol: "$" };
     }
     return (
-      currencies.find((c) => c.code === settings.default_currency) || { code: "USD", symbol: "$" }
+      currencies.find((c) => c.code === settings.default_currency) || {
+        code: "USD",
+        symbol: "$",
+      }
     );
   }, [settings?.default_currency, currencies]);
 

@@ -1,6 +1,11 @@
 export const CarrotIcon = () => {
   return (
-    <svg version="1.1" viewBox="0 0 22.8424 22.782" role="img" aria-label="Carrot icon">
+    <svg
+      version="1.1"
+      viewBox="0 0 22.8424 22.782"
+      role="img"
+      aria-label="Carrot icon"
+    >
       <g>
         <rect height="22.782" opacity="0" width="22.8424" x="0" y="0" />
         <path

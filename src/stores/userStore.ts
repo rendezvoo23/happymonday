@@ -31,7 +31,8 @@ export const useUserStore = create<UserState>((set, get) => ({
   loadProfile: async () => {
     set({ isLoading: true, error: null });
     try {
-      const { data: userData, error: userError } = await supabase.auth.getUser();
+      const { data: userData, error: userError } =
+        await supabase.auth.getUser();
       if (userError) throw userError;
 
       const { data, error } = await supabase
@@ -54,7 +55,8 @@ export const useUserStore = create<UserState>((set, get) => ({
   loadSettings: async () => {
     set({ isLoading: true, error: null });
     try {
-      const { data: userData, error: userError } = await supabase.auth.getUser();
+      const { data: userData, error: userError } =
+        await supabase.auth.getUser();
       if (userError) throw userError;
 
       const { data, error } = await supabase
@@ -97,7 +99,8 @@ export const useUserStore = create<UserState>((set, get) => ({
   updateSettings: async (updates) => {
     set({ isLoading: true, error: null });
     try {
-      const { data: userData, error: userError } = await supabase.auth.getUser();
+      const { data: userData, error: userError } =
+        await supabase.auth.getUser();
       if (userError) throw userError;
 
       const existingSettings = get().settings;
@@ -122,7 +125,11 @@ export const useUserStore = create<UserState>((set, get) => ({
       // Optimistic update
       set((state) => ({
         settings: state.settings
-          ? { ...state.settings, ...updates, updated_at: new Date().toISOString() }
+          ? {
+              ...state.settings,
+              ...updates,
+              updated_at: new Date().toISOString(),
+            }
           : ({
               user_id: userData.user.id,
               default_currency,
@@ -137,7 +144,8 @@ export const useUserStore = create<UserState>((set, get) => ({
       }));
     } catch (err: unknown) {
       console.error("Failed to update settings", err);
-      const errorMessage = err instanceof Error ? err.message : "Failed to update settings";
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to update settings";
       set({ error: errorMessage, isLoading: false });
       throw err;
     }

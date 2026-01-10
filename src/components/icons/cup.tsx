@@ -1,6 +1,11 @@
 export const CupIcon = () => {
   return (
-    <svg version="1.1" viewBox="0 0 25.7324 18.9941" role="img" aria-label="Cup icon">
+    <svg
+      version="1.1"
+      viewBox="0 0 25.7324 18.9941"
+      role="img"
+      aria-label="Cup icon"
+    >
       <g>
         <rect height="18.9941" opacity="0" width="25.7324" x="0" y="0" />
         <path

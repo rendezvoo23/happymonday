@@ -60,7 +60,8 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       // Get current user
-      const { data: userData, error: userError } = await supabase.auth.getUser();
+      const { data: userData, error: userError } =
+        await supabase.auth.getUser();
       if (userError) throw userError;
 
       let query = supabase

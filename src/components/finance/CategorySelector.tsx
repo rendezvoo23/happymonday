@@ -9,7 +9,11 @@ interface CategorySelectorProps {
   onSelect: (id: CategoryId) => void;
 }
 
-export function CategorySelector({ categories, selectedId, onSelect }: CategorySelectorProps) {
+export function CategorySelector({
+  categories,
+  selectedId,
+  onSelect,
+}: CategorySelectorProps) {
   return (
     <div className="grid grid-cols-4 gap-4 py-4">
       {categories.map((category) => {

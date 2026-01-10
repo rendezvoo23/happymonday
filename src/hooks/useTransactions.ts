@@ -14,11 +14,16 @@ export function useTransactions() {
     try {
       const start = startOfMonth(date);
       const end = endOfMonth(date);
-      const data = await api.listTransactions(start.toISOString(), end.toISOString());
+      const data = await api.listTransactions(
+        start.toISOString(),
+        end.toISOString()
+      );
       setTransactions(data);
     } catch (err: unknown) {
       console.error("Failed to load transactions", err);
-      setError(err instanceof Error ? err.message : "Failed to load transactions");
+      setError(
+        err instanceof Error ? err.message : "Failed to load transactions"
+      );
     } finally {
       setIsLoading(false);
     }
@@ -43,7 +48,8 @@ export function useTransactions() {
         await loadTransactions(date);
       } catch (err: unknown) {
         console.error("Failed to add transaction", err);
-        const errorMessage = err instanceof Error ? err.message : "Failed to add transaction";
+        const errorMessage =
+          err instanceof Error ? err.message : "Failed to add transaction";
         setError(errorMessage);
         throw err;
       } finally {
@@ -61,27 +67,36 @@ export function useTransactions() {
       setTransactions((prev) => prev.filter((t) => t.id !== id));
     } catch (err: unknown) {
       console.error("Failed to delete transaction", err);
-      setError(err instanceof Error ? err.message : "Failed to delete transaction");
+      setError(
+        err instanceof Error ? err.message : "Failed to delete transaction"
+      );
     } finally {
       setIsLoading(false);
     }
   }, []);
 
-  const updateTransaction = useCallback(async (id: string, updates: Partial<Transaction>) => {
-    setIsLoading(true);
-    try {
-      await api.updateTransaction(id, updates);
-      // Optimistic update or reload?
-      // Simple: reload. Or map.
-      // Mapping is faster.
-      setTransactions((prev) => prev.map((t) => (t.id === id ? { ...t, ...updates } : t)));
-    } catch (err: unknown) {
-      console.error("Failed to update transaction", err);
-      setError(err instanceof Error ? err.message : "Failed to update transaction");
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+  const updateTransaction = useCallback(
+    async (id: string, updates: Partial<Transaction>) => {
+      setIsLoading(true);
+      try {
+        await api.updateTransaction(id, updates);
+        // Optimistic update or reload?
+        // Simple: reload. Or map.
+        // Mapping is faster.
+        setTransactions((prev) =>
+          prev.map((t) => (t.id === id ? { ...t, ...updates } : t))
+        );
+      } catch (err: unknown) {
+        console.error("Failed to update transaction", err);
+        setError(
+          err instanceof Error ? err.message : "Failed to update transaction"
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    []
+  );
 
   // Helper for synchornisous filtering if we have loaded data?
   // The previous getTransactionsByMonth filtered the *entire* local history.
@@ -96,11 +111,15 @@ export function useTransactions() {
   };
 
   const getTotalIncome = () => {
-    return transactions.filter((t) => t.type === "income").reduce((acc, t) => acc + t.amount, 0);
+    return transactions
+      .filter((t) => t.type === "income")
+      .reduce((acc, t) => acc + t.amount, 0);
   };
 
   const getTotalExpenses = () => {
-    return transactions.filter((t) => t.type === "expense").reduce((acc, t) => acc + t.amount, 0);
+    return transactions
+      .filter((t) => t.type === "expense")
+      .reduce((acc, t) => acc + t.amount, 0);
   };
 
   return {

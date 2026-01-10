@@ -30,7 +30,7 @@
     "formatWithErrors": false,
     "indentStyle": "space",
     "indentWidth": 2,
-    "lineWidth": 100,
+    "lineWidth": 80,
     "lineEnding": "lf",
     "ignore": [
       "node_modules",
@@ -65,7 +65,7 @@
       "enabled": true,
       "indentStyle": "space",
       "indentWidth": 2,
-      "lineWidth": 100,
+      "lineWidth": 80,
       "trailingCommas": "none"
     }
   },
