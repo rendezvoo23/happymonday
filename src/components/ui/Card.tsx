@@ -11,7 +11,13 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
     return (
       <motion.div
         ref={ref}
-        className={cn("rounded-3xl p-6", glass ? "glass-card" : "bg-white shadow-sm", className)}
+        className={cn(
+          "rounded-3xl p-6",
+          glass
+            ? "glass-card"
+            : "bg-white dark:bg-gray-800 shadow-sm transition-colors duration-200",
+          className
+        )}
         {...props}
       >
         {children}

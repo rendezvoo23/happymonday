@@ -29,7 +29,7 @@ export function Modal({ isOpen, onClose, children, title }: ModalProps) {
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="fixed bottom-0 left-0 right-0 z-[100] bg-white rounded-t-[2rem] shadow-2xl max-h-[90vh] overflow-y-auto"
+            className="fixed bottom-0 left-0 right-0 z-[100] bg-white dark:bg-gray-900 rounded-t-[2rem] shadow-2xl max-h-[90vh] overflow-y-auto transition-colors duration-200"
             drag="y"
             dragConstraints={{ top: 0 }}
             dragElastic={0.2}
@@ -41,13 +41,15 @@ export function Modal({ isOpen, onClose, children, title }: ModalProps) {
           >
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold">{title}</h2>
+                <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">
+                  {title}
+                </h2>
                 <button
                   type="button"
                   onClick={onClose}
-                  className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors"
+                  className="p-2 bg-gray-100 dark:bg-gray-800 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
                 >
-                  <X className="w-5 h-5 text-gray-500" />
+                  <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                 </button>
               </div>
               {children}

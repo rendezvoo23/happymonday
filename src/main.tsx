@@ -1,11 +1,12 @@
-import { registerSW } from "virtual:pwa-register";
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
+import { registerSW } from "virtual:pwa-register";
 import App from "./App";
 import "./styles/globals.css";
 
 import { DateProvider } from "./context/DateContext";
+import { ThemeProvider } from "./context/ThemeContext";
 
 // Register PWA Service Worker
 const updateSW = registerSW({
@@ -23,10 +24,12 @@ if (!rootElement) {
 
 ReactDOM.createRoot(rootElement).render(
   <React.StrictMode>
-    <DateProvider>
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
-    </DateProvider>
+    <ThemeProvider>
+      <DateProvider>
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
+      </DateProvider>
+    </ThemeProvider>
   </React.StrictMode>
 );

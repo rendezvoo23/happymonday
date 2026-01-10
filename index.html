@@ -37,6 +37,23 @@
       name="apple-mobile-web-app-status-bar-style"
       content="black-translucent"
     />
+    <script>
+      // Early theme detection to prevent flash of wrong theme
+      (function () {
+        const theme = localStorage.getItem("theme");
+        const systemPrefersDark = window.matchMedia(
+          "(prefers-color-scheme: dark)"
+        ).matches;
+
+        if (
+          theme === "dark" ||
+          (theme === "system" && systemPrefersDark) ||
+          (!theme && systemPrefersDark)
+        ) {
+          document.documentElement.classList.add("dark");
+        }
+      })();
+    </script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
