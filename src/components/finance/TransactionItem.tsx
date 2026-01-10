@@ -1,4 +1,5 @@
 import { getIconComponent } from "@/components/icons";
+import { useCurrency } from "@/hooks/useCurrency";
 import { cn } from "@/lib/utils";
 import { getCategoryColor } from "@/stores/categoryStore";
 import type { Tables } from "@/types/supabase";
@@ -39,6 +40,8 @@ export function TransactionItem({
       : category?.icon || null;
   const iconComponent = getIconComponent(iconToUse);
 
+  const { formatAmount } = useCurrency();
+
   return (
     <div className="group flex items-center justify-between p-4 bg-white/60 backdrop-blur-md rounded-2xl mb-3 shadow-sm transition-all hover:bg-white/80 ring-1 ring-black/5">
       <div className="flex items-center gap-4">
@@ -70,15 +73,6 @@ export function TransactionItem({
       </div>
 
       <div className="flex items-center gap-4">
-        <span
-          className={cn(
-            "font-bold text-sm",
-            isExpense ? "text-gray-900" : "text-green-600"
-          )}
-        >
-          {isExpense ? "-" : "+"}${transaction.amount.toLocaleString()}
-        </span>
-
         <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
           <button
             type="button"
@@ -95,6 +89,16 @@ export function TransactionItem({
             <Trash2 className="w-3.5 h-3.5" />
           </button>
         </div>
+
+        <span
+          className={cn(
+            "font-bold text-sm",
+            isExpense ? "text-gray-900" : "text-green-600"
+          )}
+        >
+          {isExpense ? "-" : "+"}
+          {formatAmount(transaction.amount)}
+        </span>
       </div>
     </div>
   );

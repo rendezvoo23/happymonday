@@ -15,7 +15,7 @@ export function PageShell({ children, className }: PageShellProps) {
       exit={{ opacity: 0, y: -10 }}
       transition={{ duration: 0.3 }}
       className={cn(
-        "min-h-screen pb-24 px-4 pt-6 max-w-md mx-auto relative z-10",
+        "min-h-screen pb-24 px-4 pt-14 max-w-md mx-auto relative z-10",
         className
       )}
     >

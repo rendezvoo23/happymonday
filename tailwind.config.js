@@ -6,7 +6,6 @@ export default {
     extend: {
       fontFamily: {
         sans: [
-          "IBM Plex Sans",
           "Google Sans",
           "SF Pro Display",
           "SF Pro Text",

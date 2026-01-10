@@ -3,7 +3,6 @@ import { PageShell } from "@/components/layout/PageShell";
 import { Button } from "@/components/ui/Button";
 import { MonthSelector } from "@/components/ui/MonthSelector";
 import { useDate } from "@/context/DateContext";
-import { useCurrency } from "@/hooks/useCurrency";
 import { useTransactionStore } from "@/stores/transactionStore";
 import type { Enums } from "@/types/supabase";
 import { type PanInfo, motion } from "framer-motion";
@@ -15,15 +14,8 @@ type TransactionDirection = Enums<"transaction_direction">;
 
 export function HomePage() {
   const navigate = useNavigate();
-  const {
-    transactions,
-    loadTransactions,
-    isLoading,
-    getTotalIncome,
-    getTotalExpenses,
-  } = useTransactionStore();
+  const { transactions, loadTransactions, isLoading } = useTransactionStore();
   const { selectedDate, nextMonth, prevMonth } = useDate();
-  const { formatAmount } = useCurrency();
 
   useEffect(() => {
     loadTransactions(selectedDate);
@@ -72,21 +64,6 @@ export function HomePage() {
             >
               <Plus className="w-8 h-8" />
             </Button>
-          </div>
-
-          <div className="w-full grid grid-cols-2 gap-4 px-4">
-            <div className="bg-white/60 p-4 rounded-2xl backdrop-blur-md shadow-sm">
-              <p className="text-sm text-gray-500 mb-1">Income</p>
-              <p className="text-xl font-bold text-green-600">
-                {formatAmount(getTotalIncome())}
-              </p>
-            </div>
-            <div className="bg-white/60 p-4 rounded-2xl backdrop-blur-md shadow-sm">
-              <p className="text-sm text-gray-500 mb-1">Expenses</p>
-              <p className="text-xl font-bold text-red-500">
-                {formatAmount(getTotalExpenses())}
-              </p>
-            </div>
           </div>
         </main>
       </PageShell>

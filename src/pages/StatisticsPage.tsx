@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { MonthSelector } from "@/components/ui/MonthSelector";
 import { useDate } from "@/context/DateContext";
-import { useCurrency } from "@/hooks/useCurrency";
 import { getCategoryColor, useCategoryStore } from "@/stores/categoryStore";
 import { useTransactionStore } from "@/stores/transactionStore";
 import { useEffect, useMemo, useState } from "react";
@@ -16,17 +15,10 @@ import { type PanInfo, motion } from "framer-motion";
 
 export function StatisticsPage() {
   const navigate = useNavigate();
-  const {
-    transactions,
-    loadTransactions,
-    deleteTransaction,
-    isLoading,
-    getTotalIncome,
-    getTotalExpenses,
-  } = useTransactionStore();
+  const { transactions, loadTransactions, deleteTransaction, isLoading } =
+    useTransactionStore();
   const { loadCategories } = useCategoryStore();
   const { selectedDate, nextMonth, prevMonth } = useDate();
-  const { formatAmount } = useCurrency();
 
   useEffect(() => {
     loadTransactions(selectedDate);
@@ -127,21 +119,6 @@ export function StatisticsPage() {
       <header className="flex flex-col items-center pt-4 pb-6 gap-4">
         <h1 className="text-xl font-semibold text-gray-900">Statistics</h1>
         <MonthSelector />
-        {/* Summary Cards */}
-        <div className="flex gap-4 w-full px-4">
-          <div className="flex-1 bg-green-50 p-4 rounded-xl text-center">
-            <p className="text-sm text-green-600 font-medium">Income</p>
-            <p className="text-xl font-bold text-green-700">
-              {formatAmount(getTotalIncome())}
-            </p>
-          </div>
-          <div className="flex-1 bg-red-50 p-4 rounded-xl text-center">
-            <p className="text-sm text-red-600 font-medium">Expenses</p>
-            <p className="text-xl font-bold text-red-700">
-              {formatAmount(getTotalExpenses())}
-            </p>
-          </div>
-        </div>
       </header>
 
       <main className="flex flex-col items-center gap-8 pb-20">
@@ -162,6 +139,7 @@ export function StatisticsPage() {
           transactions={transactions}
           onEdit={handleEdit}
           onDelete={handleDeleteRequest}
+          limit={5}
         />
       </main>
 
