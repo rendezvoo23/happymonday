@@ -1,5 +1,7 @@
 import { useCurrency } from "@/hooks/useCurrency";
-import { useMemo } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { ChevronDown, ChevronRight } from "lucide-react";
+import { useMemo, useState } from "react";
 import { Cell, Pie, PieChart, ResponsiveContainer } from "recharts";
 
 interface CategorySpend {
@@ -7,6 +9,12 @@ interface CategorySpend {
   label: string;
   color: string;
   amount: number;
+  subcategories: {
+    id: string;
+    label: string;
+    amount: number;
+    icon?: string;
+  }[];
 }
 
 interface CategoryDoughnutChartProps {
@@ -17,6 +25,12 @@ export function CategoryDoughnutChart({
   spendByCategory,
 }: CategoryDoughnutChartProps) {
   const { formatAmount } = useCurrency();
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  const toggleExpand = (id: string) => {
+    setExpandedId(expandedId === id ? null : id);
+  };
+
   // Sort by amount descending
   const sortedCategories = useMemo(() => {
     return [...spendByCategory].sort((a, b) => b.amount - a.amount);
@@ -88,26 +102,80 @@ export function CategoryDoughnutChart({
             const percentage =
               totalExpenses > 0 ? (cat.amount / totalExpenses) * 100 : 0;
             return (
-              <div key={cat.categoryId} className="flex items-center gap-3">
-                {/* Color Dot */}
-                <div
-                  className="w-3 h-3 rounded-full flex-shrink-0"
-                  style={{ backgroundColor: cat.color }}
-                />
+              <div key={cat.categoryId} className="flex flex-col">
+                <button
+                  type="button"
+                  onClick={() =>
+                    cat.subcategories.length > 0 && toggleExpand(cat.categoryId)
+                  }
+                  className="flex items-center gap-3 w-full py-1"
+                >
+                  {/* Color Dot */}
+                  <div
+                    className="w-3 h-3 rounded-full flex-shrink-0"
+                    style={{ backgroundColor: cat.color }}
+                  />
 
-                {/* Category Name */}
-                <span className="flex-1 font-medium text-gray-800 truncate">
-                  {cat.label}
-                </span>
-                {/* Amount and Percentage */}
-                <div className="text-right">
-                  <p className="font-semibold text-gray-900">
-                    {formatAmount(cat.amount)}
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    {percentage.toFixed(1)}%
-                  </p>
-                </div>
+                  {/* Category Name */}
+                  <span className="flex-1 font-medium text-gray-800 truncate text-left">
+                    {cat.label}
+                  </span>
+
+                  {/* Amount and Percentage */}
+                  <div className="text-right flex items-center gap-2">
+                    <div>
+                      <p className="font-semibold text-gray-900 text-sm">
+                        {formatAmount(cat.amount)}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {percentage.toFixed(1)}%
+                      </p>
+                    </div>
+                    {/* Chevron or spacer for alignment */}
+                    <div className="w-4 h-4 text-gray-400 flex items-center justify-center">
+                      {cat.subcategories.length > 0 &&
+                        (expandedId === cat.categoryId ? (
+                          <ChevronDown className="w-4 h-4" />
+                        ) : (
+                          <ChevronRight className="w-4 h-4" />
+                        ))}
+                    </div>
+                  </div>
+                </button>
+
+                {/* Subcategories Expansion */}
+                <AnimatePresence>
+                  {expandedId === cat.categoryId &&
+                    cat.subcategories.length > 0 && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="py-2 space-y-2">
+                          {cat.subcategories
+                            .sort((a, b) => b.amount - a.amount)
+                            .map((sub) => {
+                              return (
+                                <div
+                                  key={sub.id}
+                                  className="flex items-center gap-3 text-sm"
+                                >
+                                  <span className="flex-1 text-gray-600 truncate pl-6">
+                                    {sub.label}
+                                  </span>
+                                  <span className="font-medium text-gray-900 pr-6">
+                                    {formatAmount(sub.amount)}
+                                  </span>
+                                </div>
+                              );
+                            })}
+                        </div>
+                      </motion.div>
+                    )}
+                </AnimatePresence>
               </div>
             );
           })}

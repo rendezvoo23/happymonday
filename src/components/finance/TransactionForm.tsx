@@ -1,3 +1,4 @@
+import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/Button";
@@ -225,6 +226,38 @@ export function TransactionForm({
         )}
       </div>
 
+      <AnimatePresence mode="wait">
+        {categoryId && (isLoadingSubcategories || subcategories.length > 0) && (
+          <motion.div
+            initial={{ opacity: 0, height: 0, y: -10 }}
+            animate={{ opacity: 1, height: "auto", y: 0 }}
+            exit={{ opacity: 0, height: 0, y: -10 }}
+            transition={{
+              type: "spring",
+              stiffness: 500,
+              damping: 30,
+              mass: 1,
+            }}
+            className="overflow-hidden"
+          >
+            <div className="space-y-2 py-1">
+              {isLoadingSubcategories ? (
+                <div className="text-center py-4 text-gray-400 text-sm">
+                  Loading subcategories...
+                </div>
+              ) : (
+                <SubcategorySelector
+                  subcategories={subcategories}
+                  selectedId={subcategoryId}
+                  onSelect={setSubcategoryId}
+                  categoryColor={selectedCategory?.color}
+                />
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <div className="space-y-2">
         <label
           htmlFor="note-input"
@@ -239,23 +272,6 @@ export function TransactionForm({
           onChange={(e) => setNote(e.target.value)}
         />
       </div>
-
-      {categoryId && (
-        <div className="space-y-2">
-          {isLoadingSubcategories ? (
-            <div className="text-center py-4 text-gray-400 text-sm">
-              Loading subcategories...
-            </div>
-          ) : (
-            <SubcategorySelector
-              subcategories={subcategories}
-              selectedId={subcategoryId}
-              onSelect={setSubcategoryId}
-              categoryColor={selectedCategory?.color}
-            />
-          )}
-        </div>
-      )}
 
       <div className="pt-4 flex gap-3">
         <Button

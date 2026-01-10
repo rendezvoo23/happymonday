@@ -54,7 +54,7 @@ export function TransactionItem({
             </div>
           ) : (
             <span className="relative z-10">
-              {categoryLabel.substring(0, 2).toUpperCase()}
+              {subcategory ? categoryLabel.substring(0, 2).toUpperCase() : ""}
             </span>
           )}
         </div>
