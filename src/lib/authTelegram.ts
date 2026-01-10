@@ -1,4 +1,5 @@
 import type { User } from "@supabase/supabase-js";
+import { env } from "../env";
 import { supabase } from "./supabaseClient";
 
 export interface TelegramAuthResponse {
@@ -29,7 +30,7 @@ export const authenticateWithTelegram = async (): Promise<boolean> => {
 
     const { data: invokeData, error: invokeError } =
       await supabase.functions.invoke<TelegramAuthResponse>("auth-telegram", {
-        body: { initData },
+        body: { initData, isDev: env.isDev },
       });
 
     if (invokeError || !invokeData) {

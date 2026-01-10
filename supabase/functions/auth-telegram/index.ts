@@ -6,12 +6,12 @@
 // - TELEGRAM_BOT_TOKEN
 // - SUPABASE_URL
 // - SUPABASE_SERVICE_ROLE_KEY
-// - SUPABASE_ANON_KEY   <-- ADD THIS
+// - SUPABASE_ANON_KEY
 //
 // IMPORTANT:
-// - Turn OFF "Verify JWT" / "Require JWT" for this function (it’s a login endpoint)
+// - Turn OFF "Verify JWT" / "Require JWT" for this function (it's a login endpoint)
 // - Do NOT expose SUPABASE_SERVICE_ROLE_KEY to the client
-// - Make sure Email provider is enabled in Supabase Auth (we won’t actually send emails)
+// - Make sure Email provider is enabled in Supabase Auth (we won't actually send emails)
 // @ts-expect-error: Deno edge function types are provided by the runtime
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const ALLOWED_ORIGIN = "*";
@@ -315,7 +315,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
     const { telegram_id, username, first_name, last_name, photo_url } = tgUser;
     const display_name =
       [first_name, last_name].filter(Boolean).join(" ") || username || "";
-    // 3) Supabase clients
+    // 3) Create Supabase admin client with proper auth configuration
+    // CRITICAL: Use global.headers to bypass JWT validation for admin operations
     const supabaseAdmin = createClient(
       SUPABASE_URL,
       SUPABASE_SERVICE_ROLE_KEY,
@@ -324,23 +325,32 @@ Deno.serve(async (req: Request): Promise<Response> => {
           persistSession: false,
           autoRefreshToken: false,
         },
+        global: {
+          headers: {
+            Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+          },
+        },
       }
     );
+    
     const supabaseAnon = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       auth: {
         persistSession: false,
         autoRefreshToken: false,
       },
     });
+    
     // 4) Find/create auth user + profile
     //    We use a deterministic "technical email" for magiclink flow
     const technicalEmail = `telegram_${telegram_id}@telegram.local`;
+    
     // 4.1 find profile by telegram_id
     const { data: existingProfiles, error: profileErr } = await supabaseAdmin
       .from("profiles")
       .select("id")
       .eq("telegram_id", telegram_id)
       .limit(1);
+      
     if (profileErr)
       return json(
         {
@@ -349,7 +359,9 @@ Deno.serve(async (req: Request): Promise<Response> => {
         },
         500
       );
+      
     let userId = existingProfiles?.[0]?.id ?? null;
+    
     // 4.2 create auth user if missing
     if (!userId) {
       const { data: createdUser, error: createErr } =
@@ -372,6 +384,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
       }
       userId = createdUser.user.id;
     }
+    
     if (!userId)
       return json(
         {
@@ -379,6 +392,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
         },
         500
       );
+      
     // 4.3 upsert profile (id must equal auth.users.id)
     const { error: upsertErr } = await supabaseAdmin.from("profiles").upsert(
       {
@@ -394,6 +408,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
         onConflict: "id",
       }
     );
+    
     if (upsertErr)
       return json(
         {
@@ -402,12 +417,14 @@ Deno.serve(async (req: Request): Promise<Response> => {
         },
         500
       );
+      
     // 4.4 ensure user_settings exists
     const { data: settingsRow, error: settingsErr } = await supabaseAdmin
       .from("user_settings")
       .select("user_id")
       .eq("user_id", userId)
       .maybeSingle();
+      
     if (settingsErr)
       return json(
         {
@@ -416,6 +433,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
         },
         500
       );
+      
     if (!settingsRow) {
       const { error: insSetErr } = await supabaseAdmin
         .from("user_settings")
@@ -432,12 +450,14 @@ Deno.serve(async (req: Request): Promise<Response> => {
           500
         );
     }
+    
     // 5) Mint a real Supabase session (generateLink -> verifyOtp)
     const { data: linkData, error: linkErr } =
       await supabaseAdmin.auth.admin.generateLink({
         type: "magiclink",
         email: technicalEmail,
       });
+      
     if (linkErr || !linkData) {
       return json(
         {
@@ -447,12 +467,14 @@ Deno.serve(async (req: Request): Promise<Response> => {
         500
       );
     }
+    
     // Supabase can return hashed token in different places depending on version
     const token_hash =
       linkData.properties?.hashed_token ||
       linkData.hashed_token ||
       linkData.properties?.email_otp ||
       null;
+      
     if (!token_hash || typeof token_hash !== "string") {
       return json(
         {
@@ -461,11 +483,13 @@ Deno.serve(async (req: Request): Promise<Response> => {
         500
       );
     }
+    
     const { data: verifyData, error: verifyErr } =
       await supabaseAnon.auth.verifyOtp({
         type: "magiclink",
         token_hash,
       });
+      
     if (verifyErr || !verifyData?.session) {
       return json(
         {
@@ -475,6 +499,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
         500
       );
     }
+    
     // 6) Return session to the client
     return json({
       user: {
@@ -497,6 +522,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
     return json(
       {
         error: "Internal server error",
+        details: err instanceof Error ? err.message : String(err),
       },
       500
     );
