@@ -2,17 +2,32 @@ import { PageShell } from "@/components/layout/PageShell";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Modal } from "@/components/ui/Modal";
+import { useTheme } from "@/context/ThemeContext";
 import { supabase } from "@/lib/supabaseClient";
 import { useUserStore } from "@/stores/userStore";
-import { Bell, Check, ChevronRight, DollarSign, Globe, LogOut, Settings } from "lucide-react";
+import {
+  Bell,
+  Check,
+  ChevronRight,
+  DollarSign,
+  Globe,
+  LogOut,
+  Monitor,
+  Moon,
+  Settings,
+  Sun,
+} from "lucide-react";
 import type * as React from "react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 export function ProfilePage() {
   const navigate = useNavigate();
-  const { profile, settings, currencies, updateSettings, isLoading } = useUserStore();
+  const { profile, settings, currencies, updateSettings, isLoading } =
+    useUserStore();
+  const { theme, setTheme } = useTheme();
   const [isCurrencyModalOpen, setIsCurrencyModalOpen] = useState(false);
+  const [isThemeModalOpen, setIsThemeModalOpen] = useState(false);
 
   // Data loading is handled globally in App.tsx
   useEffect(() => {
@@ -29,22 +44,44 @@ export function ProfilePage() {
     setIsCurrencyModalOpen(false);
   };
 
+  const handleThemeSelect = (selectedTheme: "light" | "dark" | "system") => {
+    setTheme(selectedTheme);
+    setIsThemeModalOpen(false);
+  };
+
+  const getThemeLabel = (themeValue: string) => {
+    switch (themeValue) {
+      case "light":
+        return "Light";
+      case "dark":
+        return "Dark";
+      case "system":
+        return "System";
+      default:
+        return "System";
+    }
+  };
+
   if (isLoading && !profile) {
     return (
       <PageShell className="flex items-center justify-center">
-        <p className="text-gray-500">Loading profile...</p>
+        <p className="text-gray-500 dark:text-gray-400">Loading profile...</p>
       </PageShell>
     );
   }
 
   if (!profile) return null;
 
-  const currentCurrency = currencies.find((c) => c.code === settings?.default_currency);
+  const currentCurrency = currencies.find(
+    (c) => c.code === settings?.default_currency
+  );
 
   return (
     <PageShell>
       <header className="flex flex-col items-center pt-4 pb-6">
-        <h1 className="text-xl font-semibold text-gray-900">Profile</h1>
+        <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+          Profile
+        </h1>
       </header>
 
       <main className="flex flex-col gap-6">
@@ -53,19 +90,25 @@ export function ProfilePage() {
           <img
             src={
               profile.photo_url ||
-              `https://ui-avatars.com/api/?name=${profile.display_name || profile.first_name || "User"}&background=random`
+              `https://ui-avatars.com/api/?name=${
+                profile.display_name || profile.first_name || "User"
+              }&background=random`
             }
             alt={profile.display_name || ""}
             className="w-16 h-16 rounded-full object-cover shadow-sm"
           />
           <div>
-            <h2 className="text-lg font-bold text-gray-900">
+            <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">
               {profile.display_name ||
-                `${profile.first_name || ""} ${profile.last_name || ""}`.trim() ||
+                `${profile.first_name || ""} ${
+                  profile.last_name || ""
+                }`.trim() ||
                 "User"}
             </h2>
-            <p className="text-sm text-gray-500">@{profile.username || profile.telegram_id}</p>
-            <p className="text-xs text-gray-400 mt-1">
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              @{profile.username || profile.telegram_id}
+            </p>
+            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
               Member since {new Date(profile.created_at).getFullYear()}
             </p>
           </div>
@@ -76,7 +119,11 @@ export function ProfilePage() {
           <SettingsRow
             icon={Globe}
             label="Language"
-            value={settings?.language === "en" ? "English" : settings?.language || "English"}
+            value={
+              settings?.language === "en"
+                ? "English"
+                : settings?.language || "English"
+            }
           />
           <SettingsRow
             icon={DollarSign}
@@ -88,11 +135,22 @@ export function ProfilePage() {
             }
             onClick={() => setIsCurrencyModalOpen(true)}
           />
+          <SettingsRow
+            icon={Moon}
+            label="Theme"
+            value={getThemeLabel(theme)}
+            onClick={() => setIsThemeModalOpen(true)}
+          />
           <SettingsRow icon={Bell} label="Notifications" value="On" />
           <SettingsRow icon={Settings} label="App Settings" />
         </div>
 
-        <Button variant="danger" fullWidth onClick={handleLogout} className="mt-4">
+        <Button
+          variant="danger"
+          fullWidth
+          onClick={handleLogout}
+          className="mt-4"
+        >
           <LogOut className="w-4 h-4 mr-2" />
           Log Out
         </Button>
@@ -110,20 +168,83 @@ export function ProfilePage() {
               type="button"
               key={currency.code}
               onClick={() => handleCurrencySelect(currency.code)}
-              className="w-full flex items-center justify-between p-4 rounded-xl hover:bg-gray-50 transition-colors"
+              className="w-full flex items-center justify-between p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
             >
               <div className="flex flex-col items-start">
-                <span className="font-semibold text-gray-900">{currency.code}</span>
-                <span className="text-xs text-gray-500">{currency.name}</span>
+                <span className="font-semibold text-gray-900 dark:text-gray-100">
+                  {currency.code}
+                </span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">
+                  {currency.name}
+                </span>
               </div>
               <div className="flex items-center gap-3">
-                <span className="text-lg font-medium text-gray-400">{currency.symbol}</span>
+                <span className="text-lg font-medium text-gray-400 dark:text-gray-500">
+                  {currency.symbol}
+                </span>
                 {settings?.default_currency === currency.code && (
-                  <Check className="w-5 h-5 text-blue-500" />
+                  <Check className="w-5 h-5 text-blue-500 dark:text-blue-400" />
                 )}
               </div>
             </button>
           ))}
+        </div>
+      </Modal>
+
+      {/* Theme Selection Modal */}
+      <Modal
+        isOpen={isThemeModalOpen}
+        onClose={() => setIsThemeModalOpen(false)}
+        title="Select Theme"
+      >
+        <div className="space-y-1">
+          {[
+            {
+              value: "light" as const,
+              label: "Light",
+              icon: Sun,
+              description: "Always use light mode",
+            },
+            {
+              value: "dark" as const,
+              label: "Dark",
+              icon: Moon,
+              description: "Always use dark mode",
+            },
+            {
+              value: "system" as const,
+              label: "System",
+              icon: Monitor,
+              description: "Match device settings",
+            },
+          ].map((themeOption) => {
+            const Icon = themeOption.icon;
+            return (
+              <button
+                type="button"
+                key={themeOption.value}
+                onClick={() => handleThemeSelect(themeOption.value)}
+                className="w-full flex items-center justify-between p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-lg">
+                    <Icon className="w-5 h-5 text-gray-700 dark:text-gray-300" />
+                  </div>
+                  <div className="flex flex-col items-start">
+                    <span className="font-semibold text-gray-900 dark:text-gray-100">
+                      {themeOption.label}
+                    </span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                      {themeOption.description}
+                    </span>
+                  </div>
+                </div>
+                {theme === themeOption.value && (
+                  <Check className="w-5 h-5 text-blue-500 dark:text-blue-400" />
+                )}
+              </button>
+            );
+          })}
         </div>
       </Modal>
     </PageShell>
@@ -145,17 +266,23 @@ function SettingsRow({
     <button
       type="button"
       onClick={onClick}
-      className="w-full flex items-center justify-between p-4 bg-white/60 backdrop-blur-sm rounded-2xl hover:bg-white/80 transition-colors"
+      className="w-full flex items-center justify-between p-4 bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm rounded-2xl hover:bg-white/80 dark:hover:bg-gray-800/80 transition-colors"
     >
       <div className="flex items-center gap-3">
-        <div className="p-2 bg-white rounded-full shadow-sm text-gray-600">
+        <div className="p-2 bg-white dark:bg-gray-700 rounded-full shadow-sm text-gray-600 dark:text-gray-300">
           <Icon className="w-5 h-5" />
         </div>
-        <span className="font-medium text-gray-900">{label}</span>
+        <span className="font-medium text-gray-900 dark:text-gray-100">
+          {label}
+        </span>
       </div>
       <div className="flex items-center gap-2">
-        {value && <span className="text-sm text-gray-500">{value}</span>}
-        <ChevronRight className="w-5 h-5 text-gray-400" />
+        {value && (
+          <span className="text-sm text-gray-500 dark:text-gray-400">
+            {value}
+          </span>
+        )}
+        <ChevronRight className="w-5 h-5 text-gray-400 dark:text-gray-500" />
       </div>
     </button>
   );
