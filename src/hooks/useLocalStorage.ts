@@ -39,7 +39,6 @@ export function useLocalStorage<T>(key: string, initialValue: T) {
     }
   };
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: readValue depends on key and initialValue which are props and should not change. This effect should only run on mount.
   useEffect(() => {
     setStoredValue(readValue());
   }, []);

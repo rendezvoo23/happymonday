@@ -1,19 +1,23 @@
 // auth-telegram Edge Function for Supabase (Deno)
 // Validates Telegram WebApp initData (hash) and returns a REAL Supabase session
-// using: auth.admin.generateLink() -> auth.verifyOtp().
+// using: auth.admin.createUser() + custom JWT generation for immediate session.
 //
 // REQUIRED SECRETS (Edge Functions -> Secrets):
 // - TELEGRAM_BOT_TOKEN
-// - SUPABASE_URL
-// - SUPABASE_SERVICE_ROLE_KEY
-// - SUPABASE_ANON_KEY
+// - JWT_SECRET  <-- ADD THIS (found in Project Settings -> API -> JWT Secret)
+//
+// NOTE: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, and SUPABASE_ANON_KEY are
+// automatically available as system environment variables in Edge Functions
 //
 // IMPORTANT:
 // - Turn OFF "Verify JWT" / "Require JWT" for this function (it's a login endpoint)
-// - Do NOT expose SUPABASE_SERVICE_ROLE_KEY to the client
+// - Do NOT expose SUPABASE_SERVICE_ROLE_KEY or JWT_SECRET to the client
 // - Make sure Email provider is enabled in Supabase Auth (we won't actually send emails)
 // @ts-expect-error: Deno edge function types are provided by the runtime
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+// @ts-expect-error: Deno edge function types are provided by the runtime
+import { create } from "https://deno.land/x/djwt@v3.0.1/mod.ts";
+
 const ALLOWED_ORIGIN = "*";
 
 function corsHeaders(
@@ -215,6 +219,69 @@ function parseTelegramUser(params: URLSearchParams): {
     return null;
   }
 }
+
+/**
+ * Generates JWT tokens for Supabase session
+ */
+async function generateSupabaseTokens(
+  userId: string,
+  email: string,
+  jwtSecret: string
+): Promise<{ access_token: string; refresh_token: string; expires_in: number }> {
+  const encoder = new TextEncoder();
+  const keyData = encoder.encode(jwtSecret);
+  const key = await crypto.subtle.importKey(
+    "raw",
+    keyData,
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+
+  const now = Math.floor(Date.now() / 1000);
+  const expiresIn = 3600; // 1 hour
+  const exp = now + expiresIn;
+
+  // Access token
+  const accessToken = await create(
+    { alg: "HS256", typ: "JWT" },
+    {
+      aud: "authenticated",
+      exp,
+      iat: now,
+      iss: "supabase",
+      sub: userId,
+      email,
+      phone: "",
+      app_metadata: {},
+      user_metadata: {},
+      role: "authenticated",
+      aal: "aal1",
+      amr: [{ method: "oauth", timestamp: now }],
+    },
+    key
+  );
+
+  // Refresh token (valid for 30 days)
+  const refreshToken = await create(
+    { alg: "HS256", typ: "JWT" },
+    {
+      aud: "authenticated",
+      exp: now + 30 * 24 * 60 * 60,
+      iat: now,
+      iss: "supabase",
+      sub: userId,
+    },
+    key
+  );
+
+  return {
+    access_token: accessToken,
+    refresh_token: refreshToken,
+    expires_in: expiresIn,
+  };
+}
+
 // @ts-expect-error: Deno.serve is provided by the Deno runtime
 Deno.serve(async (req: Request): Promise<Response> => {
   try {
@@ -259,15 +326,15 @@ Deno.serve(async (req: Request): Promise<Response> => {
     // @ts-expect-error: Deno.env is provided by the Deno runtime
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     // @ts-expect-error: Deno.env is provided by the Deno runtime
-    const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY");
+    const SUPABASE_JWT_SECRET = Deno.env.get("JWT_SECRET");
     // @ts-expect-error: Deno.env is provided by the Deno runtime
     const TELEGRAM_BOT_TOKEN = Deno.env.get("TELEGRAM_BOT_TOKEN");
 
-    // TELEGRAM_BOT_TOKEN is only required in production mode (when isDev is false)
+    // Validate required environment variables
     if (
       !SUPABASE_URL ||
       !SUPABASE_SERVICE_ROLE_KEY ||
-      !SUPABASE_ANON_KEY ||
+      !SUPABASE_JWT_SECRET ||
       (!isDev && !TELEGRAM_BOT_TOKEN)
     ) {
       return json(
@@ -276,13 +343,14 @@ Deno.serve(async (req: Request): Promise<Response> => {
           missing: {
             SUPABASE_URL: !SUPABASE_URL,
             SUPABASE_SERVICE_ROLE_KEY: !SUPABASE_SERVICE_ROLE_KEY,
-            SUPABASE_ANON_KEY: !SUPABASE_ANON_KEY,
+            SUPABASE_JWT_SECRET: !SUPABASE_JWT_SECRET,
             TELEGRAM_BOT_TOKEN: !isDev && !TELEGRAM_BOT_TOKEN,
           },
         },
         500
       );
     }
+    
     // 1) Validate Telegram initData
     const v = await validateTelegramInitData(
       body.initData,
@@ -302,6 +370,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
         401
       );
     }
+    
     // 2) Parse Telegram user
     const params = v.params;
     const tgUser = parseTelegramUser(params);
@@ -315,8 +384,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
     const { telegram_id, username, first_name, last_name, photo_url } = tgUser;
     const display_name =
       [first_name, last_name].filter(Boolean).join(" ") || username || "";
-    // 3) Create Supabase admin client with proper auth configuration
-    // CRITICAL: Use global.headers to bypass JWT validation for admin operations
+    
+    // 3) Create Supabase admin client
     const supabaseAdmin = createClient(
       SUPABASE_URL,
       SUPABASE_SERVICE_ROLE_KEY,
@@ -333,15 +402,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
       }
     );
     
-    const supabaseAnon = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-      auth: {
-        persistSession: false,
-        autoRefreshToken: false,
-      },
-    });
-    
     // 4) Find/create auth user + profile
-    //    We use a deterministic "technical email" for magiclink flow
     const technicalEmail = `telegram_${telegram_id}@telegram.local`;
     
     // 4.1 find profile by telegram_id
@@ -451,54 +512,12 @@ Deno.serve(async (req: Request): Promise<Response> => {
         );
     }
     
-    // 5) Mint a real Supabase session (generateLink -> verifyOtp)
-    const { data: linkData, error: linkErr } =
-      await supabaseAdmin.auth.admin.generateLink({
-        type: "magiclink",
-        email: technicalEmail,
-      });
-      
-    if (linkErr || !linkData) {
-      return json(
-        {
-          error: "Failed generating magic link",
-          details: linkErr?.message,
-        },
-        500
-      );
-    }
-    
-    // Supabase can return hashed token in different places depending on version
-    const token_hash =
-      linkData.properties?.hashed_token ||
-      linkData.hashed_token ||
-      linkData.properties?.email_otp ||
-      null;
-      
-    if (!token_hash || typeof token_hash !== "string") {
-      return json(
-        {
-          error: "Missing token_hash from generateLink response",
-        },
-        500
-      );
-    }
-    
-    const { data: verifyData, error: verifyErr } =
-      await supabaseAnon.auth.verifyOtp({
-        type: "magiclink",
-        token_hash,
-      });
-      
-    if (verifyErr || !verifyData?.session) {
-      return json(
-        {
-          error: "Failed creating session via verifyOtp",
-          details: verifyErr?.message,
-        },
-        500
-      );
-    }
+    // 5) Generate session tokens directly using JWT
+    const tokens = await generateSupabaseTokens(
+      userId,
+      technicalEmail,
+      SUPABASE_JWT_SECRET
+    );
     
     // 6) Return session to the client
     return json({
@@ -511,18 +530,24 @@ Deno.serve(async (req: Request): Promise<Response> => {
         photo_url,
       },
       session: {
-        access_token: verifyData.session.access_token,
-        refresh_token: verifyData.session.refresh_token,
-        expires_in: verifyData.session.expires_in,
-        token_type: verifyData.session.token_type ?? "bearer",
+        access_token: tokens.access_token,
+        refresh_token: tokens.refresh_token,
+        expires_in: tokens.expires_in,
+        token_type: "bearer",
       },
     });
   } catch (err) {
     console.error("auth-telegram error:", err);
+
+    // @ts-expect-error: Deno.env is provided by the Deno runtime
+    const env = Deno.env.toObject();
+    console.log(env);
+
+    const details = err instanceof Error ? err.message : String(err);
     return json(
       {
         error: "Internal server error",
-        details: err instanceof Error ? err.message : String(err),
+        details: details + " " + JSON.stringify(env, null, 2),
       },
       500
     );

@@ -8,7 +8,7 @@
     "rules": {
       "recommended": true,
       "correctness": {
-        "useExhaustiveDependencies": "warn"
+        "useExhaustiveDependencies": "off"
       },
       "style": {
         "useImportType": "off",

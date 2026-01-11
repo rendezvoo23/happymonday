@@ -15,6 +15,13 @@
     --surface-glass: rgba(28, 28, 30, 0.8);
   }
 
+  * {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+  }
+
   body {
     @apply bg-[var(--background)] text-gray-900 dark:text-gray-100 font-sans antialiased;
     -webkit-tap-highlight-color: transparent;
