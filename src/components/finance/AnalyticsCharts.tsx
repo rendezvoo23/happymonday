@@ -1,6 +1,7 @@
 import { useCurrency } from "@/hooks/useCurrency";
 import { supabase } from "@/lib/supabaseClient";
 import { cn } from "@/lib/utils";
+import { useDate } from "@/context/DateContext";
 import type { Tables } from "@/types/supabase";
 import {
   eachDayOfInterval,
@@ -47,6 +48,7 @@ export function AnalyticsCharts({
   transactions: _initialTransactions,
 }: AnalyticsChartsProps) {
   const { formatAmount } = useCurrency();
+  const { selectedDate } = useDate();
   const [range, setRange] = useState<TimeRange>("1M");
   const [data, setData] = useState<{
     current: number;
@@ -61,9 +63,10 @@ export function AnalyticsCharts({
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
-      const now = new Date();
+      // Use selectedDate as the reference point instead of current date
+      const referenceDate = selectedDate;
       let start: Date;
-      const end = endOfDay(now);
+      const end = endOfDay(referenceDate);
       let prevStart: Date;
       let prevEnd: Date;
       let groupBy: "day" | "month" = "day";
@@ -71,47 +74,45 @@ export function AnalyticsCharts({
       // Calculate ranges
       switch (range) {
         case "1W":
-          start = subWeeks(now, 1);
-          prevEnd = start; // continuous
+          start = subWeeks(referenceDate, 1);
+          prevEnd = start;
           prevStart = subWeeks(start, 1);
           groupBy = "day";
           break;
         case "1M":
-          start = subMonths(now, 1);
+          start = subMonths(referenceDate, 1);
           prevEnd = start;
           prevStart = subMonths(start, 1);
           groupBy = "day";
           break;
         case "3M":
-          start = subMonths(now, 3);
+          start = subMonths(referenceDate, 3);
           prevEnd = start;
           prevStart = subMonths(start, 3);
-          groupBy = "day"; // or week? day is fine
+          groupBy = "month";
           break;
         case "6M":
-          start = subMonths(now, 6);
+          start = subMonths(referenceDate, 6);
           prevEnd = start;
           prevStart = subMonths(start, 6);
           groupBy = "month";
           break;
         case "1Y":
-          start = subYears(now, 1);
+          start = subYears(referenceDate, 1);
           prevEnd = start;
           prevStart = subYears(start, 1);
           groupBy = "month";
           break;
         case "3Y":
-          start = subYears(now, 3);
+          start = subYears(referenceDate, 3);
           prevEnd = start;
           prevStart = subYears(start, 3);
           groupBy = "month";
           break;
         case "ALL":
-          // For ALL, we typically ideally fetch min date.
-          // Hardcode a reasonable start or fetch min.
           start = new Date(0); // 1970
-          prevEnd = now; // No comparison for ALL usually
-          prevStart = now;
+          prevEnd = referenceDate;
+          prevStart = new Date(0); // For ALL, comparison is tricky. Usually 0 or just ignore.
           groupBy = "month";
           break;
       }
@@ -147,7 +148,7 @@ export function AnalyticsCharts({
       const prevTotal = prevTx.reduce((acc, t) => acc + t.amount, 0);
 
       // Grouping
-      let chartData = [];
+      let chartData: ChartDataPoint[] = [];
       if (groupBy === "day") {
         const interval = eachDayOfInterval({ start, end });
         const prevInterval =
@@ -155,7 +156,6 @@ export function AnalyticsCharts({
             ? eachDayOfInterval({ start: prevStart, end: prevEnd })
             : [];
 
-        // Map to chart
         chartData = interval.map((date, i) => {
           const dayStr = format(date, "yyyy-MM-dd");
           const curAmt = currentExpenses
@@ -164,18 +164,11 @@ export function AnalyticsCharts({
 
           let prevAmt = 0;
           if (prevInterval[i]) {
-            // Approximate mapping by index/offset
-            // Ideally map by "same day of prev week/month" if convenient, but index mapping is standard for comparison charts of different ranges
-            // Actually for 1M, previous month might have different days. Index mapping is safest for visual overlay.
-            // Logic: Find expenses in prev period at same relative offset?
-            // Simple approach: map index i of prevInterval
             const prevDate = prevInterval[i];
-            if (prevDate) {
-              const prevDayStr = format(prevDate, "yyyy-MM-dd");
-              prevAmt = prevTx
-                .filter((t) => t.occurred_at.startsWith(prevDayStr))
-                .reduce((acc, t) => acc + t.amount, 0);
-            }
+            const prevDayStr = format(prevDate, "yyyy-MM-dd");
+            prevAmt = prevTx
+              .filter((t) => t.occurred_at.startsWith(prevDayStr))
+              .reduce((acc, t) => acc + t.amount, 0);
           }
 
           return {
@@ -232,7 +225,7 @@ export function AnalyticsCharts({
     };
 
     fetchData();
-  }, [range]); // Re-fetch only when range changes
+  }, [range, selectedDate]); // Re-fetch when range or selected date changes
 
   if (!data && isLoading)
     return (
