@@ -36,6 +36,13 @@ interface AnalyticsChartsProps {
 
 type TimeRange = "1W" | "1M" | "3M" | "6M" | "1Y" | "3Y" | "ALL";
 
+interface ChartDataPoint {
+  label: string;
+  current: number;
+  previous: number;
+  date: string;
+}
+
 export function AnalyticsCharts({
   transactions: _initialTransactions,
 }: AnalyticsChartsProps) {
@@ -44,7 +51,7 @@ export function AnalyticsCharts({
   const [data, setData] = useState<{
     current: number;
     previous: number;
-    combinedData: unknown[];
+    combinedData: ChartDataPoint[];
     isIncrease: boolean;
     absoluteChange: number;
     percentChange: number;
@@ -119,7 +126,7 @@ export function AnalyticsCharts({
         .eq("direction", "expense");
 
       // Fetch Previous Range (if not ALL)
-      let prevTx: unknown[] = [];
+      let prevTx: Transaction[] = [];
       if (range !== "ALL") {
         const { data } = await supabase
           .from("transactions")
