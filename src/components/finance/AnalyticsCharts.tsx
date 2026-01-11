@@ -1,16 +1,25 @@
-import { useDate } from "@/context/DateContext";
 import { useCurrency } from "@/hooks/useCurrency";
 import { supabase } from "@/lib/supabaseClient";
 import type { Tables } from "@/types/supabase";
 import {
-  endOfMonth,
+  endOfDay,
+  eachDayOfInterval,
+  eachMonthOfInterval,
   format,
-  getDaysInMonth,
-  startOfMonth,
   subMonths,
+  subWeeks,
+  subYears,
 } from "date-fns";
-import { useEffect, useMemo, useState } from "react";
-import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis } from "recharts";
+import { useEffect, useState } from "react";
+import {
+  Area,
+  AreaChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
+import { cn } from "@/lib/utils";
 
 type Transaction = Tables<"transactions">;
 
@@ -25,230 +34,312 @@ interface AnalyticsChartsProps {
   transactions: TransactionWithCategory[];
 }
 
-interface MonthData {
-  day: number;
-  amount: number;
-}
+type TimeRange = "1W" | "1M" | "3M" | "6M" | "1Y" | "3Y" | "ALL";
 
-export function AnalyticsCharts({ transactions }: AnalyticsChartsProps) {
-  const { selectedDate } = useDate();
+export function AnalyticsCharts({ transactions: _initialTransactions }: AnalyticsChartsProps) {
   const { formatAmount } = useCurrency();
-  const [prevMonthTransactions, setPrevMonthTransactions] = useState<
-    Transaction[]
-  >([]);
+  const [range, setRange] = useState<TimeRange>("1M");
+  const [data, setData] = useState<{
+    current: number;
+    previous: number;
+    combinedData: any[];
+    isIncrease: boolean;
+    absoluteChange: number;
+    percentChange: number;
+  } | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Use string representation for stable comparison
-  const selectedDateKey = useMemo(
-    () => format(selectedDate, "yyyy-MM"),
-    [selectedDate]
-  );
-
-  const prevMonth = useMemo(() => subMonths(selectedDate, 1), [selectedDate]);
-
-  // Load previous month transactions
   useEffect(() => {
-    const loadPrevMonth = async () => {
-      const start = startOfMonth(prevMonth).toISOString();
-      const end = endOfMonth(prevMonth).toISOString();
+    const fetchData = async () => {
+      setIsLoading(true);
+      const now = new Date();
+      let start: Date;
+      let end = endOfDay(now);
+      let prevStart: Date;
+      let prevEnd: Date;
+      let groupBy: "day" | "month" = "day";
 
-      const { data, error } = await supabase
+      // Calculate ranges
+      switch (range) {
+        case "1W":
+          start = subWeeks(now, 1);
+          prevEnd = start; // continuous
+          prevStart = subWeeks(start, 1);
+          groupBy = "day";
+          break;
+        case "1M":
+          start = subMonths(now, 1);
+          prevEnd = start;
+          prevStart = subMonths(start, 1);
+          groupBy = "day";
+          break;
+        case "3M":
+          start = subMonths(now, 3);
+          prevEnd = start;
+          prevStart = subMonths(start, 3);
+          groupBy = "day"; // or week? day is fine
+          break;
+        case "6M":
+          start = subMonths(now, 6);
+          prevEnd = start;
+          prevStart = subMonths(start, 6);
+          groupBy = "month";
+          break;
+        case "1Y":
+          start = subYears(now, 1);
+          prevEnd = start;
+          prevStart = subYears(start, 1);
+          groupBy = "month";
+          break;
+        case "3Y":
+          start = subYears(now, 3);
+          prevEnd = start;
+          prevStart = subYears(start, 3);
+          groupBy = "month";
+          break;
+        case "ALL":
+          // For ALL, we typically ideally fetch min date.
+          // Hardcode a reasonable start or fetch min.
+          start = new Date(0); // 1970
+          prevEnd = now; // No comparison for ALL usually
+          prevStart = now;
+          groupBy = "month";
+          break;
+      }
+
+      // Fetch Current Range
+      const { data: currentTx } = await supabase
         .from("transactions")
         .select("*")
-        .gte("occurred_at", start)
-        .lt("occurred_at", end)
+        .gte("occurred_at", start.toISOString())
+        .lte("occurred_at", end.toISOString())
         .is("deleted_at", null)
         .eq("direction", "expense");
 
-      if (!error && data) {
-        setPrevMonthTransactions(data);
+      // Fetch Previous Range (if not ALL)
+      let prevTx: any[] = [];
+      if (range !== "ALL") {
+        const { data } = await supabase
+          .from("transactions")
+          .select("*")
+          .gte("occurred_at", prevStart.toISOString())
+          .lt("occurred_at", prevEnd.toISOString())
+          .is("deleted_at", null)
+          .eq("direction", "expense");
+        prevTx = data || [];
       }
-    };
-    loadPrevMonth();
-    // Only re-run when the month/year changes (selectedDateKey is a string, compared by value)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedDateKey]);
 
-  // Current month data
-  const currentMonthData = useMemo(() => {
-    const daysInMonth = getDaysInMonth(selectedDate);
-    const expenses = transactions.filter((t) => t.direction === "expense");
+      // Process Data
+      const currentExpenses = currentTx || [];
+      const currentTotal = currentExpenses.reduce((acc, t) => acc + t.amount, 0);
+      const prevTotal = prevTx.reduce((acc, t) => acc + t.amount, 0);
 
-    const dayData: MonthData[] = [];
-    for (let d = 1; d <= daysInMonth; d++) {
-      const dayStr = format(
-        new Date(selectedDate.getFullYear(), selectedDate.getMonth(), d),
-        "yyyy-MM-dd"
-      );
-      const dayExpenses = expenses
-        .filter((t) => t.occurred_at.startsWith(dayStr))
-        .reduce((acc, t) => acc + t.amount, 0);
-      dayData.push({ day: d, amount: dayExpenses });
-    }
-    return dayData;
-  }, [transactions, selectedDate]);
+      // Grouping
+      let chartData = [];
+      if (groupBy === "day") {
+        const interval = eachDayOfInterval({ start, end });
+        const prevInterval = range !== "ALL" ? eachDayOfInterval({ start: prevStart, end: prevEnd }) : [];
 
-  // Previous month data
-  const prevMonthData = useMemo(() => {
-    const daysInMonth = getDaysInMonth(prevMonth);
+        // Map to chart
+        chartData = interval.map((date, i) => {
+          const dayStr = format(date, "yyyy-MM-dd");
+          const curAmt = currentExpenses
+            .filter(t => t.occurred_at.startsWith(dayStr))
+            .reduce((acc, t) => acc + t.amount, 0);
 
-    const dayData: MonthData[] = [];
-    for (let d = 1; d <= daysInMonth; d++) {
-      const dayStr = format(
-        new Date(prevMonth.getFullYear(), prevMonth.getMonth(), d),
-        "yyyy-MM-dd"
-      );
-      const dayExpenses = prevMonthTransactions
-        .filter((t) => t.occurred_at.startsWith(dayStr))
-        .reduce((acc, t) => acc + t.amount, 0);
-      dayData.push({ day: d, amount: dayExpenses });
-    }
-    return dayData;
-  }, [prevMonthTransactions, prevMonth]);
+          let prevAmt = 0;
+          if (prevInterval[i]) {
+            // Approximate mapping by index/offset
+            // Ideally map by "same day of prev week/month" if convenient, but index mapping is standard for comparison charts of different ranges
+            // Actually for 1M, previous month might have different days. Index mapping is safest for visual overlay.
+            // Logic: Find expenses in prev period at same relative offset?
+            // Simple approach: map index i of prevInterval
+            const prevDate = prevInterval[i];
+            if (prevDate) {
+              const prevDayStr = format(prevDate, "yyyy-MM-dd");
+              prevAmt = prevTx
+                .filter(t => t.occurred_at.startsWith(prevDayStr))
+                .reduce((acc, t) => acc + t.amount, 0);
+            }
+          }
 
-  // Totals
-  const currentTotal = currentMonthData.reduce((acc, d) => acc + d.amount, 0);
-  const prevTotal = prevMonthData.reduce((acc, d) => acc + d.amount, 0);
+          return {
+            label: format(date, range === "1W" ? "EEE" : "d"),
+            current: curAmt,
+            previous: range === "ALL" ? 0 : prevAmt,
+            date: date.toISOString(),
+          };
+        });
+      } else {
+        // Monthly grouping
+        const interval = eachMonthOfInterval({ start, end });
+        const prevInterval = range !== "ALL" ? eachMonthOfInterval({ start: prevStart, end: prevEnd }) : [];
 
-  // Change calculation
-  const absoluteChange = currentTotal - prevTotal;
-  const percentChange = prevTotal > 0 ? (absoluteChange / prevTotal) * 100 : 0;
-  const isIncrease = absoluteChange > 0;
+        chartData = interval.map((date, i) => {
+          const monthStr = format(date, "yyyy-MM");
+          const curAmt = currentExpenses
+            .filter(t => t.occurred_at.startsWith(monthStr))
+            .reduce((acc, t) => acc + t.amount, 0);
 
-  const currentMonthLabel = format(selectedDate, "MMMM yyyy");
-  const prevMonthLabel = format(prevMonth, "MMMM yyyy");
+          let prevAmt = 0;
+          if (prevInterval[i]) {
+            const prevMonthStr = format(prevInterval[i], "yyyy-MM");
+            prevAmt = prevTx
+              .filter(t => t.occurred_at.startsWith(prevMonthStr))
+              .reduce((acc, t) => acc + t.amount, 0);
+          }
 
-  // Combine data for overlapping chart - use max days between both months
-  const combinedData = useMemo(() => {
-    const maxDays = Math.max(currentMonthData.length, prevMonthData.length);
-    const data = [];
-    for (let i = 0; i < maxDays; i++) {
-      data.push({
-        day: i + 1,
-        current: currentMonthData[i]?.amount || 0,
-        previous: prevMonthData[i]?.amount || 0,
+          return {
+            label: format(date, "MMM"),
+            current: curAmt,
+            previous: range === "ALL" ? 0 : prevAmt,
+            date: date.toISOString(),
+          };
+        });
+      }
+
+      const absoluteChange = currentTotal - prevTotal;
+      const percentChange = prevTotal > 0 ? (absoluteChange / prevTotal) * 100 : 0;
+
+      setData({
+        current: currentTotal,
+        previous: prevTotal,
+        combinedData: chartData,
+        isIncrease: absoluteChange > 0,
+        absoluteChange,
+        percentChange,
       });
-    }
-    return data;
-  }, [currentMonthData, prevMonthData]);
+      setIsLoading(false);
+    };
+
+    fetchData();
+  }, [range]); // Re-fetch only when range changes
+
+  if (!data && isLoading) return <div className="h-64 flex items-center justify-center text-gray-400">Loading chart...</div>;
+  if (!data) return null;
+
+  const ranges: TimeRange[] = ["1W", "1M", "3M", "6M", "1Y", "3Y", "ALL"];
 
   return (
     <div className="w-full space-y-4">
-      {/* Combined Month Comparison Chart */}
+      {/* Chart Container */}
       <div className="bg-white/50 rounded-3xl p-4 backdrop-blur-sm">
-        {/* Legend Header */}
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-[#FF453A]" />
-              <span className="text-sm font-medium text-gray-700">
-                {currentMonthLabel}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-[#8E8E93]" />
-              <span className="text-sm font-medium text-gray-500">
-                {prevMonthLabel}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Totals Row */}
+        {/* HeaderStats */}
         <div className="flex items-center justify-between mb-4 px-2">
           <div>
-            <p className="text-xs text-gray-500">Current</p>
-            <p className="text-lg font-bold text-gray-900">
-              {formatAmount(currentTotal)}
-            </p>
+            <p className="text-xs text-gray-500 uppercase tracking-wider">Total Spending</p>
+            <p className="text-2xl font-bold text-gray-900">{formatAmount(data.current)}</p>
+            {range !== "ALL" && (
+              <div className="flex items-center gap-2 mt-1">
+                <span className={cn(
+                  "text-xs font-medium px-1.5 py-0.5 rounded",
+                  data.isIncrease ? "bg-red-100 text-red-600" : "bg-green-100 text-green-600"
+                )}>
+                  {data.isIncrease ? "+" : ""}{data.percentChange.toFixed(1)}%
+                </span>
+                <span className="text-xs text-gray-400">vs previous {range}</span>
+              </div>
+            )}
           </div>
-          <div className="text-right">
-            <p className="text-xs text-gray-500">Previous</p>
-            <p className="text-lg font-bold text-gray-600">
-              {formatAmount(prevTotal)}
-            </p>
-          </div>
+
+          {/* Range Selector - Stocks Style (Pills) */}
+          {/* We can put it here or below. Stocks usually puts it at bottom. */}
         </div>
 
+        {/* Legend */}
+        {range !== "ALL" && (
+          <div className="flex items-center justify-center gap-6 mb-3">
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-0.5 bg-[#007AFF] rounded-full" />
+              <span className="text-xs text-gray-600">Current</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-0.5 bg-gray-300 rounded-full" style={{ borderStyle: 'dashed' }} />
+              <span className="text-xs text-gray-400">Previous</span>
+            </div>
+          </div>
+        )}
+
         {/* Chart */}
-        <div className="h-48">
+        <div className="h-56 w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={combinedData}>
+            <AreaChart data={data.combinedData} margin={{ bottom: 5, left: -15, right: 5 }}>
               <defs>
-                <linearGradient
-                  id="colorCurrentMonth"
-                  x1="0"
-                  y1="0"
-                  x2="0"
-                  y2="1"
-                >
-                  <stop offset="5%" stopColor="#FF453A" stopOpacity={0.4} />
-                  <stop offset="95%" stopColor="#FF453A" stopOpacity={0.05} />
-                </linearGradient>
-                <linearGradient id="colorPrevMonth" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#8E8E93" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="#8E8E93" stopOpacity={0.05} />
+                <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#007AFF" stopOpacity={0.4} />
+                  <stop offset="100%" stopColor="#007AFF" stopOpacity={0.0} />
                 </linearGradient>
               </defs>
               <XAxis
-                dataKey="day"
+                dataKey="label"
                 axisLine={false}
                 tickLine={false}
                 tick={{ fontSize: 10, fill: "#9CA3AF" }}
-                interval={6}
+                interval={range === "1W" ? 0 : range === "1M" ? 4 : "preserveStartEnd"}
+                dy={5}
+              />
+              <YAxis
+                axisLine={false}
+                tickLine={false}
+                tick={{ fontSize: 9, fill: "#D1D5DB" }}
+                tickFormatter={(v) => v > 0 ? `${(v / 1000).toFixed(0)}k` : "0"}
+                domain={[0, 'auto']}
+                width={35}
               />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: "rgba(255, 255, 255, 0.95)",
+                  backgroundColor: "rgba(255, 255, 255, 0.9)",
+                  backdropFilter: "blur(8px)",
                   borderRadius: "12px",
                   border: "none",
-                  boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                  boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
+                  fontSize: "12px"
                 }}
-                formatter={(value: number) => [formatAmount(value)]}
-                labelFormatter={(label) => `Day ${label}`}
+                formatter={(value: number) => [formatAmount(value), "Spending"]}
+                labelStyle={{ color: "#6B7280", marginBottom: "4px" }}
               />
-              {/* Previous month behind (drawn first) */}
+              {/* Previous comparison line (dotted/gray) */}
+              {range !== "ALL" && (
+                <Area
+                  type="monotoneX"
+                  dataKey="previous"
+                  stroke="#D1D5DB"
+                  strokeWidth={1.5}
+                  fill="transparent"
+                  strokeDasharray="4 4"
+                  isAnimationActive={false}
+                  baseValue={0}
+                />
+              )}
               <Area
-                type="monotone"
-                dataKey="previous"
-                stroke="#8E8E93"
-                fillOpacity={1}
-                fill="url(#colorPrevMonth)"
-                strokeWidth={2}
-                strokeDasharray="5 5"
-              />
-              {/* Current month on top */}
-              <Area
-                type="monotone"
+                type="monotoneX"
                 dataKey="current"
-                stroke="#FF453A"
-                fillOpacity={1}
-                fill="url(#colorCurrentMonth)"
+                stroke="#007AFF"
                 strokeWidth={2}
+                fill="url(#chartGradient)"
+                activeDot={{ r: 4, strokeWidth: 0 }}
+                baseValue={0}
               />
             </AreaChart>
           </ResponsiveContainer>
         </div>
 
-        {/* Change Summary integrated at bottom */}
-        <div className="mt-4 pt-4 border-t border-gray-200/50">
-          <div className="flex items-center justify-center gap-3">
-            <span className="text-sm text-gray-500">Change:</span>
-            <span
-              className={`text-lg font-bold ${isIncrease ? "text-red-500" : "text-green-600"}`}
+        {/* Range Selector */}
+        <div className="flex justify-between items-center mt-6 px-1">
+          {ranges.map((r) => (
+            <button
+              key={r}
+              onClick={() => setRange(r)}
+              className={cn(
+                "text-[11px] font-semibold py-1 px-2.5 rounded-full transition-all duration-200",
+                range === r
+                  ? "bg-gray-900 text-white shadow-md scale-105"
+                  : "text-gray-400 hover:text-gray-600 hover:bg-gray-100"
+              )}
             >
-              {isIncrease ? "+" : ""}
-              {formatAmount(absoluteChange)}
-            </span>
-            <span
-              className={`text-sm font-medium px-2 py-0.5 rounded-full ${
-                isIncrease
-                  ? "bg-red-100 text-red-600"
-                  : "bg-green-100 text-green-600"
-              }`}
-            >
-              {isIncrease ? "↑" : "↓"} {Math.abs(percentChange).toFixed(1)}%
-            </span>
-          </div>
+              {r}
+            </button>
+          ))}
         </div>
       </div>
     </div>
