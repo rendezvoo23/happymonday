@@ -64,7 +64,6 @@ export default function App() {
     !location.pathname.startsWith("/add") &&
     !location.pathname.startsWith("/edit");
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: only run on mount
   useEffect(() => {
     const initAuth = async () => {
       setIsAuthLoading(true);
