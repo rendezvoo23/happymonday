@@ -4,10 +4,10 @@
 //
 // REQUIRED SECRETS (Edge Functions -> Secrets):
 // - TELEGRAM_BOT_TOKEN
-// - SUPABASE_URL
-// - SUPABASE_SERVICE_ROLE_KEY
-// - SUPABASE_ANON_KEY
-// - SUPABASE_JWT_SECRET  <-- ADD THIS (found in Project Settings -> API -> JWT Secret)
+// - JWT_SECRET  <-- ADD THIS (found in Project Settings -> API -> JWT Secret)
+//
+// NOTE: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, and SUPABASE_ANON_KEY are
+// automatically available as system environment variables in Edge Functions
 //
 // IMPORTANT:
 // - Turn OFF "Verify JWT" / "Require JWT" for this function (it's a login endpoint)
@@ -258,7 +258,6 @@ async function generateSupabaseTokens(
       role: "authenticated",
       aal: "aal1",
       amr: [{ method: "oauth", timestamp: now }],
-      session_id: crypto.randomUUID(),
     },
     key
   );
@@ -272,7 +271,6 @@ async function generateSupabaseTokens(
       iat: now,
       iss: "supabase",
       sub: userId,
-      session_id: crypto.randomUUID(),
     },
     key
   );
@@ -540,10 +538,16 @@ Deno.serve(async (req: Request): Promise<Response> => {
     });
   } catch (err) {
     console.error("auth-telegram error:", err);
+
+    // @ts-expect-error: Deno.env is provided by the Deno runtime
+    const env = Deno.env.toObject();
+    console.log(env);
+
+    const details = err instanceof Error ? err.message : String(err);
     return json(
       {
         error: "Internal server error",
-        details: err instanceof Error ? err.message : String(err),
+        details: details + " " + JSON.stringify(env, null, 2),
       },
       500
     );
