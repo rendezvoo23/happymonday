@@ -1,10 +1,11 @@
 import { useCurrency } from "@/hooks/useCurrency";
 import { supabase } from "@/lib/supabaseClient";
+import { cn } from "@/lib/utils";
 import type { Tables } from "@/types/supabase";
 import {
-  endOfDay,
   eachDayOfInterval,
   eachMonthOfInterval,
+  endOfDay,
   format,
   subMonths,
   subWeeks,
@@ -19,7 +20,6 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { cn } from "@/lib/utils";
 
 type Transaction = Tables<"transactions">;
 
@@ -36,13 +36,15 @@ interface AnalyticsChartsProps {
 
 type TimeRange = "1W" | "1M" | "3M" | "6M" | "1Y" | "3Y" | "ALL";
 
-export function AnalyticsCharts({ transactions: _initialTransactions }: AnalyticsChartsProps) {
+export function AnalyticsCharts({
+  transactions: _initialTransactions,
+}: AnalyticsChartsProps) {
   const { formatAmount } = useCurrency();
   const [range, setRange] = useState<TimeRange>("1M");
   const [data, setData] = useState<{
     current: number;
     previous: number;
-    combinedData: any[];
+    combinedData: unknown[];
     isIncrease: boolean;
     absoluteChange: number;
     percentChange: number;
@@ -54,7 +56,7 @@ export function AnalyticsCharts({ transactions: _initialTransactions }: Analytic
       setIsLoading(true);
       const now = new Date();
       let start: Date;
-      let end = endOfDay(now);
+      const end = endOfDay(now);
       let prevStart: Date;
       let prevEnd: Date;
       let groupBy: "day" | "month" = "day";
@@ -117,7 +119,7 @@ export function AnalyticsCharts({ transactions: _initialTransactions }: Analytic
         .eq("direction", "expense");
 
       // Fetch Previous Range (if not ALL)
-      let prevTx: any[] = [];
+      let prevTx: unknown[] = [];
       if (range !== "ALL") {
         const { data } = await supabase
           .from("transactions")
@@ -131,20 +133,26 @@ export function AnalyticsCharts({ transactions: _initialTransactions }: Analytic
 
       // Process Data
       const currentExpenses = currentTx || [];
-      const currentTotal = currentExpenses.reduce((acc, t) => acc + t.amount, 0);
+      const currentTotal = currentExpenses.reduce(
+        (acc, t) => acc + t.amount,
+        0
+      );
       const prevTotal = prevTx.reduce((acc, t) => acc + t.amount, 0);
 
       // Grouping
       let chartData = [];
       if (groupBy === "day") {
         const interval = eachDayOfInterval({ start, end });
-        const prevInterval = range !== "ALL" ? eachDayOfInterval({ start: prevStart, end: prevEnd }) : [];
+        const prevInterval =
+          range !== "ALL"
+            ? eachDayOfInterval({ start: prevStart, end: prevEnd })
+            : [];
 
         // Map to chart
         chartData = interval.map((date, i) => {
           const dayStr = format(date, "yyyy-MM-dd");
           const curAmt = currentExpenses
-            .filter(t => t.occurred_at.startsWith(dayStr))
+            .filter((t) => t.occurred_at.startsWith(dayStr))
             .reduce((acc, t) => acc + t.amount, 0);
 
           let prevAmt = 0;
@@ -158,7 +166,7 @@ export function AnalyticsCharts({ transactions: _initialTransactions }: Analytic
             if (prevDate) {
               const prevDayStr = format(prevDate, "yyyy-MM-dd");
               prevAmt = prevTx
-                .filter(t => t.occurred_at.startsWith(prevDayStr))
+                .filter((t) => t.occurred_at.startsWith(prevDayStr))
                 .reduce((acc, t) => acc + t.amount, 0);
             }
           }
@@ -173,19 +181,22 @@ export function AnalyticsCharts({ transactions: _initialTransactions }: Analytic
       } else {
         // Monthly grouping
         const interval = eachMonthOfInterval({ start, end });
-        const prevInterval = range !== "ALL" ? eachMonthOfInterval({ start: prevStart, end: prevEnd }) : [];
+        const prevInterval =
+          range !== "ALL"
+            ? eachMonthOfInterval({ start: prevStart, end: prevEnd })
+            : [];
 
         chartData = interval.map((date, i) => {
           const monthStr = format(date, "yyyy-MM");
           const curAmt = currentExpenses
-            .filter(t => t.occurred_at.startsWith(monthStr))
+            .filter((t) => t.occurred_at.startsWith(monthStr))
             .reduce((acc, t) => acc + t.amount, 0);
 
           let prevAmt = 0;
           if (prevInterval[i]) {
             const prevMonthStr = format(prevInterval[i], "yyyy-MM");
             prevAmt = prevTx
-              .filter(t => t.occurred_at.startsWith(prevMonthStr))
+              .filter((t) => t.occurred_at.startsWith(prevMonthStr))
               .reduce((acc, t) => acc + t.amount, 0);
           }
 
@@ -199,7 +210,8 @@ export function AnalyticsCharts({ transactions: _initialTransactions }: Analytic
       }
 
       const absoluteChange = currentTotal - prevTotal;
-      const percentChange = prevTotal > 0 ? (absoluteChange / prevTotal) * 100 : 0;
+      const percentChange =
+        prevTotal > 0 ? (absoluteChange / prevTotal) * 100 : 0;
 
       setData({
         current: currentTotal,
@@ -215,7 +227,12 @@ export function AnalyticsCharts({ transactions: _initialTransactions }: Analytic
     fetchData();
   }, [range]); // Re-fetch only when range changes
 
-  if (!data && isLoading) return <div className="h-64 flex items-center justify-center text-gray-400">Loading chart...</div>;
+  if (!data && isLoading)
+    return (
+      <div className="h-64 flex items-center justify-center text-gray-400">
+        Loading chart...
+      </div>
+    );
   if (!data) return null;
 
   const ranges: TimeRange[] = ["1W", "1M", "3M", "6M", "1Y", "3Y", "ALL"];
@@ -227,17 +244,28 @@ export function AnalyticsCharts({ transactions: _initialTransactions }: Analytic
         {/* HeaderStats */}
         <div className="flex items-center justify-between mb-4 px-2">
           <div>
-            <p className="text-xs text-gray-500 uppercase tracking-wider">Total Spending</p>
-            <p className="text-2xl font-bold text-gray-900">{formatAmount(data.current)}</p>
+            <p className="text-xs text-gray-500 uppercase tracking-wider">
+              Total Spending
+            </p>
+            <p className="text-2xl font-bold text-gray-900">
+              {formatAmount(data.current)}
+            </p>
             {range !== "ALL" && (
               <div className="flex items-center gap-2 mt-1">
-                <span className={cn(
-                  "text-xs font-medium px-1.5 py-0.5 rounded",
-                  data.isIncrease ? "bg-red-100 text-red-600" : "bg-green-100 text-green-600"
-                )}>
-                  {data.isIncrease ? "+" : ""}{data.percentChange.toFixed(1)}%
+                <span
+                  className={cn(
+                    "text-xs font-medium px-1.5 py-0.5 rounded",
+                    data.isIncrease
+                      ? "bg-red-100 text-red-600"
+                      : "bg-green-100 text-green-600"
+                  )}
+                >
+                  {data.isIncrease ? "+" : ""}
+                  {data.percentChange.toFixed(1)}%
                 </span>
-                <span className="text-xs text-gray-400">vs previous {range}</span>
+                <span className="text-xs text-gray-400">
+                  vs previous {range}
+                </span>
               </div>
             )}
           </div>
@@ -254,7 +282,10 @@ export function AnalyticsCharts({ transactions: _initialTransactions }: Analytic
               <span className="text-xs text-gray-600">Current</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-3 h-0.5 bg-gray-300 rounded-full" style={{ borderStyle: 'dashed' }} />
+              <div
+                className="w-3 h-0.5 bg-gray-300 rounded-full"
+                style={{ borderStyle: "dashed" }}
+              />
               <span className="text-xs text-gray-400">Previous</span>
             </div>
           </div>
@@ -263,7 +294,10 @@ export function AnalyticsCharts({ transactions: _initialTransactions }: Analytic
         {/* Chart */}
         <div className="h-56 w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={data.combinedData} margin={{ bottom: 5, left: -15, right: 5 }}>
+            <AreaChart
+              data={data.combinedData}
+              margin={{ bottom: 5, left: -15, right: 5 }}
+            >
               <defs>
                 <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="#007AFF" stopOpacity={0.4} />
@@ -275,15 +309,19 @@ export function AnalyticsCharts({ transactions: _initialTransactions }: Analytic
                 axisLine={false}
                 tickLine={false}
                 tick={{ fontSize: 10, fill: "#9CA3AF" }}
-                interval={range === "1W" ? 0 : range === "1M" ? 4 : "preserveStartEnd"}
+                interval={
+                  range === "1W" ? 0 : range === "1M" ? 4 : "preserveStartEnd"
+                }
                 dy={5}
               />
               <YAxis
                 axisLine={false}
                 tickLine={false}
                 tick={{ fontSize: 9, fill: "#D1D5DB" }}
-                tickFormatter={(v) => v > 0 ? `${(v / 1000).toFixed(0)}k` : "0"}
-                domain={[0, 'auto']}
+                tickFormatter={(v) =>
+                  v > 0 ? `${(v / 1000).toFixed(0)}k` : "0"
+                }
+                domain={[0, "auto"]}
                 width={35}
               />
               <Tooltip
@@ -293,7 +331,7 @@ export function AnalyticsCharts({ transactions: _initialTransactions }: Analytic
                   borderRadius: "12px",
                   border: "none",
                   boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
-                  fontSize: "12px"
+                  fontSize: "12px",
                 }}
                 formatter={(value: number) => [formatAmount(value), "Spending"]}
                 labelStyle={{ color: "#6B7280", marginBottom: "4px" }}
@@ -329,6 +367,7 @@ export function AnalyticsCharts({ transactions: _initialTransactions }: Analytic
           {ranges.map((r) => (
             <button
               key={r}
+              type="button"
               onClick={() => setRange(r)}
               className={cn(
                 "text-[11px] font-semibold py-1 px-2.5 rounded-full transition-all duration-200",
