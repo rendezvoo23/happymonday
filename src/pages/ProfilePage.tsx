@@ -4,16 +4,16 @@ import { Modal } from "@/components/ui/Modal";
 import { useTheme } from "@/context/ThemeContext";
 import { useUserStore } from "@/stores/userStore";
 import {
-  Bell,
   Check,
   ChevronRight,
-  DollarSign,
-  Globe,
   Monitor,
-  Moon,
-  Settings,
   Sun,
 } from "lucide-react";
+import {
+  DollarSignIcon,
+  GlobeIcon,
+  MoonIcon,
+} from "@/components/icons";
 import type * as React from "react";
 import { useEffect, useState } from "react";
 
@@ -75,39 +75,21 @@ export function ProfilePage() {
       </header>
 
       <main className="flex flex-col gap-6">
-        {/* Profile Card */}
-        <Card className="flex items-center gap-4">
-          <img
-            src={
-              profile.photo_url ||
-              `https://ui-avatars.com/api/?name=${
-                profile.display_name || profile.first_name || "User"
-              }&background=random`
-            }
-            alt={profile.display_name || ""}
-            className="w-16 h-16 rounded-full object-cover shadow-sm"
-          />
-          <div>
-            <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">
-              {profile.display_name ||
-                `${profile.first_name || ""} ${
-                  profile.last_name || ""
-                }`.trim() ||
-                "User"}
-            </h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              @{profile.username || profile.telegram_id}
-            </p>
-            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-              Member since {new Date(profile.created_at).getFullYear()}
-            </p>
-          </div>
+        <Card className="flex flex-col items-center gap-2 py-8">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+            {profile.display_name ||
+              `${profile.first_name || ""} ${profile.last_name || ""}`.trim() ||
+              "User"}
+          </h2>
+          <p className="text-xs text-gray-400 dark:text-gray-500">
+            Member since {new Date(profile.created_at).getFullYear()}
+          </p>
         </Card>
 
         {/* Settings List */}
         <div className="space-y-2">
           <SettingsRow
-            icon={Globe}
+            icon={GlobeIcon}
             label="Language"
             value={
               settings?.language === "en"
@@ -116,7 +98,7 @@ export function ProfilePage() {
             }
           />
           <SettingsRow
-            icon={DollarSign}
+            icon={DollarSignIcon}
             label="Currency"
             value={
               currentCurrency
@@ -126,13 +108,11 @@ export function ProfilePage() {
             onClick={() => setIsCurrencyModalOpen(true)}
           />
           <SettingsRow
-            icon={Moon}
+            icon={MoonIcon}
             label="Theme"
             value={getThemeLabel(theme)}
             onClick={() => setIsThemeModalOpen(true)}
           />
-          <SettingsRow icon={Bell} label="Notifications" value="On" />
-          <SettingsRow icon={Settings} label="App Settings" />
         </div>
       </main>
 
@@ -188,7 +168,7 @@ export function ProfilePage() {
             {
               value: "dark" as const,
               label: "Dark",
-              icon: Moon,
+              icon: MoonIcon,
               description: "Always use dark mode",
             },
             {

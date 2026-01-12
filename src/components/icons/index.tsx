@@ -30,6 +30,71 @@ import { WifiIcon } from "./wifi";
 import { WineGlassIcon } from "./wineglass";
 import { WrenchIcon } from "./wrench";
 
+// Import new icons
+import { ChartIcon } from "./chart";
+import { ChartFillIcon } from "./chartfill";
+import { ChevronLeftIcon } from "./chevronleft";
+import { ChevronRightIcon } from "./chevronright";
+import { DollarSignIcon } from "./dollarsign";
+import { GearBigIcon } from "./gearbig";
+import { GearSmallIcon } from "./gearsmall";
+import { GlobeIcon } from "./globe";
+import { HouseFillIcon } from "./housefill";
+import { MoonIcon } from "./moon";
+import { MoreIcon } from "./more";
+import { PencilIcon } from "./pencil";
+import { PersonIcon } from "./person";
+import { PersonFillIcon } from "./personfill";
+import { TrashIcon } from "./trash";
+
+// Export all icons
+export {
+  ArrowIcon,
+  BedIcon,
+  BinocularsIcon,
+  BoltIcon,
+  BusIcon,
+  CarIcon,
+  CarrotIcon,
+  CartIcon,
+  ChartIcon,
+  ChartFillIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  CreditCardIcon,
+  CupIcon,
+  DollarSignIcon,
+  FilmIcon,
+  FitnessIcon,
+  ForkIcon,
+  FuelPumpIcon,
+  GameControllerIcon,
+  GearBigIcon,
+  GearSmallIcon,
+  GlobeIcon,
+  HouseFillIcon,
+  HouseIcon,
+  LampIcon,
+  LeafIcon,
+  MoonIcon,
+  MoreIcon,
+  PaintPaletteIcon,
+  PencilIcon,
+  PersonIcon,
+  PersonFillIcon,
+  PillIcon,
+  PlaneIcon,
+  StethoscopeIcon,
+  TakeoutBagIcon,
+  TicketIcon,
+  TrashIcon,
+  TshirtIcon,
+  TvIcon,
+  WifiIcon,
+  WineGlassIcon,
+  WrenchIcon,
+};
+
 export const Icons: Record<string, React.FC> = {
   ":carrot:": CarrotIcon,
   ":fork:": ForkIcon,
@@ -60,6 +125,22 @@ export const Icons: Record<string, React.FC> = {
   ":stethoscope:": StethoscopeIcon,
   ":fitness:": FitnessIcon,
   ":leaf:": LeafIcon,
+  // New icons
+  ":gearsmall:": GearSmallIcon,
+  ":gearbig:": GearBigIcon,
+  ":person:": PersonIcon,
+  ":dollarsign:": DollarSignIcon,
+  ":moon:": MoonIcon,
+  ":globe:": GlobeIcon,
+  ":personfill:": PersonFillIcon,
+  ":pencil:": PencilIcon,
+  ":housefill:": HouseFillIcon,
+  ":chart:": ChartIcon,
+  ":chartfill:": ChartFillIcon,
+  ":trash:": TrashIcon,
+  ":chevronleft:": ChevronLeftIcon,
+  ":chevronright:": ChevronRightIcon,
+  ":more:": MoreIcon, 
 };
 
 /**

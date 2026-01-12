@@ -1,12 +1,13 @@
-export const HouseIcon = (props: React.SVGProps<SVGSVGElement>) => {
+export const HouseFillIcon = (props: React.SVGProps<SVGSVGElement>) => {
   return (
     <svg
       {...props}
       version="1.1"
+      xmlns="http://www.w3.org/2000/svg"
+      xmlnsXlink="http://www.w3.org/1999/xlink"
       viewBox="0 0 23.6816 20.5566"
-      style={{ overflow: "visible" }}
       role="img"
-      aria-label="House icon"
+      aria-label="House fill icon"
     >
       <g>
         <rect height="20.5566" opacity="0" width="23.6816" x="0" y="0" />
