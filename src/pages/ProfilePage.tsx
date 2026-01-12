@@ -1,19 +1,10 @@
+import { DollarSignIcon, GlobeIcon, MoonIcon } from "@/components/icons";
 import { PageShell } from "@/components/layout/PageShell";
 import { Card } from "@/components/ui/Card";
 import { Modal } from "@/components/ui/Modal";
 import { useTheme } from "@/context/ThemeContext";
 import { useUserStore } from "@/stores/userStore";
-import {
-  Check,
-  ChevronRight,
-  Monitor,
-  Sun,
-} from "lucide-react";
-import {
-  DollarSignIcon,
-  GlobeIcon,
-  MoonIcon,
-} from "@/components/icons";
+import { Check, ChevronRight, Monitor, Sun } from "lucide-react";
 import type * as React from "react";
 import { useEffect, useState } from "react";
 

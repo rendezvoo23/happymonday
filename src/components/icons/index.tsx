@@ -140,7 +140,7 @@ export const Icons: Record<string, React.FC> = {
   ":trash:": TrashIcon,
   ":chevronleft:": ChevronLeftIcon,
   ":chevronright:": ChevronRightIcon,
-  ":more:": MoreIcon, 
+  ":more:": MoreIcon,
 };
 
 /**
