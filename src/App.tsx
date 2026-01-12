@@ -4,11 +4,9 @@ import { authenticateWithTelegram } from "@/lib/authTelegram";
 import { supabase } from "@/lib/supabaseClient";
 import { parseInitData } from "@/lib/utils";
 import { AddTransactionPage } from "@/pages/AddTransactionPage";
-import { AiPage } from "@/pages/AiPage";
 import { EditTransactionPage } from "@/pages/EditTransactionPage";
 import { HistoryPage } from "@/pages/HistoryPage";
 import { HomePage } from "@/pages/HomePage";
-import { LandingPage } from "@/pages/LandingPage";
 import { ProfilePage } from "@/pages/ProfilePage";
 import { StatisticsPage } from "@/pages/StatisticsPage";
 import { useUserStore } from "@/stores/userStore";
@@ -136,7 +134,7 @@ export default function App() {
     <div className="min-h-screen bg-[var(--background)] text-gray-900 dark:text-gray-100 font-sans overflow-hidden transition-colors duration-200">
       <AnimatePresence mode="wait">
         <Routes location={location}>
-          <Route path="/" element={<LandingPage />} />
+          <Route path="/" element={<Navigate to="/home" replace />} />
           <Route
             path="/history"
             element={
@@ -146,7 +144,7 @@ export default function App() {
             }
           />
           <Route
-            path="/dashboard"
+            path="/home"
             element={
               <ProtectedRoute isLoading={isAuthLoading}>
                 <HomePage />
@@ -158,14 +156,6 @@ export default function App() {
             element={
               <ProtectedRoute isLoading={isAuthLoading}>
                 <StatisticsPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/ai"
-            element={
-              <ProtectedRoute isLoading={isAuthLoading}>
-                <AiPage />
               </ProtectedRoute>
             }
           />

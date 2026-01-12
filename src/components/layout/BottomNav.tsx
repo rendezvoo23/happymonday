@@ -1,16 +1,31 @@
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
-import { Bot, Home, PieChart, User } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
+import {
+  ChartFillIcon,
+  ChartIcon,
+  GearBigIcon,
+  HouseFillIcon,
+  HouseIcon,
+} from "../icons";
 
 export function BottomNav() {
   const location = useLocation();
 
   const tabs = [
-    { path: "/dashboard", label: "Home", icon: Home },
-    { path: "/statistics", label: "Stats", icon: PieChart },
-    { path: "/ai", label: "AI", icon: Bot },
-    { path: "/profile", label: "Profile", icon: User },
+    {
+      path: "/home",
+      label: "Home",
+      icon: HouseIcon,
+      activeIcon: HouseFillIcon,
+    },
+    {
+      path: "/statistics",
+      label: "Stats",
+      icon: ChartIcon,
+      activeIcon: ChartFillIcon,
+    },
+    { path: "/profile", label: "Profile", icon: GearBigIcon },
   ];
 
   return (
@@ -39,10 +54,16 @@ export function BottomNav() {
                 />
               )}
               <div className="relative z-10 flex flex-col items-center gap-0.5">
-                <Icon
-                  className={cn("w-6 h-6", isActive && "fill-current")}
-                  strokeWidth={isActive ? 2.5 : 2}
-                />
+                {isActive && tab.activeIcon ? (
+                  <tab.activeIcon
+                    className={cn("w-6 h-6", isActive && "fill-current")}
+                  />
+                ) : (
+                  <Icon
+                    className={cn("w-6 h-6", isActive && "fill-current")}
+                    strokeWidth={isActive ? 2.5 : 2}
+                  />
+                )}
               </div>
             </Link>
           );
