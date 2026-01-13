@@ -234,8 +234,8 @@ export function HomePage() {
               chartData={chartData}
               percentChange={trendStats.percentChange}
               isIncrease={trendStats.isIncrease}
-              onDoughnutClick={() => navigate("/statistics")}
-              onChartClick={() => navigate("/statistics")}
+              onDoughnutClick={() => navigate("/statistics#doughnut")}
+              onChartClick={() => navigate("/statistics#charts")}
               currentMonthName={format(selectedDate, "MMM")}
               prevMonthName={format(subMonths(selectedDate, 1), "MMM")}
             />
