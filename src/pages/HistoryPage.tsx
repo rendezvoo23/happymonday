@@ -59,7 +59,7 @@ export function HistoryPage() {
     <PageShell>
       <header className="flex items-center gap-4 py-4 mb-4">
         <Link
-          to="/home"
+          to="/statistics"
           className="p-2 -ml-2 text-gray-600 hover:text-gray-900 transition-colors"
         >
           <ChevronLeft className="w-6 h-6" />

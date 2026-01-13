@@ -63,10 +63,10 @@ export function TransactionList({
         <Button
           variant="secondary"
           fullWidth
-          className="mt-4"
+          className="mt-6 rounded-2xl h-12 text-blue-600 font-medium bg-white dark:bg-gray-800 border-none shadow-sm"
           onClick={() => navigate("/history")}
         >
-          View All Transactions
+          View all transactions
         </Button>
       )}
     </div>
