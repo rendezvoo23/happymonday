@@ -1,3 +1,4 @@
+import { format } from "date-fns";
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 
@@ -39,6 +40,8 @@ export function TransactionForm({
   initialType = "expense",
   onCancel,
 }: TransactionFormProps) {
+  const { selectedDate } = useDate();
+
   const [type] = useState<TransactionType>(initialData?.type || initialType);
   const [amount, setAmount] = useState(initialData?.amount?.toString() || "");
   const [categoryId, setCategoryId] = useState<CategoryId>(
@@ -48,6 +51,12 @@ export function TransactionForm({
     initialData?.subcategoryId || null
   );
   const [note, setNote] = useState(initialData?.note || "");
+  const [date, setDate] = useState(
+    initialData?.date
+      ? format(new Date(initialData.date), "yyyy-MM-dd")
+      : format(selectedDate, "yyyy-MM-dd")
+  );
+
   const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
   const [isLoadingSubcategories, setIsLoadingSubcategories] = useState(false);
   const previousCategoryIdRef = useRef<CategoryId | null>(null);
@@ -55,7 +64,6 @@ export function TransactionForm({
     initialData?.subcategoryId || null
   );
 
-  const { selectedDate } = useDate();
   const { symbol, isSymbolPrefix } = useCurrency();
   const {
     isLoading: categoriesLoading,
@@ -132,13 +140,26 @@ export function TransactionForm({
     e.preventDefault();
     if (!amount || !categoryId) return;
 
+    // Convert local date string back to ISO for submission
+    // We append the time from the original date if possible, or just start of day
+    const submissionDate = new Date(date);
+    if (!initialData?.date) {
+      // If new transaction, use current time but selected date
+      const now = new Date();
+      submissionDate.setHours(
+        now.getHours(),
+        now.getMinutes(),
+        now.getSeconds()
+      );
+    }
+
     onSubmit({
       type,
       amount: Number.parseFloat(amount),
       categoryId,
       subcategoryId: subcategoryId || null,
       note,
-      date: initialData?.date || selectedDate.toISOString(),
+      date: submissionDate.toISOString(),
     });
   };
 
@@ -147,8 +168,6 @@ export function TransactionForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Type Toggle removed for Expense-only MVP */}
-
       <div className="space-y-2">
         <label
           htmlFor="amount-input"
@@ -180,6 +199,24 @@ export function TransactionForm({
               {symbol}
             </span>
           )}
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <label
+          htmlFor="date-input"
+          className="text-sm font-medium text-gray-500 ml-1"
+        >
+          Date
+        </label>
+        <div className="relative">
+          <Input
+            id="date-input"
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            className="text-base font-medium"
+          />
         </div>
       </div>
 

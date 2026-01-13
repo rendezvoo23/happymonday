@@ -98,7 +98,7 @@ export function CategoryDoughnutChart({
   }
 
   return (
-    <div className="w-full px-4">
+    <div className="w-full">
       <div className="bg-white/50 backdrop-blur-sm rounded-3xl p-4">
         {/* Doughnut Chart */}
         <div className="h-64 relative">

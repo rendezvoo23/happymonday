@@ -45,11 +45,11 @@ export function HomePage() {
             </div>
           )}
 
-          {/* Redesigned "+" Button */}
-          <div className="relative mt-4">
+          {/* Floating thumb-friendly "+" Button */}
+          <div className="fixed bottom-48 left-1/2 -translate-x-1/2 z-40">
             <Button
               size="icon"
-              className="w-16 h-16 rounded-full shadow-lg text-white border-2 border-white flex items-center justify-center overflow-hidden bg-[#007AFF] hover:bg-[#0071e3]"
+              className="w-16 h-16 rounded-full shadow-lg text-white border-2 border-white flex items-center justify-center overflow-hidden bg-[#007AFF] hover:bg-[#0071e3] transition-transform active:scale-90"
               onClick={() => handleOpenAdd("expense")}
             >
               <Plus className="w-8 h-8 drop-shadow-sm" />
