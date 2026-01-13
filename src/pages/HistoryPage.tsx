@@ -59,7 +59,7 @@ export function HistoryPage() {
     <PageShell>
       <header className="flex items-center gap-4 py-4 mb-4">
         <Link
-          to="/statistics" // Going back to stats or home? User came from a 'Recent Transactions' list.
+          to="/home"
           className="p-2 -ml-2 text-gray-600 hover:text-gray-900 transition-colors"
         >
           <ChevronLeft className="w-6 h-6" />

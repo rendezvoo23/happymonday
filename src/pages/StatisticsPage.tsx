@@ -12,6 +12,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { type PanInfo, motion } from "framer-motion";
+import { ChevronLeft } from "lucide-react";
 
 export function StatisticsPage() {
   const navigate = useNavigate();
@@ -116,7 +117,14 @@ export function StatisticsPage() {
 
   return (
     <PageShell>
-      <header className="flex flex-col items-center pt-4 pb-6 gap-4">
+      <header className="relative flex flex-col items-center pt-4 pb-6 gap-4">
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
+          className="absolute left-4 top-5 p-2 rounded-full bg-white/50 backdrop-blur-sm shadow-sm text-gray-600 hover:bg-white transition-colors"
+        >
+          <ChevronLeft className="w-6 h-6" />
+        </button>
         <h1 className="text-xl font-semibold text-gray-900">Statistics</h1>
         <MonthSelector />
       </header>

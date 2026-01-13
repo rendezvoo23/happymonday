@@ -4,11 +4,13 @@ import { Card } from "@/components/ui/Card";
 import { Modal } from "@/components/ui/Modal";
 import { useTheme } from "@/context/ThemeContext";
 import { useUserStore } from "@/stores/userStore";
-import { Check, ChevronRight, Monitor, Sun } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, Monitor, Sun } from "lucide-react";
 import type * as React from "react";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export function ProfilePage() {
+  const navigate = useNavigate();
   const { profile, settings, currencies, updateSettings, isLoading } =
     useUserStore();
   const { theme, setTheme } = useTheme();
@@ -59,7 +61,14 @@ export function ProfilePage() {
 
   return (
     <PageShell>
-      <header className="flex flex-col items-center pt-4 pb-6">
+      <header className="relative flex flex-col items-center pt-4 pb-6">
+        <button
+          type="button"
+          onClick={() => navigate("/home")}
+          className="absolute left-4 top-4 p-2 rounded-full bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm shadow-sm text-gray-600 dark:text-gray-400 hover:bg-white dark:hover:bg-gray-800 transition-colors"
+        >
+          <ChevronLeft className="w-6 h-6" />
+        </button>
         <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
           Profile
         </h1>

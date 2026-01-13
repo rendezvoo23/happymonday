@@ -48,7 +48,9 @@ export function TransactionList({
 
   return (
     <div className="w-full pb-20">
-      <h3 className="text-lg font-semibold mb-4 px-1">Recent Transactions</h3>
+      <h3 className="text-lg font-semibold mb-4 px-1 text-gray-500">
+        Recent transactions
+      </h3>
       {displayed.map((t) => (
         <TransactionItem
           key={t.id}
