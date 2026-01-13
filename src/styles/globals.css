@@ -27,6 +27,10 @@
     -webkit-tap-highlight-color: transparent;
     transition: background-color 0.2s ease, color 0.2s ease;
   }
+
+  *:focus {
+    outline: none !important;
+  }
 }
 
 @layer components {

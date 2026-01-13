@@ -47,9 +47,9 @@ export function TransactionItem({
   return (
     <>
       <div className="group flex items-center justify-between p-4 bg-white/60 dark:bg-gray-800/60 backdrop-blur-md rounded-2xl mb-3 shadow-sm transition-all hover:bg-white/80 dark:hover:bg-gray-800/80 ring-1 ring-black/5 dark:ring-white/5">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 min-w-0">
           <div
-            className="w-10 h-10 rounded-full flex items-center justify-center text-white text-[10px] font-bold shadow-sm relative overflow-hidden"
+            className="w-10 h-10 shrink-0 rounded-full flex items-center justify-center text-white text-[10px] font-bold shadow-sm relative overflow-hidden"
             style={{ backgroundColor: categoryColor }}
           >
             {/* Glossy Effect on Circle */}
@@ -64,18 +64,18 @@ export function TransactionItem({
               </span>
             )}
           </div>
-          <div>
-            <p className="font-semibold text-gray-900 dark:text-gray-100 leading-tight">
+          <div className="min-w-0">
+            <p className="font-semibold text-gray-900 dark:text-gray-100 leading-tight truncate">
               {categoryLabel}
             </p>
-            <p className="text-[11px] text-gray-500 mt-0.5">
+            <p className="text-[11px] text-gray-500 mt-0.5 truncate">
               {format(parseISO(transaction.occurred_at), "MMM d")}
               {transaction.note && ` • ${transaction.note}`}
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 shrink-0 ml-4">
           <span
             className={cn(
               "font-bold text-sm",

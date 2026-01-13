@@ -3,7 +3,6 @@ import { useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import { useDate } from "@/context/DateContext";
 import { useCurrency } from "@/hooks/useCurrency";
 import { type Subcategory, getSubcategories } from "@/lib/api";
@@ -40,9 +39,7 @@ export function TransactionForm({
   initialType = "expense",
   onCancel,
 }: TransactionFormProps) {
-  const [type, setType] = useState<TransactionType>(
-    initialData?.type || initialType
-  );
+  const [type] = useState<TransactionType>(initialData?.type || initialType);
   const [amount, setAmount] = useState(initialData?.amount?.toString() || "");
   const [categoryId, setCategoryId] = useState<CategoryId>(
     initialData?.categoryId || ""
@@ -145,33 +142,12 @@ export function TransactionForm({
     });
   };
 
-  // Reset category when type changes if current category is invalid for new type
-  const handleTypeChange = (newType: string) => {
-    const t = newType as TransactionType;
-    setType(t);
-    const validCategories =
-      t === "expense" ? getExpenseCategories() : getIncomeCategories();
-    if (
-      validCategories.length > 0 &&
-      !validCategories.find((c) => c.id === categoryId)
-    ) {
-      setCategoryId(validCategories[0].id);
-    }
-  };
-
   // Get the selected category to pass its color to SubcategorySelector
   const selectedCategory = categories.find((c) => c.id === categoryId);
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <SegmentedControl
-        options={[
-          { value: "expense", label: "Expense" },
-          { value: "income", label: "Income" },
-        ]}
-        value={type}
-        onChange={handleTypeChange}
-      />
+      {/* Type Toggle removed for Expense-only MVP */}
 
       <div className="space-y-2">
         <label
@@ -283,7 +259,7 @@ export function TransactionForm({
           Cancel
         </Button>
         <Button type="submit" className="flex-[2]" disabled={!amount}>
-          {initialData ? "Save Changes" : "Add Transaction"}
+          {initialData ? "Save Changes" : "Add"}
         </Button>
       </div>
     </form>
