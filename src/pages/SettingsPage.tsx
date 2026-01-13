@@ -1,26 +1,17 @@
 import { DollarSignIcon, GlobeIcon, MoonIcon } from "@/components/icons";
 import { PageShell } from "@/components/layout/PageShell";
-import { Card } from "@/components/ui/Card";
 import { Modal } from "@/components/ui/Modal";
 import { useTheme } from "@/context/ThemeContext";
 import { useUserStore } from "@/stores/userStore";
-import { Check, ChevronLeft, ChevronRight, Monitor, Sun } from "lucide-react";
+import { Check, ChevronRight, Monitor, Sun } from "lucide-react";
 import type * as React from "react";
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 
-export function ProfilePage() {
-  const navigate = useNavigate();
-  const { profile, settings, currencies, updateSettings, isLoading } =
-    useUserStore();
+export function SettingsPage() {
+  const { settings, currencies, updateSettings, isLoading } = useUserStore();
   const { theme, setTheme } = useTheme();
   const [isCurrencyModalOpen, setIsCurrencyModalOpen] = useState(false);
   const [isThemeModalOpen, setIsThemeModalOpen] = useState(false);
-
-  // Data loading is handled globally in App.tsx
-  useEffect(() => {
-    // We can still trigger re-loads if needed, but App.tsx ensures initial data is there.
-  }, []);
 
   const handleCurrencySelect = async (code: string) => {
     await updateSettings({ default_currency: code });
@@ -45,15 +36,13 @@ export function ProfilePage() {
     }
   };
 
-  if (isLoading && !profile) {
+  if (isLoading && !settings) {
     return (
       <PageShell className="flex items-center justify-center">
-        <p className="text-gray-500 dark:text-gray-400">Loading profile...</p>
+        <p className="text-gray-500 dark:text-gray-400">Loading settings...</p>
       </PageShell>
     );
   }
-
-  if (!profile) return null;
 
   const currentCurrency = currencies.find(
     (c) => c.code === settings?.default_currency
@@ -62,30 +51,12 @@ export function ProfilePage() {
   return (
     <PageShell>
       <header className="relative flex flex-col items-center pt-4 pb-6">
-        <button
-          type="button"
-          onClick={() => navigate("/home")}
-          className="absolute left-4 top-4 p-2 rounded-full bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm shadow-sm text-gray-600 dark:text-gray-400 hover:bg-white dark:hover:bg-gray-800 transition-colors"
-        >
-          <ChevronLeft className="w-6 h-6" />
-        </button>
         <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-          Profile
+          Settings
         </h1>
       </header>
 
-      <main className="flex flex-col gap-6">
-        <Card className="flex flex-col items-center gap-2 py-8">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-            {profile.display_name ||
-              `${profile.first_name || ""} ${profile.last_name || ""}`.trim() ||
-              "User"}
-          </h2>
-          <p className="text-xs text-gray-400 dark:text-gray-500">
-            Member since {new Date(profile.created_at).getFullYear()}
-          </p>
-        </Card>
-
+      <main className="flex flex-col gap-4">
         {/* Settings List */}
         <div className="space-y-2">
           <SettingsRow

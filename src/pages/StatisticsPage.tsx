@@ -1,22 +1,27 @@
 import { AnalyticsCharts } from "@/components/finance/AnalyticsCharts";
 import { CategoryDoughnutChart } from "@/components/finance/CategoryDoughnutChart";
+import { TransactionList } from "@/components/finance/TransactionList";
 import { PageShell } from "@/components/layout/PageShell";
+import { Button } from "@/components/ui/Button";
+import { Modal } from "@/components/ui/Modal";
 import { MonthSelector } from "@/components/ui/MonthSelector";
 import { useDate } from "@/context/DateContext";
 import { getCategoryColor, useCategoryStore } from "@/stores/categoryStore";
 import { useTransactionStore } from "@/stores/transactionStore";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-
-import { type PanInfo, motion } from "framer-motion";
-import { ChevronLeft } from "lucide-react";
 
 export function StatisticsPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { transactions, loadTransactions, isLoading } = useTransactionStore();
+  const { transactions, loadTransactions, deleteTransaction, isLoading } =
+    useTransactionStore();
   const { loadCategories } = useCategoryStore();
-  const { selectedDate, nextMonth, prevMonth } = useDate();
+  const { selectedDate } = useDate();
+
+  // Modals state
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
 
   useEffect(() => {
     loadTransactions(selectedDate);
@@ -94,25 +99,26 @@ export function StatisticsPage() {
       .sort((a, b) => b.amount - a.amount);
   }, [transactions]);
 
-  const handlePanEnd = (_: unknown, info: PanInfo) => {
-    const threshold = 50;
-    if (info.offset.x < -threshold) {
-      nextMonth();
-    } else if (info.offset.x > threshold) {
-      prevMonth();
+  const handleEdit = (transaction: { id: string }) => {
+    navigate(`/edit/${transaction.id}`);
+  };
+
+  const handleDeleteRequest = (id: string) => {
+    setDeleteTargetId(id);
+    setIsDeleteModalOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (deleteTargetId) {
+      deleteTransaction(deleteTargetId);
+      setIsDeleteModalOpen(false);
+      setDeleteTargetId(null);
     }
   };
 
   return (
     <PageShell>
-      <header className="relative flex flex-col items-center pt-4 pb-8">
-        <button
-          type="button"
-          onClick={() => navigate("/home")}
-          className="absolute left-4 top-4 p-2 rounded-full bg-white/50 backdrop-blur-sm shadow-sm text-gray-600 hover:bg-white transition-colors"
-        >
-          <ChevronLeft className="w-6 h-6" />
-        </button>
+      <header className="flex flex-col items-center pt-4 pb-8">
         <MonthSelector />
       </header>
 
@@ -121,20 +127,52 @@ export function StatisticsPage() {
 
         {/* Category Doughnut Chart */}
         {!isLoading && (
-          <motion.div
-            id="doughnut"
-            className="w-full scroll-mt-24"
-            onPanEnd={handlePanEnd}
-          >
+          <div id="doughnut" className="w-full scroll-mt-24">
             <CategoryDoughnutChart spendByCategory={spendByCategory} />
-          </motion.div>
+          </div>
         )}
 
         {/* Charts */}
         <div id="charts" className="w-full scroll-mt-24">
           <AnalyticsCharts transactions={transactions} />
         </div>
+
+        {/* Recent Transactions List */}
+        <div className="w-full px-4 mt-4 space-y-4">
+          <TransactionList
+            transactions={transactions}
+            onEdit={handleEdit}
+            onDelete={handleDeleteRequest}
+            limit={5}
+          />
+        </div>
       </main>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        title="Delete Transaction"
+      >
+        <div className="space-y-4">
+          <p className="text-gray-600">
+            Are you sure you want to delete this transaction? This action cannot
+            be undone.
+          </p>
+          <div className="flex gap-3">
+            <Button
+              variant="secondary"
+              fullWidth
+              onClick={() => setIsDeleteModalOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button variant="danger" fullWidth onClick={confirmDelete}>
+              Delete
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </PageShell>
   );
 }
