@@ -1,9 +1,10 @@
 import { getIconComponent } from "@/components/icons";
 import { useCurrency } from "@/hooks/useCurrency";
+import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { useMemo, useState } from "react";
-import { Cell, Pie, PieChart, ResponsiveContainer } from "recharts";
+import { Cell, Pie, PieChart, ResponsiveContainer, Sector } from "recharts";
 
 interface CategorySpend {
   categoryId: string;
@@ -22,6 +23,30 @@ interface CategoryDoughnutChartProps {
   spendByCategory: CategorySpend[];
 }
 
+const renderActiveShape = (props: any) => {
+  const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill } =
+    props;
+
+  return (
+    <g>
+      <Sector
+        cx={cx}
+        cy={cy}
+        innerRadius={innerRadius}
+        outerRadius={outerRadius + 6}
+        startAngle={startAngle}
+        endAngle={endAngle}
+        fill={fill}
+        className="outline-none focus:outline-none"
+        style={{
+          filter: "drop-shadow(0 4px 8px rgba(0,0,0,0.1))",
+          transition: "all 0.3s ease-out",
+        }}
+      />
+    </g>
+  );
+};
+
 export function CategoryDoughnutChart({
   spendByCategory,
 }: CategoryDoughnutChartProps) {
@@ -37,6 +62,10 @@ export function CategoryDoughnutChart({
     return [...spendByCategory].sort((a, b) => b.amount - a.amount);
   }, [spendByCategory]);
 
+  const activeIndex = useMemo(() => {
+    return sortedCategories.findIndex((cat) => cat.categoryId === expandedId);
+  }, [expandedId, sortedCategories]);
+
   // Total expenses
   const totalExpenses = useMemo(() => {
     return sortedCategories.reduce((acc, cat) => acc + cat.amount, 0);
@@ -50,6 +79,13 @@ export function CategoryDoughnutChart({
       color: cat.color,
     }));
   }, [sortedCategories]);
+
+  const onPieClick = (_: any, index: number) => {
+    const cat = sortedCategories[index];
+    if (cat) {
+      toggleExpand(cat.categoryId);
+    }
+  };
 
   if (sortedCategories.length === 0) {
     return (
@@ -67,8 +103,10 @@ export function CategoryDoughnutChart({
         {/* Doughnut Chart */}
         <div className="h-64 relative">
           <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
+            <PieChart className="outline-none focus:outline-none">
               <Pie
+                activeIndex={activeIndex}
+                activeShape={renderActiveShape}
                 data={chartData}
                 cx="50%"
                 cy="50%"
@@ -77,11 +115,19 @@ export function CategoryDoughnutChart({
                 paddingAngle={2}
                 dataKey="value"
                 strokeWidth={0}
+                onClick={onPieClick}
+                className="outline-none focus:outline-none cursor-pointer"
               >
-                {chartData.map((entry) => (
+                {chartData.map((entry, index) => (
                   <Cell
                     key={`${entry.name}-${entry.color}`}
                     fill={entry.color}
+                    className="outline-none focus:outline-none"
+                    style={{
+                      opacity:
+                        activeIndex === -1 || activeIndex === index ? 1 : 0.6,
+                      transition: "opacity 0.3s ease",
+                    }}
                   />
                 ))}
               </Pie>
@@ -103,13 +149,21 @@ export function CategoryDoughnutChart({
             const percentage =
               totalExpenses > 0 ? (cat.amount / totalExpenses) * 100 : 0;
             return (
-              <div key={cat.categoryId} className="flex flex-col">
+              <div
+                key={cat.categoryId}
+                className={cn(
+                  "flex flex-col transition-all duration-300 rounded-2xl",
+                  expandedId === cat.categoryId
+                    ? "bg-gray-50 dark:bg-gray-800/40 px-3 -mx-3"
+                    : "px-0 -mx-0"
+                )}
+              >
                 <button
                   type="button"
                   onClick={() =>
                     cat.subcategories.length > 0 && toggleExpand(cat.categoryId)
                   }
-                  className="flex items-center gap-3 w-full py-1"
+                  className="flex items-center gap-3 w-full py-2.5"
                 >
                   {/* Color Dot Container for alignment */}
                   <div className="w-5 h-5 flex items-center justify-center flex-shrink-0">
