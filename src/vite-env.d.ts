@@ -15,7 +15,7 @@ type TelegramUser = {
 interface TelegramWebApp {
   initData: string;
   initDataUnsafe: Record<string, unknown> & { user: TelegramUser };
-  HapticFeedback: {
+  HapticFeedback?: {
     impactOccurred: (
       style: "light" | "medium" | "heavy" | "rigid" | "soft"
     ) => void;
