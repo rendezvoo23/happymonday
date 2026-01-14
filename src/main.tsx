@@ -7,6 +7,7 @@ import "./styles/globals.css";
 
 import { DateProvider } from "./context/DateContext";
 import { ThemeProvider } from "./context/ThemeContext";
+import { ToastProvider } from "./context/ToastContext";
 
 // Register PWA Service Worker
 const updateSW = registerSW({
@@ -26,9 +27,11 @@ ReactDOM.createRoot(rootElement).render(
   <React.StrictMode>
     <ThemeProvider>
       <DateProvider>
-        <BrowserRouter>
-          <App />
-        </BrowserRouter>
+        <ToastProvider>
+          <BrowserRouter>
+            <App />
+          </BrowserRouter>
+        </ToastProvider>
       </DateProvider>
     </ThemeProvider>
   </React.StrictMode>

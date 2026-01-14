@@ -3,7 +3,7 @@ import { useCurrency } from "@/hooks/useCurrency";
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown, ChevronRight } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Cell, Pie, PieChart, ResponsiveContainer, Sector } from "recharts";
 
 interface CategorySpend {
@@ -33,14 +33,14 @@ const renderActiveShape = (props: any) => {
         cx={cx}
         cy={cy}
         innerRadius={innerRadius}
-        outerRadius={outerRadius + 6}
+        outerRadius={outerRadius + 8}
         startAngle={startAngle}
         endAngle={endAngle}
         fill={fill}
         className="outline-none focus:outline-none"
         style={{
-          filter: "drop-shadow(0 4px 8px rgba(0,0,0,0.1))",
-          transition: "all 0.3s ease-out",
+          filter: `drop-shadow(0 8px 16px ${fill}44)`,
+          transition: "all 0.4s var(--apple-easing)",
         }}
       />
     </g>
@@ -53,8 +53,21 @@ export function CategoryDoughnutChart({
   const { formatAmount } = useCurrency();
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  const toggleExpand = (id: string) => {
+  // Create refs for category elements to support auto-scrolling
+  const categoryRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
+  const toggleExpand = (id: string | null) => {
     setExpandedId(expandedId === id ? null : id);
+
+    // Auto-scroll to selected category after a short delay for animation
+    if (id) {
+      setTimeout(() => {
+        categoryRefs.current[id]?.scrollIntoView({
+          behavior: "smooth",
+          block: "nearest",
+        });
+      }, 100);
+    }
   };
 
   // Sort by amount descending
@@ -80,9 +93,12 @@ export function CategoryDoughnutChart({
     }));
   }, [sortedCategories]);
 
-  const onPieClick = (_: any, index: number) => {
+  const onPieClick = (_: unknown, index: number) => {
     const cat = sortedCategories[index];
     if (cat) {
+      if (window.Telegram?.WebApp?.HapticFeedback) {
+        window.Telegram.WebApp.HapticFeedback.selectionChanged();
+      }
       toggleExpand(cat.categoryId);
     }
   };
@@ -90,7 +106,7 @@ export function CategoryDoughnutChart({
   if (sortedCategories.length === 0) {
     return (
       <div className="w-full">
-        <div className="bg-white/50 backdrop-blur-sm rounded-3xl p-6 text-center mx-4">
+        <div className="bg-white/50 dark:bg-gray-800/40 backdrop-blur-sm rounded-[2rem] p-6 text-center mx-4">
           <p className="text-gray-400">No expenses this month</p>
         </div>
       </div>
@@ -99,7 +115,7 @@ export function CategoryDoughnutChart({
 
   return (
     <div className="w-full">
-      <div className="bg-white/50 backdrop-blur-sm rounded-3xl p-4">
+      <div className="bg-white/50 dark:bg-gray-800/40 backdrop-blur-sm rounded-[2rem] p-4 shadow-soft transition-all duration-300">
         {/* Doughnut Chart */}
         <div className="h-64 relative">
           <ResponsiveContainer width="100%" height="100%">
@@ -151,19 +167,25 @@ export function CategoryDoughnutChart({
             return (
               <div
                 key={cat.categoryId}
+                ref={(el) => {
+                  categoryRefs.current[cat.categoryId] = el;
+                }}
                 className={cn(
                   "flex flex-col transition-all duration-300 rounded-2xl",
                   expandedId === cat.categoryId
-                    ? "bg-gray-50 dark:bg-gray-800/40 px-3 -mx-3"
+                    ? "bg-gray-100/80 dark:bg-gray-700/40 px-3 -mx-3 shadow-soft"
                     : "px-0 -mx-0"
                 )}
               >
                 <button
                   type="button"
-                  onClick={() =>
-                    cat.subcategories.length > 0 && toggleExpand(cat.categoryId)
-                  }
-                  className="flex items-center gap-3 w-full py-2.5"
+                  onClick={() => {
+                    if (window.Telegram?.WebApp?.HapticFeedback) {
+                      window.Telegram.WebApp.HapticFeedback.selectionChanged();
+                    }
+                    toggleExpand(cat.categoryId);
+                  }}
+                  className="flex items-center gap-3 w-full py-2.5 outline-none"
                 >
                   <div className="w-5 h-5 flex items-center justify-center flex-shrink-0">
                     <div

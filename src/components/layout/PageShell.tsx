@@ -10,10 +10,10 @@ interface PageShellProps {
 export function PageShell({ children, className }: PageShellProps) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10 }}
+      initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -10 }}
-      transition={{ duration: 0.3 }}
+      exit={{ opacity: 0, y: -8 }}
+      transition={{ duration: 0.4, ease: [0.32, 0.72, 0, 1] }}
       className={cn(
         "min-h-screen pb-24 px-4 pt-14 max-w-md mx-auto relative z-10",
         className

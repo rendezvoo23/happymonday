@@ -6,9 +6,9 @@ export default {
     extend: {
       fontFamily: {
         sans: [
+          '"SF Pro Rounded"',
           '"SF Pro Display"',
           '"SF Pro Text"',
-          '"SF Pro Rounded"',
           '"SF Pro Condensed"',
           '"SF Pro Compressed"',
           '"SF Pro Expanded"',
