@@ -223,18 +223,29 @@ export function BubblesCluster({
               initial={{ scale: 0, opacity: 0 }}
               animate={{
                 scale: 1,
-                opacity: 1, // Increased opacity for better color matrix result
+                opacity: 1,
                 x: bubble.x,
-                y: bubble.y,
+                y: [bubble.y - 2, bubble.y + 2, bubble.y - 2],
               }}
+              whileTap={{ scale: 0.95 }}
               transition={{
-                type: "spring",
-                stiffness: 120,
-                damping: 15,
-                mass: 1,
-                layout: { duration: 0.3 },
+                scale: { type: "spring", stiffness: 300, damping: 20 },
+                opacity: { duration: 0.2 },
+                y: {
+                  duration: 2 + Math.random() * 2,
+                  repeat: Number.POSITIVE_INFINITY,
+                  ease: "easeInOut",
+                },
+                layout: { type: "spring", stiffness: 200, damping: 25 },
               }}
-              onClick={() => handleBubbleClick(bubble.id)}
+              onClick={() => {
+                if (window.Telegram?.WebApp?.HapticFeedback) {
+                  window.Telegram.WebApp.HapticFeedback.impactOccurred(
+                    "medium"
+                  );
+                }
+                handleBubbleClick(bubble.id);
+              }}
               className={`absolute flex flex-col items-center justify-center rounded-full ${bubbleEffects} ${mode === "cluster" || (mode === "separated" && onBubbleClick) ? "cursor-pointer" : ""}`}
               style={{
                 width: bubble.r * 2,

@@ -1,4 +1,3 @@
-import { getIconComponent } from "@/components/icons";
 import type { Subcategory } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
@@ -29,19 +28,25 @@ export function SubcategorySelector({
       <div className="grid grid-cols-4 gap-3 py-2">
         {subcategories.map((subcategory) => {
           const isSelected = selectedId === subcategory.id;
-          const IconComponent = getIconComponent(subcategory.icon);
           return (
             <button
               type="button"
               key={subcategory.id}
-              onClick={() => onSelect(isSelected ? null : subcategory.id)}
-              className="flex flex-col items-center gap-2 group"
+              onClick={() => {
+                if (window.Telegram?.WebApp?.HapticFeedback) {
+                  window.Telegram.WebApp.HapticFeedback.selectionChanged();
+                }
+                onSelect(isSelected ? null : subcategory.id);
+              }}
+              className="flex flex-col items-center gap-2 group outline-none"
             >
               <div className="relative">
                 <motion.div
                   className={cn(
-                    "w-12 h-12 rounded-full flex items-center justify-center shadow-sm transition-transform",
-                    isSelected ? "scale-110" : "scale-100 group-hover:scale-105"
+                    "w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300",
+                    isSelected
+                      ? "shadow-sm scale-110"
+                      : "scale-100 opacity-85 hover:opacity-100"
                   )}
                   style={{ backgroundColor: categoryColor }}
                   whileTap={{ scale: 0.9 }}
@@ -55,21 +60,14 @@ export function SubcategorySelector({
                       <Check strokeWidth={3} className="w-5 h-5" />
                     </motion.div>
                   )}
-                  {!isSelected && subcategory.icon && (
-                    <div className="text-white text-lg flex items-center justify-center">
-                      {IconComponent ? (
-                        IconComponent
-                      ) : (
-                        <span>{subcategory.icon}</span>
-                      )}
-                    </div>
-                  )}
                 </motion.div>
               </div>
               <span
                 className={cn(
-                  "text-xs font-medium text-center leading-tight",
-                  isSelected ? "text-black" : "text-gray-500"
+                  "text-xs font-medium text-center leading-tight transition-colors duration-200",
+                  isSelected
+                    ? "text-gray-900 dark:text-gray-100"
+                    : "text-gray-500"
                 )}
               >
                 {subcategory.name}

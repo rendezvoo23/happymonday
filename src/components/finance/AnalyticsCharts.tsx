@@ -345,7 +345,9 @@ export function AnalyticsCharts({
                   strokeWidth={1.5}
                   fill="transparent"
                   strokeDasharray="4 4"
-                  isAnimationActive={false}
+                  isAnimationActive={true}
+                  animationDuration={500}
+                  animationEasing="ease-in-out"
                   baseValue={0}
                 />
               )}
@@ -353,9 +355,18 @@ export function AnalyticsCharts({
                 type="monotoneX"
                 dataKey="current"
                 stroke="#007AFF"
-                strokeWidth={2}
+                strokeWidth={2.5}
                 fill="url(#chartGradient)"
-                activeDot={{ r: 4, strokeWidth: 0 }}
+                isAnimationActive={true}
+                animationDuration={600}
+                animationEasing="ease-in-out"
+                activeDot={{
+                  r: 6,
+                  strokeWidth: 2,
+                  stroke: "#fff",
+                  fill: "#007AFF",
+                  className: "drop-shadow-md",
+                }}
                 baseValue={0}
               />
             </AreaChart>

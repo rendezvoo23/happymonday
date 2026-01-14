@@ -60,13 +60,7 @@ export function EditTransactionPage() {
   };
 
   return (
-    <PageShell className="pb-6">
-      <header className="flex flex-col items-center pt-4 pb-6">
-        <h1 className="text-xl font-semibold text-gray-900">
-          Edit Transaction
-        </h1>
-      </header>
-
+    <PageShell className="pb-6 pt-10">
       <TransactionForm
         initialData={formData}
         onCancel={() => navigate(-1)}

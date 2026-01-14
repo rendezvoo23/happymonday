@@ -23,33 +23,43 @@ export function CategorySelector({
           <button
             type="button"
             key={category.id}
-            onClick={() => onSelect(category.id)}
-            className="flex flex-col items-center gap-2 group"
+            onClick={() => {
+              if (window.Telegram?.WebApp?.HapticFeedback) {
+                window.Telegram.WebApp.HapticFeedback.selectionChanged();
+              }
+              onSelect(category.id);
+            }}
+            className="flex flex-col items-center gap-2 group outline-none"
           >
             <div className="relative">
               <motion.div
                 className={cn(
-                  "w-14 h-14 rounded-full flex items-center justify-center shadow-sm transition-transform",
-                  isSelected ? "scale-110" : "scale-100 group-hover:scale-105"
+                  "w-14 h-14 rounded-full flex items-center justify-center transition-all duration-300",
+                  isSelected
+                    ? "shadow-medium scale-110"
+                    : "scale-100 shadow-none hover:scale-105"
                 )}
                 style={{ backgroundColor: category.color }}
                 whileTap={{ scale: 0.9 }}
+                transition={{ type: "spring", stiffness: 400, damping: 25 }}
               >
-                {isSelected ? (
+                {isSelected && (
                   <motion.div
                     initial={{ scale: 0, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
-                    className="text-white"
+                    className="absolute inset-0 flex items-center justify-center rounded-full"
                   >
-                    <Check strokeWidth={3} className="w-6 h-6" />
+                    <Check className="w-6 h-6 text-white" strokeWidth={3} />
                   </motion.div>
-                ) : null}
+                )}
               </motion.div>
             </div>
             <span
               className={cn(
-                "text-xs font-medium text-center leading-tight",
-                isSelected ? "text-black" : "text-gray-500"
+                "text-xs font-medium text-center leading-tight transition-colors duration-200",
+                isSelected
+                  ? "text-gray-900 dark:text-gray-100"
+                  : "text-gray-500"
               )}
             >
               {category.label}
