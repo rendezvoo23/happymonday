@@ -89,8 +89,8 @@ export function CategoryDoughnutChart({
 
   if (sortedCategories.length === 0) {
     return (
-      <div className="w-full px-4">
-        <div className="bg-white/50 backdrop-blur-sm rounded-3xl p-6 text-center">
+      <div className="w-full">
+        <div className="bg-white/50 backdrop-blur-sm rounded-3xl p-6 text-center mx-4">
           <p className="text-gray-400">No expenses this month</p>
         </div>
       </div>
@@ -165,7 +165,6 @@ export function CategoryDoughnutChart({
                   }
                   className="flex items-center gap-3 w-full py-2.5"
                 >
-                  {/* Color Dot Container for alignment */}
                   <div className="w-5 h-5 flex items-center justify-center flex-shrink-0">
                     <div
                       className="w-3 h-3 rounded-full"
@@ -173,12 +172,10 @@ export function CategoryDoughnutChart({
                     />
                   </div>
 
-                  {/* Category Name */}
                   <span className="flex-1 font-medium text-gray-800 truncate text-left">
                     {cat.label}
                   </span>
 
-                  {/* Amount and Percentage */}
                   <div className="text-right flex items-center gap-2">
                     <div>
                       <p className="font-semibold text-gray-900 text-sm">
@@ -188,7 +185,6 @@ export function CategoryDoughnutChart({
                         {percentage.toFixed(1)}%
                       </p>
                     </div>
-                    {/* Chevron or spacer for alignment */}
                     <div className="w-4 h-4 text-gray-400 flex items-center justify-center">
                       {cat.subcategories.length > 0 &&
                         (expandedId === cat.categoryId ? (
@@ -200,7 +196,6 @@ export function CategoryDoughnutChart({
                   </div>
                 </button>
 
-                {/* Subcategories Expansion */}
                 <AnimatePresence>
                   {expandedId === cat.categoryId &&
                     cat.subcategories.length > 0 && (
@@ -221,7 +216,6 @@ export function CategoryDoughnutChart({
                                   key={sub.id}
                                   className="flex items-center gap-3 text-sm"
                                 >
-                                  {/* Subcategory Icon */}
                                   <div
                                     className="w-5 h-5 rounded-full flex items-center justify-center text-white flex-shrink-0"
                                     style={{ backgroundColor: cat.color }}
