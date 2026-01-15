@@ -82,6 +82,8 @@ export default function App() {
             initData: env.devInitData,
             initDataUnsafe: parseInitData(env.devInitData),
             ready() {},
+            expand() {},
+            disableClosingConfirmation() {},
           },
         };
 
@@ -89,6 +91,19 @@ export default function App() {
       }
 
       const success = authenticateWithTelegram();
+
+      // Initialize Telegram WebApp UI behavior
+      if (window.Telegram?.WebApp) {
+        window.Telegram.WebApp.ready();
+        window.Telegram.WebApp.expand();
+        // Specifically disable closing confirmation as requested (swipe-to-close behavior)
+        // Note: The user requested CLOSING only via Telegram close button.
+        // We ensure confirmation is disabled so it doesn't prompt on accidental swipes,
+        // but we rely on the platform button for the actual close.
+        if (window.Telegram.WebApp.disableClosingConfirmation) {
+          window.Telegram.WebApp.disableClosingConfirmation();
+        }
+      }
 
       // We can treat the promise result
       if (await success) {
