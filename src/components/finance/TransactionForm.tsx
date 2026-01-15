@@ -6,10 +6,12 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { useDate } from "@/context/DateContext";
 import { useCurrency } from "@/hooks/useCurrency";
+import { useTranslation } from "@/hooks/useTranslation";
 import { type Subcategory, getSubcategories } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { useCategoryStore } from "@/stores/categoryStore";
 import type { CategoryId, TransactionType } from "@/types";
+import { Loader2 } from "lucide-react";
 import { CategorySelector } from "./CategorySelector";
 import { SubcategorySelector } from "./SubcategorySelector";
 
@@ -41,6 +43,7 @@ export function TransactionForm({
   onCancel,
 }: TransactionFormProps) {
   const { selectedDate } = useDate();
+  const { t } = useTranslation();
 
   const [type] = useState<TransactionType>(initialData?.type || initialType);
   const [amount, setAmount] = useState(initialData?.amount?.toString() || "");
@@ -171,13 +174,13 @@ export function TransactionForm({
       <div className="space-y-2">
         <label
           htmlFor="amount-input"
-          className="text-sm font-medium text-gray-500 ml-1"
+          className="text-sm font-medium text-gray-500 dark:text-gray-400 ml-1"
         >
-          Amount
+          {t("transactions.amount")}
         </label>
         <div className="relative">
           {isSymbolPrefix && (
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl font-semibold text-gray-400">
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl font-semibold text-gray-400 dark:text-gray-500">
               {symbol}
             </span>
           )}
@@ -185,7 +188,7 @@ export function TransactionForm({
             id="amount-input"
             type="number"
             inputMode="decimal"
-            placeholder="0.00"
+            placeholder={t("transactions.amountPlaceholder")}
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             className={cn(
@@ -195,40 +198,36 @@ export function TransactionForm({
             autoFocus
           />
           {!isSymbolPrefix && (
-            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xl font-semibold text-gray-400">
+            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xl font-semibold text-gray-400 dark:text-gray-500">
               {symbol}
             </span>
           )}
         </div>
       </div>
 
-      <div className="space-y-2">
-        <label
-          htmlFor="date-input"
-          className="text-sm font-medium text-gray-500 ml-1"
-        >
-          Date
-        </label>
+      <div className="space-y-2 flex items-center justify-center">
         <div className="relative">
           <Input
             id="date-input"
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            className="text-base font-medium"
+            className="w-[200px] border-none focus:border-none focus:ring-0"
           />
         </div>
       </div>
 
       <div className="space-y-2">
-        <div className="text-sm font-medium text-gray-500 ml-1">Category</div>
+        <div className="text-sm font-medium text-gray-500 dark:text-gray-400 ml-1">
+          {t("transactions.category")}
+        </div>
         {categoriesLoading ? (
-          <div className="text-center py-8 text-gray-400">
-            Loading categories...
+          <div className="text-center py-8 text-gray-400 dark:text-gray-500">
+            {t("transactions.loadingCategories")}
           </div>
         ) : categories.length === 0 ? (
-          <div className="text-center py-8 text-gray-400">
-            No categories available
+          <div className="text-center py-8 text-gray-400 dark:text-gray-500">
+            {t("transactions.noCategories")}
           </div>
         ) : (
           <CategorySelector
@@ -255,8 +254,8 @@ export function TransactionForm({
           >
             <div className="space-y-2 py-1">
               {isLoadingSubcategories ? (
-                <div className="text-center py-4 text-gray-400 text-sm">
-                  Loading subcategories...
+                <div className="text-center py-4 text-gray-400 dark:text-gray-500 text-sm min-h-[100px] flex items-center justify-center">
+                  <Loader2 className="w-6 h-6 animate-spin" />
                 </div>
               ) : (
                 <SubcategorySelector
@@ -274,13 +273,13 @@ export function TransactionForm({
       <div className="space-y-2">
         <label
           htmlFor="note-input"
-          className="text-sm font-medium text-gray-500 ml-1"
+          className="text-sm font-medium text-gray-500 dark:text-gray-400 ml-1"
         >
-          Note (Optional)
+          {t("transactions.noteOptional")}
         </label>
         <Input
           id="note-input"
-          placeholder="What was this for?"
+          placeholder={t("transactions.notePlaceholder")}
           value={note}
           onChange={(e) => setNote(e.target.value)}
         />
@@ -293,10 +292,10 @@ export function TransactionForm({
           className="flex-1"
           onClick={onCancel}
         >
-          Cancel
+          {t("common.cancel")}
         </Button>
         <Button type="submit" className="flex-[2]" disabled={!amount}>
-          {initialData ? "Save Changes" : "Add"}
+          {initialData ? t("common.saveChanges") : t("common.add")}
         </Button>
       </div>
     </form>

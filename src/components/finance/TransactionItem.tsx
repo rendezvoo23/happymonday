@@ -1,11 +1,42 @@
 import { MoreIcon, getIconComponent } from "@/components/icons";
 import { useCurrency } from "@/hooks/useCurrency";
+import { useTranslation } from "@/hooks/useTranslation";
 import { cn } from "@/lib/utils";
 import { getCategoryColor } from "@/stores/categoryStore";
 import type { Tables } from "@/types/supabase";
 import { format, parseISO } from "date-fns";
+import {
+  ar,
+  de,
+  enUS,
+  es,
+  fr,
+  hi,
+  it,
+  ja,
+  ko,
+  pt,
+  ru,
+  zhCN,
+} from "date-fns/locale";
 import { useState } from "react";
 import { TransactionActionsMenu } from "./TransactionActionsMenu";
+
+// Map locale codes to date-fns locales
+const dateLocales = {
+  en: enUS,
+  es: es,
+  fr: fr,
+  de: de,
+  ru: ru,
+  zh: zhCN,
+  ja: ja,
+  pt: pt,
+  it: it,
+  ko: ko,
+  ar: ar,
+  hi: hi,
+};
 
 type Transaction = Tables<"transactions">;
 
@@ -43,6 +74,10 @@ export function TransactionItem({
   const iconComponent = getIconComponent(iconToUse);
 
   const { formatAmount } = useCurrency();
+  const { locale } = useTranslation();
+
+  // Get the date-fns locale based on current language
+  const dateLocale = dateLocales[locale as keyof typeof dateLocales] || enUS;
 
   return (
     <>
@@ -68,8 +103,10 @@ export function TransactionItem({
             <p className="font-semibold text-gray-900 dark:text-gray-100 leading-tight truncate">
               {categoryLabel}
             </p>
-            <p className="text-[11px] text-gray-500 mt-0.5 truncate">
-              {format(parseISO(transaction.occurred_at), "MMM d")}
+            <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5 truncate">
+              {format(parseISO(transaction.occurred_at), "MMM d", {
+                locale: dateLocale,
+              })}
               {transaction.note && ` • ${transaction.note}`}
             </p>
           </div>

@@ -1,7 +1,9 @@
+import { useLocale } from "@/context/LocaleContext";
 import type { Subcategory } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { Check } from "lucide-react";
+import { getIconComponent } from "../icons";
 
 interface SubcategorySelectorProps {
   subcategories: Subcategory[];
@@ -16,6 +18,8 @@ export function SubcategorySelector({
   onSelect,
   categoryColor = "#6B7280",
 }: SubcategorySelectorProps) {
+  const { t } = useLocale();
+
   if (subcategories.length === 0) {
     return null;
   }
@@ -23,7 +27,7 @@ export function SubcategorySelector({
   return (
     <div className="space-y-2">
       <div className="text-sm font-medium text-gray-500 ml-1">
-        Subcategory (Optional)
+        {t("transactions.subcategoryOptional")}
       </div>
       <div className="grid grid-cols-4 gap-3 py-2">
         {subcategories.map((subcategory) => {
@@ -51,7 +55,7 @@ export function SubcategorySelector({
                   style={{ backgroundColor: categoryColor }}
                   whileTap={{ scale: 0.9 }}
                 >
-                  {isSelected && (
+                  {isSelected ? (
                     <motion.div
                       initial={{ scale: 0, opacity: 0 }}
                       animate={{ scale: 1, opacity: 1 }}
@@ -59,6 +63,10 @@ export function SubcategorySelector({
                     >
                       <Check strokeWidth={3} className="w-5 h-5" />
                     </motion.div>
+                  ) : (
+                    <div className="relative z-10 flex items-center justify-center">
+                      {getIconComponent(subcategory.icon)}
+                    </div>
                   )}
                 </motion.div>
               </div>

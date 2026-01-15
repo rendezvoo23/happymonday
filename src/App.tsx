@@ -1,3 +1,5 @@
+import { LocalizationExample } from "@/components/examples/LocalizationExample";
+import { ThemeExample } from "@/components/examples/ThemeExample";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { authenticateWithTelegram } from "@/lib/authTelegram";
@@ -7,7 +9,6 @@ import { AddTransactionPage } from "@/pages/AddTransactionPage";
 import { EditTransactionPage } from "@/pages/EditTransactionPage";
 import { HistoryPage } from "@/pages/HistoryPage";
 import { HomePage } from "@/pages/HomePage";
-import { SettingsPage } from "@/pages/SettingsPage";
 import { StatisticsPage } from "@/pages/StatisticsPage";
 import { useUserStore } from "@/stores/userStore";
 import { AnimatePresence } from "framer-motion";
@@ -60,7 +61,8 @@ export default function App() {
   const showBottomNav =
     location.pathname !== "/" &&
     !location.pathname.startsWith("/add") &&
-    !location.pathname.startsWith("/edit");
+    !location.pathname.startsWith("/edit") &&
+    !location.pathname.startsWith("/examples");
 
   useEffect(() => {
     const initAuth = async () => {
@@ -160,14 +162,6 @@ export default function App() {
             }
           />
           <Route
-            path="/settings"
-            element={
-              <ProtectedRoute isLoading={isAuthLoading}>
-                <SettingsPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
             path="/add"
             element={
               <ProtectedRoute isLoading={isAuthLoading}>
@@ -180,6 +174,22 @@ export default function App() {
             element={
               <ProtectedRoute isLoading={isAuthLoading}>
                 <EditTransactionPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/examples/localization"
+            element={
+              <ProtectedRoute isLoading={isAuthLoading}>
+                <LocalizationExample />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/examples/theme"
+            element={
+              <ProtectedRoute isLoading={isAuthLoading}>
+                <ThemeExample />
               </ProtectedRoute>
             }
           />

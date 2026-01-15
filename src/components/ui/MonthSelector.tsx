@@ -1,14 +1,49 @@
 import { useDate } from "@/context/DateContext";
+import { useTranslation } from "@/hooks/useTranslation";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
+import {
+  ar,
+  de,
+  enUS,
+  es,
+  fr,
+  hi,
+  it,
+  ja,
+  ko,
+  pt,
+  ru,
+  zhCN,
+} from "date-fns/locale";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface MonthSelectorProps {
   className?: string;
 }
 
+// Map locale codes to date-fns locales
+const dateLocales = {
+  en: enUS,
+  es: es,
+  fr: fr,
+  de: de,
+  ru: ru,
+  zh: zhCN,
+  ja: ja,
+  pt: pt,
+  it: it,
+  ko: ko,
+  ar: ar,
+  hi: hi,
+};
+
 export function MonthSelector({ className }: MonthSelectorProps) {
   const { selectedDate, nextMonth, prevMonth, canGoNext } = useDate();
+  const { locale } = useTranslation();
+
+  // Get the date-fns locale based on current language
+  const dateLocale = dateLocales[locale as keyof typeof dateLocales] || enUS;
 
   return (
     <div className={cn("flex items-center gap-4", className)}>
@@ -23,9 +58,9 @@ export function MonthSelector({ className }: MonthSelectorProps) {
 
       <button
         type="button"
-        className="text-lg font-semibold text-gray-900 min-w-[140px] text-center"
+        className="text-lg font-semibold text-gray-900 dark:text-gray-100 min-w-[140px] text-center"
       >
-        {format(selectedDate, "MMMM yyyy")}
+        {format(selectedDate, "MMM yyyy", { locale: dateLocale })}
       </button>
 
       <button

@@ -1,5 +1,6 @@
 import { getIconComponent } from "@/components/icons";
 import { useCurrency } from "@/hooks/useCurrency";
+import { useTranslation } from "@/hooks/useTranslation";
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown, ChevronRight } from "lucide-react";
@@ -52,6 +53,7 @@ export function CategoryDoughnutChart({
 }: CategoryDoughnutChartProps) {
   const { formatAmount } = useCurrency();
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const { t } = useTranslation();
 
   // Create refs for category elements to support auto-scrolling
   const categoryRefs = useRef<Record<string, HTMLDivElement | null>>({});
@@ -106,8 +108,10 @@ export function CategoryDoughnutChart({
   if (sortedCategories.length === 0) {
     return (
       <div className="w-full">
-        <div className="bg-white/50 dark:bg-gray-800/40 backdrop-blur-sm rounded-[2rem] p-6 text-center mx-4">
-          <p className="text-gray-400">No expenses this month</p>
+        <div className="p-6 text-center mx-4 min-h-64 flex items-center justify-center">
+          <p className="text-gray-500 dark:text-gray-400">
+            {t("statistics.noData")}
+          </p>
         </div>
       </div>
     );
@@ -115,7 +119,7 @@ export function CategoryDoughnutChart({
 
   return (
     <div className="w-full">
-      <div className="bg-white/50 dark:bg-gray-800/40 backdrop-blur-sm rounded-[2rem] p-4 shadow-soft transition-all duration-300">
+      <div className="card-level-1 rounded-[2rem] p-4 transition-all duration-300">
         {/* Doughnut Chart */}
         <div className="h-64 relative">
           <ResponsiveContainer width="100%" height="100%">
@@ -150,17 +154,17 @@ export function CategoryDoughnutChart({
             </PieChart>
           </ResponsiveContainer>
           <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none px-4">
-            <p className="text-[10px] uppercase tracking-wider text-gray-400 font-medium">
+            <p className="text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-400 font-medium">
               Total
             </p>
-            <p className="text-xl font-bold text-gray-900 text-center leading-tight break-words max-w-full">
+            <p className="text-xl font-bold text-gray-900 dark:text-gray-100 text-center leading-tight break-words max-w-full">
               {formatAmount(totalExpenses)}
             </p>
           </div>
         </div>
 
         {/* Category Breakdown List */}
-        <div className="mt-4 pt-4 border-t border-gray-200/50 space-y-3">
+        <div className="mt-4 pt-4 border-t border-border-subtle space-y-3">
           {sortedCategories.map((cat) => {
             const percentage =
               totalExpenses > 0 ? (cat.amount / totalExpenses) * 100 : 0;
@@ -173,7 +177,7 @@ export function CategoryDoughnutChart({
                 className={cn(
                   "flex flex-col transition-all duration-300 rounded-2xl",
                   expandedId === cat.categoryId
-                    ? "bg-gray-100/80 dark:bg-gray-700/40 px-3 -mx-3 shadow-soft"
+                    ? "card-level-0 px-3 -mx-3"
                     : "px-0 -mx-0"
                 )}
               >
@@ -194,20 +198,20 @@ export function CategoryDoughnutChart({
                     />
                   </div>
 
-                  <span className="flex-1 font-medium text-gray-800 truncate text-left">
+                  <span className="flex-1 font-medium text-gray-800 dark:text-gray-200 truncate text-left">
                     {cat.label}
                   </span>
 
                   <div className="text-right flex items-center gap-2">
                     <div>
-                      <p className="font-semibold text-gray-900 text-sm">
+                      <p className="font-semibold text-gray-900 dark:text-gray-100 text-sm">
                         {formatAmount(cat.amount)}
                       </p>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
                         {percentage.toFixed(1)}%
                       </p>
                     </div>
-                    <div className="w-4 h-4 text-gray-400 flex items-center justify-center">
+                    <div className="w-4 h-4 text-gray-400 dark:text-gray-500 flex items-center justify-center">
                       {cat.subcategories.length > 0 &&
                         (expandedId === cat.categoryId ? (
                           <ChevronDown className="w-4 h-4" />
@@ -253,10 +257,10 @@ export function CategoryDoughnutChart({
                                     )}
                                   </div>
 
-                                  <span className="flex-1 text-gray-600 truncate">
+                                  <span className="flex-1 text-gray-600 dark:text-gray-400 truncate">
                                     {sub.label}
                                   </span>
-                                  <span className="font-medium text-gray-900 pr-6">
+                                  <span className="font-medium text-gray-900 dark:text-gray-100 pr-6">
                                     {formatAmount(sub.amount)}
                                   </span>
                                 </div>

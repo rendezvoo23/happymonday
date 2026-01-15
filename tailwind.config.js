@@ -6,7 +6,6 @@ export default {
     extend: {
       fontFamily: {
         sans: [
-          '"SF Pro Rounded"',
           '"SF Pro Display"',
           '"SF Pro Text"',
           '"SF Pro Condensed"',
@@ -21,7 +20,23 @@ export default {
         ],
       },
       colors: {
-        // Apple-like neutrals
+        // Canvas backgrounds
+        "canvas-default": "var(--bg-canvas-default)",
+        "canvas-subtle": "var(--bg-canvas-subtle)",
+        "canvas-inset": "var(--bg-canvas-inset)",
+        "canvas-overlay": "var(--bg-canvas-overlay)",
+
+        // Card backgrounds by level
+        "card-0": "var(--card-bg-level-0)",
+        "card-1": "var(--card-bg-level-1)",
+        "card-2": "var(--card-bg-level-2)",
+        "card-3": "var(--card-bg-level-3)",
+
+        // Borders
+        "border-default": "var(--border-default)",
+        "border-subtle": "var(--border-subtle)",
+
+        // Legacy support
         background: "#F5F5F7",
         surface: "rgba(255, 255, 255, 0.7)",
         "surface-glass": "rgba(255, 255, 255, 0.8)",

@@ -123,14 +123,9 @@ export function StatisticsPage() {
       </header>
 
       <main className="flex flex-col items-center gap-4 pb-32">
-        {isLoading && <div className="text-gray-500 mt-10">Loading...</div>}
-
-        {/* Category Doughnut Chart */}
-        {!isLoading && (
-          <div id="doughnut" className="w-full scroll-mt-24">
-            <CategoryDoughnutChart spendByCategory={spendByCategory} />
-          </div>
-        )}
+        <div id="doughnut" className="w-full scroll-mt-24">
+          <CategoryDoughnutChart spendByCategory={spendByCategory} />
+        </div>
 
         {/* Charts */}
         <div id="charts" className="w-full scroll-mt-24">

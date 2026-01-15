@@ -32,11 +32,26 @@ export function BubblesCluster({
   const containerRef = useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const { getCategoryById } = useCategoryStore();
-  const { formatAmount } = useCurrency();
+  const { formatCompactAmount } = useCurrency();
+
+  // Helper to convert hex color to rgba with transparency
+  const hexToRgba = (hex: string, alpha: number) => {
+    const r = Number.parseInt(hex.slice(1, 3), 16);
+    const g = Number.parseInt(hex.slice(3, 5), 16);
+    const b = Number.parseInt(hex.slice(5, 7), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  };
 
   // Measure container size
   useEffect(() => {
     if (!containerRef.current) return;
+
+    // Initial measurement
+    const rect = containerRef.current.getBoundingClientRect();
+    setDimensions({
+      width: rect.width,
+      height: rect.height,
+    });
 
     const observer = new ResizeObserver((entries) => {
       for (const entry of entries) {
@@ -250,7 +265,7 @@ export function BubblesCluster({
               style={{
                 width: bubble.r * 2,
                 height: bubble.r * 2,
-                backgroundColor: bubble.category.color,
+                background: `radial-gradient(circle, ${bubble.category.color} 0%, ${hexToRgba(bubble.category.color, 0.5)} 90%, transparent 100%)`,
                 opacity: 1,
                 zIndex: 10,
                 left: "50%",
@@ -260,15 +275,17 @@ export function BubblesCluster({
               }}
             >
               <span
-                className="text-white font-bold text-lg drop-shadow-md text-center leading-tight"
-                style={{ fontSize: Math.max(10, bubble.r * 0.4) }}
+                className="text-white font-bold text-lg text-center leading-tight"
+                style={{ fontSize: Math.max(10, bubble.r * 0.3) }}
               >
-                {formatAmount(bubble.value, { hideFractions: true })}
+                {formatCompactAmount(bubble.value)}
               </span>
               {bubble.r > 30 && (
                 <span
-                  className="text-white/90 font-medium drop-shadow-md mt-1 text-center leading-tight px-1"
-                  style={{ fontSize: Math.max(8, bubble.r * 0.25) }}
+                  className="text-white/90 font-medium mt-1 text-center leading-tight px-1"
+                  style={{
+                    fontSize: Math.max(8, bubble.r * 0.2),
+                  }}
                 >
                   {bubble.category.label}
                 </span>

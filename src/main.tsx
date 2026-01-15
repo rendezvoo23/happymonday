@@ -4,8 +4,10 @@ import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import App from "./App";
 import "./styles/globals.css";
+import "./lib/i18n";
 
 import { DateProvider } from "./context/DateContext";
+import { LocaleProvider } from "./context/LocaleContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import { ToastProvider } from "./context/ToastContext";
 
@@ -25,14 +27,16 @@ if (!rootElement) {
 
 ReactDOM.createRoot(rootElement).render(
   <React.StrictMode>
-    <ThemeProvider>
-      <DateProvider>
-        <ToastProvider>
-          <BrowserRouter>
-            <App />
-          </BrowserRouter>
-        </ToastProvider>
-      </DateProvider>
-    </ThemeProvider>
+    <LocaleProvider>
+      <ThemeProvider>
+        <DateProvider>
+          <ToastProvider>
+            <BrowserRouter>
+              <App />
+            </BrowserRouter>
+          </ToastProvider>
+        </DateProvider>
+      </ThemeProvider>
+    </LocaleProvider>
   </React.StrictMode>
 );

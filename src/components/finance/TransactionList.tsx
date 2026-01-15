@@ -1,5 +1,8 @@
+import { Button } from "@/components/ui/Button";
+import { useTranslation } from "@/hooks/useTranslation";
 import type { Tables } from "@/types/supabase";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import { TransactionItem } from "./TransactionItem";
 
 type Transaction = Tables<"transactions">;
@@ -20,9 +23,6 @@ interface TransactionListProps {
   disableLimit?: boolean;
 }
 
-import { Button } from "@/components/ui/Button";
-import { useNavigate } from "react-router-dom";
-
 export function TransactionList({
   transactions,
   onEdit,
@@ -31,10 +31,12 @@ export function TransactionList({
   disableLimit,
 }: TransactionListProps) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
+
   if (transactions.length === 0) {
     return (
-      <div className="text-center py-10 text-gray-400">
-        No transactions yet.
+      <div className="text-center py-10 text-gray-500 dark:text-gray-400">
+        {t("transactions.noTransactions")}
       </div>
     );
   }
@@ -67,9 +69,9 @@ export function TransactionList({
           hidden: { opacity: 0, y: 10 },
           show: { opacity: 1, y: 0 },
         }}
-        className="text-lg font-semibold mb-4 px-1 text-gray-500"
+        className="text-lg font-semibold mb-4 px-1 text-gray-500 dark:text-gray-400"
       >
-        Recent transactions
+        {t("transactions.recent")}
       </motion.h3>
       <div className="space-y-3">
         {displayed.map((t) => (
@@ -98,10 +100,10 @@ export function TransactionList({
           <Button
             variant="secondary"
             fullWidth
-            className="mt-6 rounded-2xl h-12 text-blue-600 font-medium bg-white dark:bg-gray-800 border-none shadow-sm"
+            className="mt-6 rounded-2xl h-12 text-blue-600 dark:text-blue-400 font-medium bg-white dark:bg-gray-800 border-none shadow-sm"
             onClick={() => navigate("/history")}
           >
-            View all transactions
+            {t("transactions.viewAll")}
           </Button>
         </motion.div>
       )}
