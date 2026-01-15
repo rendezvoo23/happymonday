@@ -60,7 +60,7 @@ export function EditTransactionPage() {
   };
 
   return (
-    <PageShell className="pb-6 pt-10">
+    <PageShell className="pb-6 pt-[72px]">
       <TransactionForm
         initialData={formData}
         onCancel={() => navigate(-1)}

@@ -31,7 +31,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   return (
     <ToastContext.Provider value={{ showToast }}>
       {children}
-      <div className="fixed top-6 left-0 right-0 z-[100] flex flex-col items-center pointer-events-none gap-2">
+      <div className="fixed top-20 left-0 right-0 z-[100] flex flex-col items-center pointer-events-none gap-2">
         <AnimatePresence>
           {toasts.map((toast) => (
             <motion.div
@@ -39,13 +39,13 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
               initial={{ opacity: 0, y: -20, scale: 0.9 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9, y: -10 }}
-              className="pointer-events-auto bg-black/90 dark:bg-white/90 text-white dark:text-black px-4 py-2.5 rounded-full shadow-lg flex items-center gap-3 min-w-[200px] backdrop-blur-md"
+              className="pointer-events-auto bg-black/90 dark:bg-white/90 text-white dark:text-black px-6 py-2.5 rounded-full shadow-lg flex items-center justify-center gap-3 min-w-[240px] backdrop-blur-md relative"
             >
-              <div className="flex flex-col">
-                <p className="text-xs font-medium opacity-70">
+              <div className="flex flex-col items-center text-center">
+                <p className="text-[10px] font-bold uppercase tracking-widest opacity-60">
                   Transaction Added
                 </p>
-                <p className="text-sm font-semibold truncate">
+                <p className="text-sm font-semibold">
                   {toast.category} • {toast.amount}
                 </p>
               </div>
@@ -56,7 +56,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                     toast.onUndo?.();
                     setToasts((prev) => prev.filter((t) => t.id !== toast.id));
                   }}
-                  className="ml-auto text-xs font-bold uppercase tracking-wider text-blue-400 dark:text-blue-600"
+                  className="ml-2 text-xs font-bold uppercase tracking-wider text-blue-400 dark:text-blue-600"
                 >
                   Undo
                 </button>
@@ -67,9 +67,9 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                   onClick={() =>
                     setToasts((prev) => prev.filter((t) => t.id !== toast.id))
                   }
-                  className="ml-auto"
+                  className="absolute right-4 p-1 rounded-full hover:bg-white/10 dark:hover:bg-black/10 transition-colors"
                 >
-                  <X className="w-4 h-4 opacity-50" />
+                  <X className="w-3.5 h-3.5 opacity-40" />
                 </button>
               )}
             </motion.div>

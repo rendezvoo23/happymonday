@@ -21,7 +21,7 @@ export function AddTransactionPage() {
     (searchParams.get("type") as TransactionDirection) || "expense";
 
   return (
-    <PageShell className="pb-6 pt-10">
+    <PageShell className="pb-6 pt-[72px]">
       <TransactionForm
         initialType={initialType}
         onCancel={() => navigate(-1)}
