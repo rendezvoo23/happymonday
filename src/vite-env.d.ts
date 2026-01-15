@@ -23,8 +23,6 @@ interface TelegramWebApp {
     selectionChanged: () => void;
   };
   ready: () => void;
-  expand: () => void;
-  disableClosingConfirmation: () => void;
 }
 
 interface Window {
