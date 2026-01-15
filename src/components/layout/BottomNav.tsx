@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
+import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   ChartFillIcon,
@@ -8,13 +9,14 @@ import {
   HouseFillIcon,
   HouseIcon,
 } from "../icons";
+import { SettingsDrawer } from "./SettingsDrawer";
 
 export function BottomNav() {
   const location = useLocation();
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const isHomeActive = location.pathname === "/home";
   const isStatsActive = location.pathname === "/statistics";
-  const isSettingsActive = location.pathname === "/settings";
 
   return (
     <div className="fixed bottom-8 left-0 right-0 z-40 flex justify-between px-6 pointer-events-none">
@@ -83,21 +85,22 @@ export function BottomNav() {
 
       {/* Right Pill: Settings */}
       <div className="flex items-center bg-white/80 dark:bg-gray-900/80 backdrop-blur-2xl rounded-full shadow-medium p-1.5 pointer-events-auto border border-white/20 dark:border-white/10">
-        <Link
-          to="/settings"
+        <button
+          type="button"
           onClick={() => {
             if (window.Telegram?.WebApp?.HapticFeedback) {
               window.Telegram.WebApp.HapticFeedback.selectionChanged();
             }
+            setIsSettingsOpen(true);
           }}
           className={cn(
             "relative flex items-center justify-center w-12 h-12 rounded-full transition-all",
-            isSettingsActive
+            isSettingsOpen
               ? "text-blue-500 dark:text-blue-400"
               : "text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
           )}
         >
-          {isSettingsActive && (
+          {isSettingsOpen && (
             <motion.div
               layoutId="nav-indicator-right"
               className="absolute inset-0 bg-blue-50 dark:bg-blue-900/30 rounded-full"
@@ -107,8 +110,14 @@ export function BottomNav() {
           <motion.div whileTap={{ scale: 0.88 }} className="relative z-10">
             <GearBigIcon className="w-6 h-6" />
           </motion.div>
-        </Link>
+        </button>
       </div>
+
+      {/* Settings Drawer */}
+      <SettingsDrawer
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+      />
     </div>
   );
 }

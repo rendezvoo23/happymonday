@@ -4,20 +4,60 @@
 
 @layer base {
   :root {
+    /* Light theme - Apple style */
     --background: #f5f5f7;
     --surface: rgba(255, 255, 255, 0.7);
     --surface-glass: rgba(255, 255, 255, 0.8);
+
+    /* Background levels */
+    --bg-canvas-default: #f5f5f7;
+    --bg-canvas-subtle: #ffffff;
+    --bg-canvas-inset: #eaeaea;
+    --bg-canvas-overlay: rgba(255, 255, 255, 0.95);
+
+    /* Card backgrounds by elevation */
+    --card-bg-level-0: rgba(255, 255, 255, 0.6);
+    --card-bg-level-1: rgba(255, 255, 255, 0.7);
+    --card-bg-level-2: rgba(255, 255, 255, 0.8);
+    --card-bg-level-3: rgba(255, 255, 255, 0.9);
+
+    /* Borders */
+    --border-default: rgba(0, 0, 0, 0.1);
+    --border-subtle: rgba(0, 0, 0, 0.06);
+
+    /* Shadows */
     --apple-easing: cubic-bezier(0.32, 0.72, 0, 1);
     --shadow-soft: 0 8px 32px rgba(0, 0, 0, 0.04);
     --shadow-medium: 0 12px 48px rgba(0, 0, 0, 0.08);
+    --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.06);
   }
 
   .dark {
-    --background: #1c1c1e;
-    --surface: rgba(44, 44, 46, 0.75);
-    --surface-glass: rgba(44, 44, 46, 0.85);
-    --shadow-soft: 0 8px 32px rgba(0, 0, 0, 0.4);
-    --shadow-medium: 0 12px 48px rgba(0, 0, 0, 0.6);
+    /* Dark theme - GitHub inspired */
+    --background: #0d1117;
+    --surface: rgba(22, 27, 34, 0.75);
+    --surface-glass: rgba(22, 27, 34, 0.85);
+
+    /* Background levels - GitHub colors */
+    --bg-canvas-default: #0d1117;
+    --bg-canvas-subtle: #161b22;
+    --bg-canvas-inset: #010409;
+    --bg-canvas-overlay: rgba(22, 27, 34, 0.95);
+
+    /* Card backgrounds by elevation - lighter as they elevate */
+    --card-bg-level-0: rgba(22, 27, 34, 0.6);
+    --card-bg-level-1: rgba(22, 27, 34, 0.75);
+    --card-bg-level-2: rgba(33, 38, 45, 0.85);
+    --card-bg-level-3: rgba(48, 54, 61, 0.9);
+
+    /* Borders - GitHub style */
+    --border-default: rgba(48, 54, 61, 1);
+    --border-subtle: rgba(33, 38, 45, 1);
+
+    /* Shadows - deeper in dark mode */
+    --shadow-soft: 0 8px 32px rgba(0, 0, 0, 0.6);
+    --shadow-medium: 0 12px 48px rgba(0, 0, 0, 0.8);
+    --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.4);
   }
 
   * {
@@ -39,14 +79,63 @@
 }
 
 @layer components {
+  /* Canvas backgrounds */
+  .bg-canvas-default {
+    background-color: var(--bg-canvas-default);
+  }
+
+  .bg-canvas-subtle {
+    background-color: var(--bg-canvas-subtle);
+  }
+
+  .bg-canvas-inset {
+    background-color: var(--bg-canvas-inset);
+  }
+
+  /* Card levels - increasing elevation */
+  .card-level-0 {
+    background-color: var(--card-bg-level-0);
+    border-color: var(--border-subtle);
+    box-shadow: var(--shadow-card);
+    @apply backdrop-blur-xl border;
+    transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow
+      0.2s ease;
+  }
+
+  .card-level-1 {
+    background-color: var(--card-bg-level-1);
+    border-color: var(--border-default);
+    box-shadow: var(--shadow-card);
+    @apply backdrop-blur-xl border;
+    transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow
+      0.2s ease;
+  }
+
+  .card-level-2 {
+    background-color: var(--card-bg-level-2);
+    border-color: var(--border-default);
+    box-shadow: var(--shadow-medium);
+    @apply backdrop-blur-xl border;
+    transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow
+      0.2s ease;
+  }
+
+  .card-level-3 {
+    background-color: var(--card-bg-level-3);
+    border-color: var(--border-default);
+    box-shadow: var(--shadow-soft);
+    @apply backdrop-blur-2xl border;
+    transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow
+      0.2s ease;
+  }
+
+  /* Legacy support */
   .glass-panel {
-    @apply bg-[var(--surface)] backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-soft dark:shadow-none;
-    transition: background-color 0.2s ease, border-color 0.2s ease;
+    @apply card-level-1;
   }
 
   .glass-card {
-    @apply bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl border border-white/40 dark:border-white/10 shadow-sm;
-    transition: background-color 0.2s ease, border-color 0.2s ease;
+    @apply card-level-2;
   }
 
   .btn-press {
@@ -63,4 +152,8 @@
 .no-scrollbar {
   -ms-overflow-style: none; /* IE and Edge */
   scrollbar-width: none; /* Firefox */
+}
+
+header {
+  margin-top: calc(env(safe-area-inset-top) + 32px);
 }

@@ -130,10 +130,39 @@ export function useCurrency() {
     return fmt.format(amount);
   };
 
+  const formatCompactAmount = (amount: number) => {
+    const absAmount = Math.abs(amount);
+    let value: number;
+    let suffix: string;
+
+    if (absAmount >= 1_000_000) {
+      // Format as millions
+      value = amount / 1_000_000;
+      suffix = "M";
+    } else if (absAmount >= 1_000) {
+      // Format as thousands
+      value = amount / 1_000;
+      suffix = "K";
+    } else {
+      // Format normally for values under 1000
+      return formatAmount(amount, { hideFractions: true });
+    }
+
+    // Format the value with 2 decimal places and remove trailing zeros
+    const formatted = Number.parseFloat(value.toFixed(2)).toString();
+
+    // Add currency symbol in the correct position
+    if (isSymbolPrefix) {
+      return `${currency.symbol}${formatted}${suffix}`;
+    }
+    return `${formatted}${suffix}`;
+  };
+
   return {
     symbol: currency.symbol,
     code: currency.code,
     formatAmount,
+    formatCompactAmount,
     formatter,
     isSymbolPrefix,
   };

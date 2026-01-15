@@ -1,5 +1,6 @@
 import { useDate } from "@/context/DateContext";
 import { useCurrency } from "@/hooks/useCurrency";
+import { useTranslation } from "@/hooks/useTranslation";
 import { supabase } from "@/lib/supabaseClient";
 import { cn } from "@/lib/utils";
 import type { Tables } from "@/types/supabase";
@@ -12,6 +13,20 @@ import {
   subWeeks,
   subYears,
 } from "date-fns";
+import {
+  ar,
+  de,
+  enUS,
+  es,
+  fr,
+  hi,
+  it,
+  ja,
+  ko,
+  pt,
+  ru,
+  zhCN,
+} from "date-fns/locale";
 import { useEffect, useState } from "react";
 import {
   Area,
@@ -21,6 +36,22 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+
+// Map locale codes to date-fns locales
+const dateLocales = {
+  en: enUS,
+  es: es,
+  fr: fr,
+  de: de,
+  ru: ru,
+  zh: zhCN,
+  ja: ja,
+  pt: pt,
+  it: it,
+  ko: ko,
+  ar: ar,
+  hi: hi,
+};
 
 type Transaction = Tables<"transactions">;
 
@@ -48,8 +79,12 @@ export function AnalyticsCharts({
   transactions: _initialTransactions,
 }: AnalyticsChartsProps) {
   const { formatAmount } = useCurrency();
+  const { locale } = useTranslation();
+
+  // Get the date-fns locale based on current language
+  const dateLocale = dateLocales[locale as keyof typeof dateLocales] || enUS;
   const { selectedDate } = useDate();
-  const [range, setRange] = useState<TimeRange>("1M");
+  const [range, setRange] = useState<TimeRange>("1W");
   const [data, setData] = useState<{
     current: number;
     previous: number;
@@ -172,7 +207,9 @@ export function AnalyticsCharts({
           }
 
           return {
-            label: format(date, range === "1W" ? "EEE" : "d"),
+            label: format(date, range === "1W" ? "EEE" : "d", {
+              locale: dateLocale,
+            }),
             current: curAmt,
             previous: range === "ALL" ? 0 : prevAmt,
             date: date.toISOString(),
@@ -201,7 +238,7 @@ export function AnalyticsCharts({
           }
 
           return {
-            label: format(date, "MMM"),
+            label: format(date, "MMM", { locale: dateLocale }),
             current: curAmt,
             previous: range === "ALL" ? 0 : prevAmt,
             date: date.toISOString(),
@@ -240,7 +277,7 @@ export function AnalyticsCharts({
   return (
     <div className="w-full space-y-4">
       {/* Chart Container */}
-      <div className="bg-white/50 rounded-3xl p-4 backdrop-blur-sm">
+      <div className="card-level-1 rounded-3xl p-4 backdrop-blur-sm">
         {/* HeaderStats */}
         <div className="flex items-center justify-between mb-4 px-2">
           <div>

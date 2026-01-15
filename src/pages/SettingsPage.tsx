@@ -1,17 +1,29 @@
 import { DollarSignIcon, GlobeIcon, MoonIcon } from "@/components/icons";
 import { PageShell } from "@/components/layout/PageShell";
 import { Modal } from "@/components/ui/Modal";
+import { useLocale } from "@/context/LocaleContext";
 import { useTheme } from "@/context/ThemeContext";
 import { useUserStore } from "@/stores/userStore";
-import { Check, ChevronRight, Monitor, Sun } from "lucide-react";
+import {
+  Check,
+  ChevronRight,
+  Code2,
+  Monitor,
+  Palette,
+  Sun,
+} from "lucide-react";
 import type * as React from "react";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export function SettingsPage() {
+  const navigate = useNavigate();
   const { settings, currencies, updateSettings, isLoading } = useUserStore();
   const { theme, setTheme } = useTheme();
+  const { locale, setLocale, t, languages } = useLocale();
   const [isCurrencyModalOpen, setIsCurrencyModalOpen] = useState(false);
   const [isThemeModalOpen, setIsThemeModalOpen] = useState(false);
+  const [isLanguageModalOpen, setIsLanguageModalOpen] = useState(false);
 
   const handleCurrencySelect = async (code: string) => {
     await updateSettings({ default_currency: code });
@@ -26,20 +38,29 @@ export function SettingsPage() {
   const getThemeLabel = (themeValue: string) => {
     switch (themeValue) {
       case "light":
-        return "Light";
+        return t("theme.light");
       case "dark":
-        return "Dark";
+        return t("theme.dark");
       case "system":
-        return "System";
+        return t("theme.system");
       default:
-        return "System";
+        return t("theme.system");
     }
   };
+
+  const handleLanguageSelect = (languageCode: string) => {
+    setLocale(languageCode as typeof locale);
+    setIsLanguageModalOpen(false);
+  };
+
+  const currentLanguage = languages.find((l) => l.code === locale);
 
   if (isLoading && !settings) {
     return (
       <PageShell className="flex items-center justify-center">
-        <p className="text-gray-500 dark:text-gray-400">Loading settings...</p>
+        <p className="text-gray-500 dark:text-gray-400">
+          {t("settings.loadingSettings")}
+        </p>
       </PageShell>
     );
   }
@@ -52,25 +73,22 @@ export function SettingsPage() {
     <PageShell>
       <header className="relative flex flex-col items-center pt-4 pb-6">
         <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-          Settings
+          {t("settings.title")}
         </h1>
       </header>
 
-      <main className="flex flex-col gap-4">
+      <main className="flex flex-col gap-6">
         {/* Settings List */}
         <div className="space-y-2">
           <SettingsRow
             icon={GlobeIcon}
-            label="Language"
-            value={
-              settings?.language === "en"
-                ? "English"
-                : settings?.language || "English"
-            }
+            label={t("settings.language")}
+            value={currentLanguage?.nativeName || "English"}
+            onClick={() => setIsLanguageModalOpen(true)}
           />
           <SettingsRow
             icon={DollarSignIcon}
-            label="Currency"
+            label={t("settings.currency")}
             value={
               currentCurrency
                 ? `${currentCurrency.code} (${currentCurrency.symbol})`
@@ -80,18 +98,64 @@ export function SettingsPage() {
           />
           <SettingsRow
             icon={MoonIcon}
-            label="Theme"
+            label={t("settings.theme")}
             value={getThemeLabel(theme)}
             onClick={() => setIsThemeModalOpen(true)}
           />
         </div>
+
+        {/* Examples Section */}
+        <div className="space-y-2">
+          <SettingsRow
+            icon={Code2}
+            label="Localization Example"
+            value="i18n Demo"
+            onClick={() => navigate("/examples/localization")}
+          />
+          <SettingsRow
+            icon={Palette}
+            label="Theme System Example"
+            value="Card Levels"
+            onClick={() => navigate("/examples/theme")}
+          />
+        </div>
       </main>
+
+      {/* Language Selection Modal */}
+      <Modal
+        isOpen={isLanguageModalOpen}
+        onClose={() => setIsLanguageModalOpen(false)}
+        title={t("settings.selectLanguage")}
+      >
+        <div className="space-y-1 max-h-[60vh] overflow-y-auto no-scrollbar">
+          {languages.map((language) => (
+            <button
+              type="button"
+              key={language.code}
+              onClick={() => handleLanguageSelect(language.code)}
+              className="w-full flex items-center justify-between p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+            >
+              <div className="flex flex-col items-start">
+                <span className="font-semibold text-gray-900 dark:text-gray-100">
+                  {language.nativeName}
+                </span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">
+                  {language.name}
+                </span>
+              </div>
+              {locale === language.code && (
+                <Check className="w-5 h-5 text-blue-500 dark:text-blue-400" />
+              )}
+            </button>
+          ))}
+        </div>
+      </Modal>
 
       {/* Currency Selection Modal */}
       <Modal
         isOpen={isCurrencyModalOpen}
         onClose={() => setIsCurrencyModalOpen(false)}
-        title="Select Currency"
+        title={t("settings.selectCurrency")}
       >
         <div className="space-y-1 max-h-[60vh] overflow-y-auto no-scrollbar">
           {currencies.map((currency) => (
@@ -126,27 +190,27 @@ export function SettingsPage() {
       <Modal
         isOpen={isThemeModalOpen}
         onClose={() => setIsThemeModalOpen(false)}
-        title="Select Theme"
+        title={t("settings.selectTheme")}
       >
         <div className="space-y-1">
           {[
             {
               value: "light" as const,
-              label: "Light",
+              label: t("theme.light"),
               icon: Sun,
-              description: "Always use light mode",
+              description: t("theme.lightDescription"),
             },
             {
               value: "dark" as const,
-              label: "Dark",
+              label: t("theme.dark"),
               icon: MoonIcon,
-              description: "Always use dark mode",
+              description: t("theme.darkDescription"),
             },
             {
               value: "system" as const,
-              label: "System",
+              label: t("theme.system"),
               icon: Monitor,
-              description: "Match device settings",
+              description: t("theme.systemDescription"),
             },
           ].map((themeOption) => {
             const Icon = themeOption.icon;
