@@ -40,36 +40,42 @@ export function HomePage() {
 
   return (
     <>
-      <PageShell>
-        <header className="flex flex-col items-center pt-4 pb-8">
+      <PageShell allowScroll={false}>
+        <header className="flex flex-col items-center pt-2 pb-4">
           <MonthSelector />
         </header>
 
-        <main className="flex flex-col items-center gap-4 pb-32">
+        <main className="flex flex-col items-center gap-2 pb-10">
           <div className="w-full flex justify-center">
             {isLoading && transactions.length === 0 ? (
-              <div className="text-gray-500 mt-10 h-52 flex items-center justify-center">
+              <div className="text-gray-500 mt-6 h-40 flex items-center justify-center">
                 <Loader2 className="w-8 h-8 animate-spin" />
               </div>
             ) : (
-              <BubblesCluster transactions={transactions} mode="cluster" />
+              <BubblesCluster
+                transactions={transactions}
+                mode="cluster"
+                height={280}
+              />
             )}
           </div>
 
-          <div className="text-center">
+          <div className="text-center space-y-1">
+            <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              Total Spending
+            </p>
             <p className="text-xl font-bold text-gray-900 dark:text-gray-100">
               {formatAmount(totalExpenses)}
             </p>
           </div>
 
-          {/* Floating thumb-friendly "+" Button */}
-          <div className="fixed bottom-48 left-1/2 -translate-x-1/2 z-40">
+          <div className="mt-28 flex justify-center">
             <Button
               size="icon"
-              className="w-16 h-16 rounded-full shadow-lg text-white border-2 border-white flex items-center justify-center overflow-hidden bg-[#007AFF] hover:bg-[#0071e3] transition-transform active:scale-90"
+              className="w-16 h-16 rounded-full shadow-2xl text-white dark:text-black border-2 border-black dark:border-white flex items-center justify-center overflow-hidden bg-black dark:bg-white hover:bg-gray-900 dark:hover:bg-gray-100 transition-transform active:scale-95 z-50"
               onClick={() => handleOpenAdd("expense")}
             >
-              <Plus className="w-8 h-8 drop-shadow-sm" />
+              <Plus className="w-8 h-8" />
             </Button>
           </div>
         </main>
