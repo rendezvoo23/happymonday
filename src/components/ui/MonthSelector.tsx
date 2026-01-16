@@ -96,10 +96,14 @@ export function MonthSelector({
         )}
         aria-label="Next month"
       >
-        <ChevronRight className={cn(
-          "w-5 h-5",
-          canGoNext ? "text-gray-700 dark:text-gray-300" : "text-gray-400 dark:text-gray-600"
-        )} />
+        <ChevronRight
+          className={cn(
+            "w-5 h-5",
+            canGoNext
+              ? "text-gray-700 dark:text-gray-300"
+              : "text-gray-400 dark:text-gray-600"
+          )}
+        />
       </button>
     </div>
   );
