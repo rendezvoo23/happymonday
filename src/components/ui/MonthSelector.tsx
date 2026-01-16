@@ -20,6 +20,8 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface MonthSelectorProps {
   className?: string;
+  onPrevMonth?: () => void;
+  onNextMonth?: () => void;
 }
 
 // Map locale codes to date-fns locales
@@ -38,22 +40,38 @@ const dateLocales = {
   hi: hi,
 };
 
-export function MonthSelector({ className }: MonthSelectorProps) {
+export function MonthSelector({
+  className,
+  onPrevMonth,
+  onNextMonth,
+}: MonthSelectorProps) {
   const { selectedDate, nextMonth, prevMonth, canGoNext } = useDate();
   const { locale } = useTranslation();
 
   // Get the date-fns locale based on current language
   const dateLocale = dateLocales[locale as keyof typeof dateLocales] || enUS;
 
+  // Use custom handlers if provided, otherwise use default from context
+  const handlePrevClick = onPrevMonth || prevMonth;
+  const handleNextClick = onNextMonth || nextMonth;
+
+  // Prevent touch events from bubbling up to prevent swipe gesture interference
+  const handleTouchEvent = (e: React.TouchEvent) => {
+    e.stopPropagation();
+  };
+
   return (
     <div className={cn("flex items-center gap-4", className)}>
       <button
         type="button"
-        onClick={prevMonth}
-        className="p-2 rounded-full hover:bg-black/5 transition-colors"
+        onClick={handlePrevClick}
+        onTouchStart={handleTouchEvent}
+        onTouchMove={handleTouchEvent}
+        onTouchEnd={handleTouchEvent}
+        className="p-3 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 active:bg-gray-300 dark:active:bg-gray-600 transition-colors shadow-sm"
         aria-label="Previous month"
       >
-        <ChevronLeft className="w-5 h-5 text-gray-600" />
+        <ChevronLeft className="w-5 h-5 text-gray-700 dark:text-gray-300" />
       </button>
 
       <button
@@ -65,17 +83,23 @@ export function MonthSelector({ className }: MonthSelectorProps) {
 
       <button
         type="button"
-        onClick={nextMonth}
+        onClick={handleNextClick}
+        onTouchStart={handleTouchEvent}
+        onTouchMove={handleTouchEvent}
+        onTouchEnd={handleTouchEvent}
         disabled={!canGoNext}
         className={cn(
-          "p-2 rounded-full transition-colors",
+          "p-3 rounded-full transition-colors shadow-sm",
           canGoNext
-            ? "hover:bg-black/5 cursor-pointer"
-            : "opacity-20 cursor-not-allowed"
+            ? "bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 active:bg-gray-300 dark:active:bg-gray-600 cursor-pointer"
+            : "bg-gray-50 dark:bg-gray-900 opacity-30 cursor-not-allowed"
         )}
         aria-label="Next month"
       >
-        <ChevronRight className="w-5 h-5 text-gray-600" />
+        <ChevronRight className={cn(
+          "w-5 h-5",
+          canGoNext ? "text-gray-700 dark:text-gray-300" : "text-gray-400 dark:text-gray-600"
+        )} />
       </button>
     </div>
   );

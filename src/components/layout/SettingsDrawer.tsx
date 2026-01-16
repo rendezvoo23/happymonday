@@ -3,12 +3,19 @@ import { useLocale } from "@/context/LocaleContext";
 import { useTheme } from "@/context/ThemeContext";
 import { useUserStore } from "@/stores/userStore";
 import { AnimatePresence, motion } from "framer-motion";
-import { Check, ChevronLeft, ChevronRight, Monitor, Sun } from "lucide-react";
+import {
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  Monitor,
+  Send,
+  Sun,
+} from "lucide-react";
 import type * as React from "react";
 import { useState } from "react";
 import { Drawer } from "vaul";
 
-type SettingsScreen = "main" | "language" | "currency" | "theme";
+type SettingsScreen = "main" | "language" | "currency" | "theme" | "telegram";
 
 const CLOSE_ON_SELECT = true;
 
@@ -109,7 +116,7 @@ export function SettingsDrawer({ isOpen, onClose }: SettingsDrawerProps) {
     <Drawer.Root open={isOpen} onOpenChange={handleDrawerClose}>
       <Drawer.Portal>
         <Drawer.Overlay className="fixed inset-0 bg-black/40 z-50" />
-        <Drawer.Content className="bg-white dark:bg-gray-900 flex flex-col rounded-t-[24px] h-[85vh] mt-24 fixed bottom-0 left-0 right-0 z-50 outline-none overflow-hidden">
+        <Drawer.Content className="bg-white dark:bg-gray-900 flex flex-col rounded-t-[24px] h-[500px] mt-24 fixed bottom-0 left-0 right-0 z-50 outline-none overflow-hidden">
           {/* Handle */}
           <div className="flex-shrink-0 mx-auto w-12 h-1.5 rounded-full bg-gray-300 dark:bg-gray-700 mt-4 mb-6" />
 
@@ -129,6 +136,7 @@ export function SettingsDrawer({ isOpen, onClose }: SettingsDrawerProps) {
               {currentScreen === "language" && t("settings.selectLanguage")}
               {currentScreen === "currency" && t("settings.selectCurrency")}
               {currentScreen === "theme" && t("settings.selectTheme")}
+              {currentScreen === "telegram" && "Telegram"}
             </Drawer.Title>
           </div>
 
@@ -183,6 +191,10 @@ export function SettingsDrawer({ isOpen, onClose }: SettingsDrawerProps) {
                     onSelect={handleThemeSelect}
                     t={t}
                   />
+                )}
+
+                {currentScreen === "telegram" && (
+                  <TelegramScreen onClose={onClose} />
                 )}
               </motion.div>
             </AnimatePresence>
@@ -250,6 +262,12 @@ function MainScreen({
           label={t("settings.theme")}
           value={getThemeLabel(theme)}
           onClick={() => navigateToScreen("theme")}
+        />
+        <SettingsRow
+          icon={Send}
+          label="Telegram"
+          value=""
+          onClick={() => navigateToScreen("telegram")}
         />
       </div>
     </div>
@@ -394,6 +412,78 @@ function ThemeScreen({
           </button>
         );
       })}
+    </div>
+  );
+}
+
+// Telegram Settings Screen
+function TelegramScreen({ onClose }: { onClose: () => void }) {
+  const handleOpenTelegramSettings = () => {
+    if (window.Telegram?.WebApp?.openTelegramLink) {
+      window.Telegram.WebApp.openTelegramLink("https://t.me/settings");
+    } else if (window.Telegram?.WebApp?.openLink) {
+      window.Telegram.WebApp.openLink("https://t.me/settings");
+    }
+    onClose();
+  };
+
+  const handleOpenSupport = () => {
+    if (window.Telegram?.WebApp?.openTelegramLink) {
+      window.Telegram.WebApp.openTelegramLink("https://t.me/telegram");
+    } else if (window.Telegram?.WebApp?.openLink) {
+      window.Telegram.WebApp.openLink("https://t.me/telegram");
+    }
+    onClose();
+  };
+
+  return (
+    <div className="space-y-1">
+      <button
+        type="button"
+        onClick={handleOpenTelegramSettings}
+        className="w-full flex items-center justify-between p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+      >
+        <div className="flex flex-col items-start">
+          <span className="font-semibold text-gray-900 dark:text-gray-100">
+            Open Telegram Settings
+          </span>
+          <span className="text-xs text-gray-500 dark:text-gray-400">
+            Manage your Telegram account settings
+          </span>
+        </div>
+        <ChevronRight className="w-5 h-5 text-gray-400 dark:text-gray-500" />
+      </button>
+
+      <button
+        type="button"
+        onClick={handleOpenSupport}
+        className="w-full flex items-center justify-between p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+      >
+        <div className="flex flex-col items-start">
+          <span className="font-semibold text-gray-900 dark:text-gray-100">
+            Telegram Support
+          </span>
+          <span className="text-xs text-gray-500 dark:text-gray-400">
+            Get help with Telegram
+          </span>
+        </div>
+        <ChevronRight className="w-5 h-5 text-gray-400 dark:text-gray-500" />
+      </button>
+
+      {window.Telegram?.WebApp?.version && (
+        <div className="p-4 mt-4 bg-gray-50 dark:bg-gray-800 rounded-xl">
+          <div className="text-xs text-gray-500 dark:text-gray-400 space-y-1">
+            <p>
+              <span className="font-medium">Telegram WebApp Version:</span>{" "}
+              {window.Telegram.WebApp.version}
+            </p>
+            <p>
+              <span className="font-medium">Platform:</span>{" "}
+              {window.Telegram.WebApp.platform || "Unknown"}
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

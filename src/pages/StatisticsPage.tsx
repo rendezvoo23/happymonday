@@ -23,6 +23,10 @@ export function StatisticsPage() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
 
+  // Get category from URL params
+  const searchParams = new URLSearchParams(location.search);
+  const categoryParam = searchParams.get("category");
+
   useEffect(() => {
     loadTransactions(selectedDate);
     loadCategories();
@@ -124,7 +128,10 @@ export function StatisticsPage() {
 
       <main className="flex flex-col items-center gap-4 pb-32">
         <div id="doughnut" className="w-full scroll-mt-24">
-          <CategoryDoughnutChart spendByCategory={spendByCategory} />
+          <CategoryDoughnutChart
+            spendByCategory={spendByCategory}
+            initialExpandedCategory={categoryParam}
+          />
         </div>
 
         {/* Charts */}

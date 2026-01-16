@@ -23,6 +23,13 @@ interface TelegramWebApp {
     selectionChanged: () => void;
   };
   ready: () => void;
+  expand: () => void;
+  disableVerticalSwipes: () => void;
+  enableVerticalSwipes: () => void;
+  openLink: (url: string) => void;
+  openTelegramLink: (url: string) => void;
+  version?: string;
+  platform?: string;
 }
 
 interface Window {
