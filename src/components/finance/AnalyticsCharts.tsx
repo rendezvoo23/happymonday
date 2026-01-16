@@ -80,7 +80,7 @@ export function AnalyticsCharts({
 }: AnalyticsChartsProps) {
   const { formatAmount } = useCurrency();
   const { locale } = useTranslation();
-
+  const { t } = useTranslation(); // Translation hook
   // Get the date-fns locale based on current language
   const dateLocale = dateLocales[locale as keyof typeof dateLocales] || enUS;
   const { selectedDate } = useDate();
@@ -281,12 +281,10 @@ export function AnalyticsCharts({
         {/* HeaderStats */}
         <div className="flex items-center justify-between mb-4 px-2">
           <div>
-            <p className="text-xs text-gray-500 uppercase tracking-wider">
-              Total Spending
+            <p className="text-xs uppercase tracking-wider opacity-50">
+              {t("statistics.totalExpenses")}
             </p>
-            <p className="text-2xl font-bold text-gray-900">
-              {formatAmount(data.current)}
-            </p>
+            <p className="text-2xl font-bold">{formatAmount(data.current)}</p>
             {range !== "ALL" && (
               <div className="flex items-center gap-2 mt-1">
                 <span

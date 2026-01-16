@@ -24,7 +24,7 @@ interface TransactionState {
   error: string | null;
 
   // Actions
-  loadTransactions: (date: Date) => Promise<void>;
+  loadTransactions: (date: Date) => Promise<TransactionWithCategory[]>;
   loadHistory: (
     page: number,
     pageSize: number
@@ -77,7 +77,9 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
         .order("occurred_at", { ascending: false });
 
       if (error) throw error;
-      set({ transactions: data || [], isLoading: false });
+      const transactions = data || [];
+      set({ transactions, isLoading: false });
+      return transactions;
     } catch (err: unknown) {
       console.error("Failed to load transactions", err);
       set({
@@ -85,6 +87,7 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
           err instanceof Error ? err.message : "Failed to load transactions",
         isLoading: false,
       });
+      return [];
     }
   },
 

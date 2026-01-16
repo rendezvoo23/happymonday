@@ -4,7 +4,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown, ChevronRight } from "lucide-react";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Cell, Pie, PieChart, ResponsiveContainer, Sector } from "recharts";
 
 interface CategorySpend {
@@ -22,6 +22,7 @@ interface CategorySpend {
 
 interface CategoryDoughnutChartProps {
   spendByCategory: CategorySpend[];
+  initialExpandedCategory?: string | null;
 }
 
 const renderActiveShape = (props: any) => {
@@ -50,13 +51,43 @@ const renderActiveShape = (props: any) => {
 
 export function CategoryDoughnutChart({
   spendByCategory,
+  initialExpandedCategory,
 }: CategoryDoughnutChartProps) {
   const { formatAmount } = useCurrency();
-  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(
+    initialExpandedCategory || null
+  );
   const { t } = useTranslation();
 
   // Create refs for category elements to support auto-scrolling
   const categoryRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
+  // Sort by amount descending - must be before useEffect that uses it
+  const sortedCategories = useMemo(() => {
+    return [...spendByCategory].sort((a, b) => b.amount - a.amount);
+  }, [spendByCategory]);
+
+  // Auto-expand and scroll to category on mount if initialExpandedCategory is provided
+  useEffect(() => {
+    if (initialExpandedCategory && sortedCategories.length > 0) {
+      // Check if the category exists in the sorted categories
+      const categoryExists = sortedCategories.some(
+        (cat) => cat.categoryId === initialExpandedCategory
+      );
+
+      if (categoryExists) {
+        setExpandedId(initialExpandedCategory);
+
+        // Scroll to the category after a delay to allow rendering
+        setTimeout(() => {
+          categoryRefs.current[initialExpandedCategory]?.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+          });
+        }, 500);
+      }
+    }
+  }, [initialExpandedCategory, sortedCategories]);
 
   const toggleExpand = (id: string | null) => {
     setExpandedId(expandedId === id ? null : id);
@@ -71,11 +102,6 @@ export function CategoryDoughnutChart({
       }, 100);
     }
   };
-
-  // Sort by amount descending
-  const sortedCategories = useMemo(() => {
-    return [...spendByCategory].sort((a, b) => b.amount - a.amount);
-  }, [spendByCategory]);
 
   const activeIndex = useMemo(() => {
     return sortedCategories.findIndex((cat) => cat.categoryId === expandedId);
@@ -145,7 +171,7 @@ export function CategoryDoughnutChart({
                     className="outline-none focus:outline-none"
                     style={{
                       opacity:
-                        activeIndex === -1 || activeIndex === index ? 1 : 0.6,
+                        activeIndex === -1 || activeIndex === index ? 1 : 0.9,
                       transition: "opacity 0.3s ease",
                     }}
                   />
@@ -176,9 +202,7 @@ export function CategoryDoughnutChart({
                 }}
                 className={cn(
                   "flex flex-col transition-all duration-300 rounded-2xl",
-                  expandedId === cat.categoryId
-                    ? "card-level-0 px-3 -mx-3"
-                    : "px-0 -mx-0"
+                  expandedId === cat.categoryId ? "px-3 -mx-3" : "px-0 -mx-0"
                 )}
               >
                 <button

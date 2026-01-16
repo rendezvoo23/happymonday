@@ -179,7 +179,7 @@ export function BubblesCluster({
     if (onBubbleClick && mode === "separated") {
       onBubbleClick(categoryId);
     } else if (mode === "cluster") {
-      navigate("/statistics");
+      navigate(`/statistics?category=${categoryId}`);
     }
   };
 

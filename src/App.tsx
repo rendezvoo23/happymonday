@@ -12,6 +12,7 @@ import { HomePage } from "@/pages/HomePage";
 import { StatisticsPage } from "@/pages/StatisticsPage";
 import { useUserStore } from "@/stores/userStore";
 import { AnimatePresence } from "framer-motion";
+import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { env } from "./env";
@@ -28,7 +29,7 @@ function ProtectedRoute({
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[var(--background)] text-gray-900 dark:text-gray-100 transition-colors duration-200">
-        Loading...
+        <Loader2 className="w-8 h-8 animate-spin" />
       </div>
     );
   }
@@ -81,7 +82,28 @@ export default function App() {
           WebApp: {
             initData: env.devInitData,
             initDataUnsafe: parseInitData(env.devInitData),
-            ready() {},
+            ready() {
+              console.log("Telegram WebApp ready (mocked)");
+            },
+            expand() {
+              console.log("Telegram WebApp expand (mocked)");
+            },
+            disableVerticalSwipes() {
+              console.log("Telegram WebApp disableVerticalSwipes (mocked)");
+            },
+            enableVerticalSwipes() {
+              console.log("Telegram WebApp enableVerticalSwipes (mocked)");
+            },
+            openLink(url: string) {
+              console.log("Telegram WebApp openLink (mocked):", url);
+              window.open(url, "_blank");
+            },
+            openTelegramLink(url: string) {
+              console.log("Telegram WebApp openTelegramLink (mocked):", url);
+              window.open(url, "_blank");
+            },
+            version: "7.0",
+            platform: "web",
           },
         };
 
