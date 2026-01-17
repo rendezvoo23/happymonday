@@ -1,5 +1,6 @@
 import { BubblesCluster } from "@/components/finance/BubblesCluster";
 import { TransactionDrawer } from "@/components/finance/TransactionDrawer";
+import { CircleGradientIcon } from "@/components/icons/circle-gradient";
 import { PageShell } from "@/components/layout/PageShell";
 import { Button } from "@/components/ui/Button";
 import { MonthSelector } from "@/components/ui/MonthSelector";
@@ -384,10 +385,11 @@ export function HomePage() {
           <div className="mt-28 flex justify-center">
             <Button
               size="icon"
-              className="w-16 h-16 rounded-full shadow-2xl text-white dark:text-black border-2 border-black dark:border-white flex items-center justify-center overflow-hidden bg-black dark:bg-white hover:bg-gray-900 dark:hover:bg-gray-100 transition-transform active:scale-95 z-50"
+              className="w-16 h-16 rounded-full shadow-2xl border-2 border-white flex items-center justify-center overflow-hidden transition-transform active:scale-95 z-50 relative"
               onClick={() => handleOpenAdd("expense")}
             >
-              <Plus className="w-8 h-8" />
+              <CircleGradientIcon className="absolute inset-0 w-full h-full" />
+              <Plus className="w-8 h-8 text-white relative z-10" />
             </Button>
           </div>
         </main>

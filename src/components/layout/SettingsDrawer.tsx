@@ -10,6 +10,7 @@ import {
   ChevronRight,
   HeartIcon,
   Monitor,
+  Search,
   Star,
   Sun,
 } from "lucide-react";
@@ -323,33 +324,66 @@ function CurrencyScreen({
   selectedCurrency?: string;
   onSelect: (code: string) => void;
 }) {
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredCurrencies = currencies.filter((currency) => {
+    const query = searchQuery.toLowerCase();
+    return (
+      currency.code.toLowerCase().includes(query) ||
+      currency.name.toLowerCase().includes(query)
+    );
+  });
+
   return (
-    <div className="space-y-1">
-      {currencies.map((currency) => (
-        <button
-          type="button"
-          key={currency.code}
-          onClick={() => onSelect(currency.code)}
-          className="w-full flex items-center justify-between p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-        >
-          <div className="flex flex-col items-start">
-            <span className="font-semibold text-gray-900 dark:text-gray-100">
-              {currency.code}
-            </span>
-            <span className="text-xs text-gray-500 dark:text-gray-400">
-              {currency.name}
-            </span>
+    <div className="space-y-3">
+      {/* Search Input */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Search currencies..."
+          className="w-full pl-10 pr-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-blue-400 dark:focus:border-blue-500 focus:outline-none transition-colors"
+        />
+      </div>
+
+      {/* Currency List */}
+      <div className="space-y-1">
+        {filteredCurrencies.length > 0 ? (
+          filteredCurrencies.map((currency) => (
+            <button
+              type="button"
+              key={currency.code}
+              onClick={() => onSelect(currency.code)}
+              className="w-full flex items-center justify-between p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+            >
+              <div className="flex flex-col items-start">
+                <span className="font-semibold text-gray-900 dark:text-gray-100">
+                  {currency.code}
+                </span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">
+                  {currency.name}
+                </span>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-lg font-medium text-gray-400 dark:text-gray-500">
+                  {currency.symbol}
+                </span>
+                {selectedCurrency === currency.code && (
+                  <Check className="w-5 h-5 text-blue-500 dark:text-blue-400" />
+                )}
+              </div>
+            </button>
+          ))
+        ) : (
+          <div className="text-center py-8">
+            <p className="text-gray-500 dark:text-gray-400 text-sm">
+              No currencies found
+            </p>
           </div>
-          <div className="flex items-center gap-3">
-            <span className="text-lg font-medium text-gray-400 dark:text-gray-500">
-              {currency.symbol}
-            </span>
-            {selectedCurrency === currency.code && (
-              <Check className="w-5 h-5 text-blue-500 dark:text-blue-400" />
-            )}
-          </div>
-        </button>
-      ))}
+        )}
+      </div>
     </div>
   );
 }
