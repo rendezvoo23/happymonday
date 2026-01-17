@@ -1,6 +1,7 @@
 import { DollarSignIcon, GlobeIcon, MoonIcon } from "@/components/icons";
 import { useLocale } from "@/context/LocaleContext";
 import { useTheme } from "@/context/ThemeContext";
+import { supabase } from "@/lib/supabaseClient";
 import { useUserStore } from "@/stores/userStore";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -441,9 +442,44 @@ function DonateScreen({ onClose }: { onClose: () => void }) {
 
     try {
       if (window.Telegram?.WebApp?.openInvoice) {
-        // Create invoice URL for Telegram Stars
-        const invoiceUrl = `https://t.me/$WPJhqTN4ODMy?startattach=${amount}`;
+        // Step 1: Create invoice link via Supabase edge function
+        console.log("Creating invoice for", amount, "stars...");
 
+        let invoiceUrl: string;
+
+        try {
+          const { data, error } = await supabase.functions.invoke(
+            "create-telegram-invoice",
+            {
+              body: {
+                amount: amount,
+                title: `Donate ${amount} Stars`,
+                payload: `donate_${amount}_${Date.now()}`,
+              },
+            }
+          );
+
+          if (error) {
+            console.error("Failed to create invoice:", error);
+            throw error;
+          }
+
+          if (!data?.ok || !data?.result) {
+            console.error("Invalid invoice response:", data);
+            throw new Error("Failed to create invoice");
+          }
+
+          // Step 2: Get the invoice link
+          invoiceUrl = data.result;
+          console.log("Invoice created:", invoiceUrl);
+        } catch (invoiceError) {
+          console.error("Invoice creation error:", invoiceError);
+          // In dev mode or if edge function fails, use mock invoice URL
+          invoiceUrl = `mock://telegram/invoice/${amount}`;
+          console.log("Using mock invoice URL:", invoiceUrl);
+        }
+
+        // Step 3: Open the invoice in the Mini App
         window.Telegram.WebApp.openInvoice(invoiceUrl, (status) => {
           console.log("Payment status:", status);
 
@@ -469,16 +505,21 @@ function DonateScreen({ onClose }: { onClose: () => void }) {
         });
       } else {
         // Fallback to opening bot with start parameter
+        console.log("openInvoice not available, using fallback");
         const fallbackUrl = `${BASE_DONATE_URL}_${amount}`;
         if (window.Telegram?.WebApp?.openTelegramLink) {
           window.Telegram.WebApp.openTelegramLink(fallbackUrl);
         } else {
           window.open(fallbackUrl, "_blank");
         }
+        setIsProcessing(false);
         onClose();
       }
     } catch (error) {
       console.error("Payment error:", error);
+      if (window.Telegram?.WebApp?.HapticFeedback) {
+        window.Telegram.WebApp.HapticFeedback.notificationOccurred("error");
+      }
       setIsProcessing(false);
     }
   };

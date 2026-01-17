@@ -1,4 +1,5 @@
 import { BubblesCluster } from "@/components/finance/BubblesCluster";
+import { TransactionDrawer } from "@/components/finance/TransactionDrawer";
 import { PageShell } from "@/components/layout/PageShell";
 import { Button } from "@/components/ui/Button";
 import { MonthSelector } from "@/components/ui/MonthSelector";
@@ -11,7 +12,6 @@ import type { Enums, Tables } from "@/types/supabase";
 import { subMonths } from "date-fns";
 import { Loader2, Plus } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 type TransactionDirection = Enums<"transaction_direction">;
 type TransactionWithCategory = Tables<"transactions"> & {
@@ -22,12 +22,16 @@ type TransactionWithCategory = Tables<"transactions"> & {
 };
 
 export function HomePage() {
-  const navigate = useNavigate();
   const { loadTransactions } = useTransactionStore();
   const { loadCategories } = useCategoryStore();
   const { selectedDate, prevMonth, nextMonth, canGoNext } = useDate();
   const { formatAmount } = useCurrency();
   const { t } = useTranslation();
+
+  // Transaction drawer state
+  const [isTransactionDrawerOpen, setIsTransactionDrawerOpen] = useState(false);
+  const [transactionType, setTransactionType] =
+    useState<TransactionDirection>("expense");
 
   // Touch gesture state
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
@@ -77,6 +81,49 @@ export function HomePage() {
     },
     [getMonthKey, loadTransactions]
   );
+
+  // Function to reload transactions (used after adding a new transaction)
+  const reloadTransactions = useCallback(async () => {
+    // Clear cache for current month to force reload
+    const currentKey = getMonthKey(selectedDate);
+    setMonthsCache((prev) => {
+      const newCache = new Map(prev);
+      newCache.delete(currentKey);
+      return newCache;
+    });
+
+    // Reload current month
+    await loadAndCacheMonth(selectedDate);
+
+    // Also reload adjacent months if they're in cache
+    const prevDate = subMonths(selectedDate, 1);
+    const prevKey = getMonthKey(prevDate);
+    if (monthsCacheRef.current.has(prevKey)) {
+      setMonthsCache((prev) => {
+        const newCache = new Map(prev);
+        newCache.delete(prevKey);
+        return newCache;
+      });
+      loadAndCacheMonth(prevDate);
+    }
+
+    if (canGoNext) {
+      const nextDate = new Date(
+        selectedDate.getFullYear(),
+        selectedDate.getMonth() + 1,
+        1
+      );
+      const nextKey = getMonthKey(nextDate);
+      if (monthsCacheRef.current.has(nextKey)) {
+        setMonthsCache((prev) => {
+          const newCache = new Map(prev);
+          newCache.delete(nextKey);
+          return newCache;
+        });
+        loadAndCacheMonth(nextDate);
+      }
+    }
+  }, [selectedDate, getMonthKey, loadAndCacheMonth, canGoNext]);
 
   // Disable Telegram swipe-to-close behavior
   useEffect(() => {
@@ -247,14 +294,13 @@ export function HomePage() {
   };
 
   const handleOpenAdd = (type: TransactionDirection) => {
-    navigate(
-      `/add?type=${type}&month=${selectedDate.getMonth() + 1}&year=${selectedDate.getFullYear()}`
-    );
+    setTransactionType(type);
+    setIsTransactionDrawerOpen(true);
   };
 
   return (
     <>
-      <PageShell allowScroll={false}>
+      <PageShell allowScroll={true}>
         <main
           ref={containerRef}
           className="flex flex-col items-center gap-2 pb-10 touch-none"
@@ -319,12 +365,6 @@ export function HomePage() {
             )}
           </div>
 
-          <header className="flex flex-col items-center pt-2 pb-4">
-            <MonthSelector
-              onPrevMonth={handlePrevMonthClick}
-              onNextMonth={handleNextMonthClick}
-            />
-          </header>
           <div className="text-center space-y-1">
             <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider">
               {t("transactions.total")}
@@ -333,6 +373,13 @@ export function HomePage() {
               {formatAmount(totalExpenses)}
             </p>
           </div>
+
+          <header className="flex flex-col items-center pt-2 pb-4">
+            <MonthSelector
+              onPrevMonth={handlePrevMonthClick}
+              onNextMonth={handleNextMonthClick}
+            />
+          </header>
 
           <div className="mt-28 flex justify-center">
             <Button
@@ -345,6 +392,14 @@ export function HomePage() {
           </div>
         </main>
       </PageShell>
+
+      {/* Transaction Drawer */}
+      <TransactionDrawer
+        isOpen={isTransactionDrawerOpen}
+        onClose={() => setIsTransactionDrawerOpen(false)}
+        initialType={transactionType}
+        onTransactionAdded={reloadTransactions}
+      />
     </>
   );
 }
