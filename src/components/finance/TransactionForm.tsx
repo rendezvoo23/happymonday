@@ -4,11 +4,11 @@ import { useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { NumericKeyboard } from "@/components/ui/NumericKeyboard";
 import { useDate } from "@/context/DateContext";
 import { useCurrency } from "@/hooks/useCurrency";
 import { useTranslation } from "@/hooks/useTranslation";
 import { type Subcategory, getSubcategories } from "@/lib/api";
-import { cn } from "@/lib/utils";
 import { useCategoryStore } from "@/stores/categoryStore";
 import type { CategoryId, TransactionType } from "@/types";
 import { Loader2 } from "lucide-react";
@@ -139,6 +139,39 @@ export function TransactionForm({
       });
   }, [categoryId]);
 
+  const handleKeyPress = (key: string) => {
+    if (key === ".") {
+      // Only allow one decimal point
+      if (amount.includes(".")) return;
+      // If empty, start with "0."
+      if (amount === "") {
+        setAmount("0.");
+        return;
+      }
+    }
+
+    // Prevent multiple leading zeros
+    if (amount === "0" && key !== ".") {
+      setAmount(key);
+      return;
+    }
+
+    // Limit to 2 decimal places
+    if (amount.includes(".")) {
+      const [, decimals] = amount.split(".");
+      if (decimals && decimals.length >= 2) return;
+    }
+
+    // Limit total length
+    if (amount.length >= 10) return;
+
+    setAmount(amount + key);
+  };
+
+  const handleBackspace = () => {
+    setAmount(amount.slice(0, -1));
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!amount || !categoryId) return;
@@ -171,38 +204,37 @@ export function TransactionForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="space-y-2">
-        <label
-          htmlFor="amount-input"
+      <div className="space-y-4">
+        <div
           className="text-sm font-medium text-gray-500 dark:text-gray-400 ml-1"
         >
           {t("transactions.amount")}
-        </label>
-        <div className="relative">
-          {isSymbolPrefix && (
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl font-semibold text-gray-400 dark:text-gray-500">
-              {symbol}
-            </span>
-          )}
-          <Input
-            id="amount-input"
-            type="number"
-            inputMode="decimal"
-            placeholder={t("transactions.amountPlaceholder")}
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            className={cn(
-              "text-2xl font-semibold",
-              isSymbolPrefix ? "pl-10" : "pr-10"
-            )}
-            autoFocus
-          />
-          {!isSymbolPrefix && (
-            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xl font-semibold text-gray-400 dark:text-gray-500">
-              {symbol}
-            </span>
-          )}
         </div>
+        
+        {/* Amount Display */}
+        <div className="relative flex items-center justify-center min-h-[64px] bg-gray-50 dark:bg-gray-800 rounded-2xl px-6 py-4">
+          <div className="flex items-center gap-2 text-4xl font-bold text-gray-900 dark:text-gray-100">
+            {isSymbolPrefix && (
+              <span className="text-gray-400 dark:text-gray-500">
+                {symbol}
+              </span>
+            )}
+            <span className={amount ? "" : "text-gray-400 dark:text-gray-600"}>
+              {amount || "0"}
+            </span>
+            {!isSymbolPrefix && (
+              <span className="text-gray-400 dark:text-gray-500">
+                {symbol}
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Virtual Keyboard */}
+        <NumericKeyboard
+          onKeyPress={handleKeyPress}
+          onBackspace={handleBackspace}
+        />
       </div>
 
       <div className="space-y-2 flex items-center justify-center">
@@ -285,7 +317,7 @@ export function TransactionForm({
         />
       </div>
 
-      <div className="pt-4 flex gap-3">
+      <div className="pt-4 pb-4 flex gap-3">
         <Button
           type="button"
           variant="secondary"

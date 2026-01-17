@@ -79,7 +79,10 @@ export function TransactionDrawer({
           />
 
           {/* Content - Prevent dragging on form area */}
-          <div className="flex-1 overflow-hidden" data-vaul-no-drag>
+          <div
+            className="flex-1 overflow-y-auto overflow-x-hidden"
+            data-vaul-no-drag
+          >
             <AnimatePresence mode="wait">
               <motion.div
                 key="add-transaction"
@@ -87,7 +90,7 @@ export function TransactionDrawer({
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.2 }}
-                className="h-full overflow-y-auto px-4 pb-8"
+                className="px-4 pb-16"
               >
                 <TransactionForm
                   initialType={initialType}
