@@ -1,5 +1,28 @@
 // @ts-expect-error: Deno.serve is provided by the Deno runtime
 Deno.serve(async (req)=>{
+  // Handle CORS preflight
+  if (req.method === "OPTIONS") {
+    return new Response(null, {
+      status: 204,
+      headers: {
+        "Access-Control-Allow-Origin": req.headers.get("Origin") ?? "*",
+        "Access-Control-Allow-Methods": "POST, OPTIONS",
+        "Access-Control-Allow-Headers":
+          req.headers.get("Access-Control-Request-Headers") ??
+          "content-type, apikey, x-client-info, authorization",
+        "Access-Control-Max-Age": "600",
+        Vary: "Origin",
+      },
+    });
+  }
+
+  const corsHeaders = {
+    "Access-Control-Allow-Origin": req.headers.get("Origin") ?? "*",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Access-Control-Allow-Headers": "content-type, apikey, x-client-info, authorization",
+    Vary: "Origin",
+  };
+
   try {
     const { amount, title, payload } = await req.json();
     // @ts-expect-error: Deno.serve is provided by the Deno runtime
@@ -7,12 +30,14 @@ Deno.serve(async (req)=>{
     if (!BOT_TOKEN) return new Response(JSON.stringify({
       error: 'Missing BOT_TOKEN'
     }), {
-      status: 500
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
     if (!amount || !title || !payload) return new Response(JSON.stringify({
       error: 'Missing parameters'
     }), {
-      status: 400
+      status: 400,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
     const body = {
       title: title,
@@ -37,6 +62,7 @@ Deno.serve(async (req)=>{
     const data = await res.json();
     return new Response(JSON.stringify(data), {
       headers: {
+        ...corsHeaders,
         'Content-Type': 'application/json'
       }
     });
@@ -44,7 +70,8 @@ Deno.serve(async (req)=>{
     return new Response(JSON.stringify({
       error: err.message
     }), {
-      status: 500
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
   }
 });
