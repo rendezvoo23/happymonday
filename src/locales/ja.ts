@@ -40,6 +40,7 @@ export default {
     language: "言語",
     currency: "通貨",
     theme: "テーマ",
+    donate: "寄付",
     selectCurrency: "通貨を選択",
     selectTheme: "テーマを選択",
     selectLanguage: "言語を選択",

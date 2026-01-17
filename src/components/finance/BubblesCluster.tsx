@@ -242,7 +242,7 @@ export function BubblesCluster({
                 x: bubble.x,
                 y: [bubble.y - 2, bubble.y + 2, bubble.y - 2],
               }}
-              whileTap={{ scale: 0.95 }}
+              whileTap={{ scale: 0.9 }}
               transition={{
                 scale: { type: "spring", stiffness: 300, damping: 20 },
                 opacity: { duration: 0.2 },
@@ -255,9 +255,7 @@ export function BubblesCluster({
               }}
               onClick={() => {
                 if (window.Telegram?.WebApp?.HapticFeedback) {
-                  window.Telegram.WebApp.HapticFeedback.impactOccurred(
-                    "medium"
-                  );
+                  window.Telegram.WebApp.HapticFeedback.impactOccurred("heavy");
                 }
                 handleBubbleClick(bubble.id);
               }}
@@ -265,7 +263,7 @@ export function BubblesCluster({
               style={{
                 width: bubble.r * 2,
                 height: bubble.r * 2,
-                background: `radial-gradient(circle, ${bubble.category.color} 0%, ${hexToRgba(bubble.category.color, 0.5)} 90%, transparent 100%)`,
+                background: `radial-gradient(circle, ${bubble.category.color} 0%, ${hexToRgba(bubble.category.color, 0.8)} 95%, transparent 100%)`,
                 opacity: 1,
                 zIndex: 10,
                 left: "50%",
@@ -282,9 +280,10 @@ export function BubblesCluster({
               </span>
               {bubble.r > 30 && (
                 <span
-                  className="text-white/90 font-medium mt-1 text-center leading-tight px-1"
+                  className="text-white/90 font-medium mt-0 text-center leading-tight"
                   style={{
                     fontSize: Math.max(8, bubble.r * 0.2),
+                    opacity: 0.5,
                   }}
                 >
                   {bubble.category.label}

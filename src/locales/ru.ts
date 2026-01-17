@@ -40,6 +40,7 @@ export default {
     language: "Язык",
     currency: "Валюта",
     theme: "Тема",
+    donate: "Донат",
     selectCurrency: "Выбрать валюту",
     selectTheme: "Выбрать тему",
     selectLanguage: "Выбрать язык",

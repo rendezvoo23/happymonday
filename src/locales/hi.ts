@@ -40,6 +40,7 @@ export default {
     language: "भाषा",
     currency: "मुद्रा",
     theme: "थीम",
+    donate: "दान करें",
     selectCurrency: "मुद्रा चुनें",
     selectTheme: "थीम चुनें",
     selectLanguage: "भाषा चुनें",

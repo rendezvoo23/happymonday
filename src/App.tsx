@@ -78,10 +78,52 @@ export default function App() {
       }
 
       if (env.isDev) {
+        let settingsButtonCallback: (() => void) | null = null;
+        const eventCallbacks: Record<string, (() => void) | null> = {};
+
         window.Telegram = {
           WebApp: {
             initData: env.devInitData,
             initDataUnsafe: parseInitData(env.devInitData),
+            SettingsButton: {
+              isVisible: false,
+              show() {
+                console.log("Telegram SettingsButton show (mocked)");
+                this.isVisible = true;
+              },
+              hide() {
+                console.log("Telegram SettingsButton hide (mocked)");
+                this.isVisible = false;
+              },
+              onClick(callback: () => void) {
+                console.log("Telegram SettingsButton onClick (mocked)");
+                settingsButtonCallback = callback;
+              },
+              offClick(callback: () => void) {
+                console.log("Telegram SettingsButton offClick (mocked)");
+                if (settingsButtonCallback === callback) {
+                  settingsButtonCallback = null;
+                }
+              },
+            },
+            onEvent(eventType: string, callback: () => void) {
+              console.log("Telegram WebApp onEvent (mocked):", eventType);
+              eventCallbacks[eventType] = callback;
+
+              // For settings_button_pressed, connect to SettingsButton callback
+              if (eventType === "settings_button_pressed") {
+                settingsButtonCallback = callback;
+              }
+            },
+            offEvent(eventType: string, callback: () => void) {
+              console.log("Telegram WebApp offEvent (mocked):", eventType);
+              if (eventCallbacks[eventType] === callback) {
+                delete eventCallbacks[eventType];
+                if (eventType === "settings_button_pressed") {
+                  settingsButtonCallback = null;
+                }
+              }
+            },
             ready() {
               console.log("Telegram WebApp ready (mocked)");
             },
@@ -102,12 +144,35 @@ export default function App() {
               console.log("Telegram WebApp openTelegramLink (mocked):", url);
               window.open(url, "_blank");
             },
+            openInvoice(url: string, callback?: (status: string) => void) {
+              console.log("Telegram WebApp openInvoice (mocked):", url);
+              // Simulate payment flow in dev mode
+              const shouldSucceed = window.confirm(
+                `Mock Payment\n\nURL: ${url}\n\nClick OK to simulate successful payment, Cancel for failed payment.`
+              );
+              if (callback) {
+                setTimeout(() => {
+                  callback(shouldSucceed ? "paid" : "failed");
+                }, 500);
+              }
+            },
             version: "7.0",
             platform: "web",
           },
         };
 
+        // Add keyboard shortcut to trigger settings button in dev mode
+        const handleKeyPress = (e: KeyboardEvent) => {
+          if (e.key === "s" && (e.metaKey || e.ctrlKey)) {
+            e.preventDefault();
+            console.log("Dev: Triggering settings_button_pressed event");
+            settingsButtonCallback?.();
+          }
+        };
+        window.addEventListener("keydown", handleKeyPress);
+
         console.log("window.Telegram [mocked]", window.Telegram);
+        console.log("Dev tip: Press Cmd/Ctrl+S to trigger settings button");
       }
 
       const success = authenticateWithTelegram();
