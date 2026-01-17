@@ -20,27 +20,37 @@ export function BottomNav() {
 
   // Setup Telegram Settings Button
   useEffect(() => {
-    if (window.Telegram?.WebApp) {
-      const webApp = window.Telegram.WebApp;
+    console.log("BottomNav: Setting up Telegram Settings Button");
+    console.log("Telegram WebApp exists:", !!window.Telegram?.WebApp);
+    console.log(
+      "SettingsButton exists:",
+      !!window.Telegram?.WebApp?.SettingsButton
+    );
 
-      // Show the settings button
-      webApp.SettingsButton?.show();
+    if (window.Telegram?.WebApp?.SettingsButton) {
+      const settingsButton = window.Telegram.WebApp.SettingsButton;
 
-      // Create handler for settings_button_pressed event
+      // Create handler for settings button
       const handleSettingsButtonPressed = () => {
+        console.log("✅ Settings button pressed handler called!");
         if (window.Telegram?.WebApp?.HapticFeedback) {
           window.Telegram.WebApp.HapticFeedback.impactOccurred("light");
         }
         setIsSettingsOpen(true);
       };
 
-      // Register event handler
-      webApp.onEvent("settings_button_pressed", handleSettingsButtonPressed);
+      // Show the settings button and register click handler
+      console.log("Showing settings button...");
+      settingsButton.show();
+      console.log("Registering onClick handler...");
+      settingsButton.onClick(handleSettingsButtonPressed);
+      console.log("Settings button setup complete");
 
       // Cleanup
       return () => {
-        webApp.offEvent("settings_button_pressed", handleSettingsButtonPressed);
-        webApp.SettingsButton?.hide();
+        console.log("Cleaning up settings button...");
+        settingsButton.offClick(handleSettingsButtonPressed);
+        settingsButton.hide();
       };
     }
   }, []);
