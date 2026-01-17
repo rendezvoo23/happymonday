@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   ChartFillIcon,
@@ -17,6 +17,33 @@ export function BottomNav() {
 
   const isHomeActive = location.pathname === "/home";
   const isStatsActive = location.pathname === "/statistics";
+
+  // Setup Telegram Settings Button
+  useEffect(() => {
+    if (window.Telegram?.WebApp) {
+      const webApp = window.Telegram.WebApp;
+
+      // Show the settings button
+      webApp.SettingsButton?.show();
+
+      // Create handler for settings_button_pressed event
+      const handleSettingsButtonPressed = () => {
+        if (window.Telegram?.WebApp?.HapticFeedback) {
+          window.Telegram.WebApp.HapticFeedback.impactOccurred("light");
+        }
+        setIsSettingsOpen(true);
+      };
+
+      // Register event handler
+      webApp.onEvent("settings_button_pressed", handleSettingsButtonPressed);
+
+      // Cleanup
+      return () => {
+        webApp.offEvent("settings_button_pressed", handleSettingsButtonPressed);
+        webApp.SettingsButton?.hide();
+      };
+    }
+  }, []);
 
   return (
     <div className="fixed bottom-8 left-0 right-0 z-40 flex justify-between px-6 pointer-events-none">

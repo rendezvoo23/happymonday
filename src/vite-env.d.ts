@@ -12,6 +12,14 @@ type TelegramUser = {
   username: string;
 };
 
+interface TelegramSettingsButton {
+  isVisible: boolean;
+  show: () => void;
+  hide: () => void;
+  onClick: (callback: () => void) => void;
+  offClick: (callback: () => void) => void;
+}
+
 interface TelegramWebApp {
   initData: string;
   initDataUnsafe: Record<string, unknown> & { user: TelegramUser };
@@ -22,12 +30,16 @@ interface TelegramWebApp {
     notificationOccurred: (type: "error" | "success" | "warning") => void;
     selectionChanged: () => void;
   };
+  SettingsButton: TelegramSettingsButton;
   ready: () => void;
   expand: () => void;
   disableVerticalSwipes: () => void;
   enableVerticalSwipes: () => void;
   openLink: (url: string) => void;
   openTelegramLink: (url: string) => void;
+  openInvoice: (url: string, callback?: (status: string) => void) => void;
+  onEvent: (eventType: string, callback: () => void) => void;
+  offEvent: (eventType: string, callback: () => void) => void;
   version?: string;
   platform?: string;
 }

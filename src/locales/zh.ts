@@ -40,6 +40,7 @@ export default {
     language: "语言",
     currency: "货币",
     theme: "主题",
+    donate: "捐赠",
     selectCurrency: "选择货币",
     selectTheme: "选择主题",
     selectLanguage: "选择语言",

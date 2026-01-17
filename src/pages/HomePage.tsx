@@ -264,7 +264,7 @@ export function HomePage() {
         >
           <div className="w-full flex justify-center relative overflow-hidden">
             {isInitialLoading ? (
-              <div className="text-gray-500 mt-6 h-40 flex items-center justify-center">
+              <div className="text-gray-500 mt-6 h-[380px] flex items-center justify-center">
                 <Loader2 className="w-8 h-8 animate-spin" />
               </div>
             ) : (
@@ -286,8 +286,8 @@ export function HomePage() {
                 >
                   <BubblesCluster
                     transactions={prevMonthTransactions}
-                    mode="cluster"
-                    height={280}
+                    mode="separated"
+                    height={380}
                   />
                 </div>
 
@@ -296,7 +296,7 @@ export function HomePage() {
                   <BubblesCluster
                     transactions={transactions}
                     mode="cluster"
-                    height={280}
+                    height={380}
                   />
                 </div>
 
@@ -310,8 +310,8 @@ export function HomePage() {
                   >
                     <BubblesCluster
                       transactions={nextMonthTransactions}
-                      mode="cluster"
-                      height={280}
+                      mode="separated"
+                      height={380}
                     />
                   </div>
                 )}

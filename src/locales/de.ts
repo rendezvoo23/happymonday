@@ -40,6 +40,7 @@ export default {
     language: "Sprache",
     currency: "Währung",
     theme: "Design",
+    donate: "Spenden",
     selectCurrency: "Währung auswählen",
     selectTheme: "Design auswählen",
     selectLanguage: "Sprache auswählen",

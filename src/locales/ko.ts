@@ -40,6 +40,7 @@ export default {
     language: "언어",
     currency: "통화",
     theme: "테마",
+    donate: "후원",
     selectCurrency: "통화 선택",
     selectTheme: "테마 선택",
     selectLanguage: "언어 선택",
