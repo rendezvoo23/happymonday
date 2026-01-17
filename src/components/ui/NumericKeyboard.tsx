@@ -1,6 +1,6 @@
+import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { Delete } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 interface NumericKeyboardProps {
   onKeyPress: (key: string) => void;
@@ -50,11 +50,7 @@ export function NumericKeyboard({
           )}
           whileTap={{ scale: 0.95 }}
         >
-          {key === "⌫" ? (
-            <Delete className="w-6 h-6" />
-          ) : (
-            key
-          )}
+          {key === "⌫" ? <Delete className="w-6 h-6" /> : key}
         </motion.button>
       ))}
     </div>

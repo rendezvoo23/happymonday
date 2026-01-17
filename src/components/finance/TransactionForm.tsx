@@ -205,27 +205,21 @@ export function TransactionForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="space-y-4">
-        <div
-          className="text-sm font-medium text-gray-500 dark:text-gray-400 ml-1"
-        >
+        <div className="text-sm font-medium text-gray-500 dark:text-gray-400 ml-1">
           {t("transactions.amount")}
         </div>
-        
+
         {/* Amount Display */}
         <div className="relative flex items-center justify-center min-h-[64px] bg-gray-50 dark:bg-gray-800 rounded-2xl px-6 py-4">
           <div className="flex items-center gap-2 text-4xl font-bold text-gray-900 dark:text-gray-100">
             {isSymbolPrefix && (
-              <span className="text-gray-400 dark:text-gray-500">
-                {symbol}
-              </span>
+              <span className="text-gray-400 dark:text-gray-500">{symbol}</span>
             )}
             <span className={amount ? "" : "text-gray-400 dark:text-gray-600"}>
               {amount || "0"}
             </span>
             {!isSymbolPrefix && (
-              <span className="text-gray-400 dark:text-gray-500">
-                {symbol}
-              </span>
+              <span className="text-gray-400 dark:text-gray-500">{symbol}</span>
             )}
           </div>
         </div>
