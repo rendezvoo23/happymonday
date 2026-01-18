@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/Button";
 import { MonthSelector } from "@/components/ui/MonthSelector";
 import { useDate } from "@/context/DateContext";
 import { useCurrency } from "@/hooks/useCurrency";
-import { useTranslation } from "@/hooks/useTranslation";
 import { useCategoryStore } from "@/stores/categoryStore";
 import { useTransactionStore } from "@/stores/transactionStore";
 import type { Enums, Tables } from "@/types/supabase";
@@ -27,7 +26,6 @@ export function HomePage() {
   const { loadCategories } = useCategoryStore();
   const { selectedDate, prevMonth, nextMonth, canGoNext } = useDate();
   const { formatAmount } = useCurrency();
-  const { t } = useTranslation();
 
   // Transaction drawer state
   const [isTransactionDrawerOpen, setIsTransactionDrawerOpen] = useState(false);

@@ -13,7 +13,8 @@
     "check": "biome check .",
     "check:fix": "biome check --write .",
     "prepare": "husky",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.89.0",
