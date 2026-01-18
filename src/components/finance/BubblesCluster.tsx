@@ -20,6 +20,7 @@ interface BubblesClusterProps {
   mode?: "cluster" | "separated";
   height?: number;
   onBubbleClick?: (categoryId: string) => void;
+  animateBubbles?: boolean;
 }
 
 export function BubblesCluster({
@@ -27,6 +28,7 @@ export function BubblesCluster({
   mode = "cluster",
   height = 320,
   onBubbleClick,
+  animateBubbles = true,
 }: BubblesClusterProps) {
   const navigate = useNavigate();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -105,9 +107,9 @@ export function BubblesCluster({
     const packed = packCircles(
       data.map((d) => ({ id: d.id, value: d.value })),
       {
-        minRadius: mode === "cluster" ? 40 : 60,
-        maxRadius: mode === "cluster" ? 70 : 100,
-        padding: mode === "cluster" ? -15 : 10,
+        minRadius: mode === "cluster" ? 30 : 60,
+        maxRadius: mode === "cluster" ? 120 : 100,
+        padding: mode === "cluster" ? -20 : 10,
       }
     );
 
@@ -186,7 +188,7 @@ export function BubblesCluster({
   return (
     <div
       ref={containerRef}
-      className="relative w-full flex items-center justify-center overflow-hidden"
+      className="relative w-full flex items-center justify-center"
       style={{ height }}
     >
       {/* Gooey Filter - Only for cluster mode */}
@@ -199,18 +201,18 @@ export function BubblesCluster({
             <filter id="goo">
               <feGaussianBlur
                 in="SourceGraphic"
-                stdDeviation="15"
+                stdDeviation="12"
                 result="blur"
                 colorInterpolationFilters="sRGB"
               />
               <feColorMatrix
                 in="blur"
                 mode="matrix"
-                values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -7"
+                values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 20 -8"
                 result="goo"
                 colorInterpolationFilters="sRGB"
               />
-              <feComposite in="SourceGraphic" in2="goo" operator="atop" />
+              <feComposite in="SourceGraphic" in2="goo" operator="over" />
             </filter>
           </defs>
         </svg>
@@ -234,25 +236,38 @@ export function BubblesCluster({
           return (
             <motion.div
               key={bubble.id}
-              layout
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{
-                scale: 1,
-                opacity: 1,
-                x: bubble.x,
-                y: [bubble.y - 2, bubble.y + 2, bubble.y - 2],
-              }}
-              whileTap={{ scale: 0.9 }}
-              transition={{
-                scale: { type: "spring", stiffness: 300, damping: 20 },
-                opacity: { duration: 0.2 },
-                y: {
-                  duration: 2 + Math.random() * 2,
-                  repeat: Number.POSITIVE_INFINITY,
-                  ease: "easeInOut",
-                },
-                layout: { type: "spring", stiffness: 200, damping: 25 },
-              }}
+              layout={animateBubbles}
+              initial={animateBubbles ? { scale: 0, opacity: 0 } : false}
+              animate={
+                animateBubbles
+                  ? {
+                      scale: 1,
+                      opacity: 1,
+                      x: bubble.x,
+                      y: [bubble.y - 2, bubble.y + 2, bubble.y - 2],
+                    }
+                  : {
+                      scale: 1,
+                      opacity: 1,
+                      x: bubble.x,
+                      y: bubble.y,
+                    }
+              }
+              whileTap={animateBubbles ? { scale: 0.9 } : undefined}
+              transition={
+                animateBubbles
+                  ? {
+                      scale: { type: "spring", stiffness: 300, damping: 20 },
+                      opacity: { duration: 0.2 },
+                      y: {
+                        duration: 2 + Math.random() * 2,
+                        repeat: Number.POSITIVE_INFINITY,
+                        ease: "easeInOut",
+                      },
+                      layout: { type: "spring", stiffness: 200, damping: 25 },
+                    }
+                  : { duration: 0 }
+              }
               onClick={() => {
                 if (window.Telegram?.WebApp?.HapticFeedback) {
                   window.Telegram.WebApp.HapticFeedback.impactOccurred("heavy");
@@ -263,7 +278,7 @@ export function BubblesCluster({
               style={{
                 width: bubble.r * 2,
                 height: bubble.r * 2,
-                background: `radial-gradient(circle, ${bubble.category.color} 0%, ${hexToRgba(bubble.category.color, 0.8)} 95%, transparent 100%)`,
+                background: `radial-gradient(circle, ${hexToRgba(bubble.category.color, 0.95)} 0%, ${hexToRgba(bubble.category.color, 0.85)} 40%, ${hexToRgba(bubble.category.color, 0.6)} 70%, ${hexToRgba(bubble.category.color, 0.3)} 90%, transparent 100%)`,
                 opacity: 1,
                 zIndex: 10,
                 left: "50%",
@@ -274,7 +289,10 @@ export function BubblesCluster({
             >
               <span
                 className="text-white font-bold text-lg text-center leading-tight"
-                style={{ fontSize: Math.max(10, bubble.r * 0.3) }}
+                style={{
+                  fontSize: Math.max(10, bubble.r * 0.3),
+                  opacity: 0.95,
+                }}
               >
                 {formatCompactAmount(bubble.value)}
               </span>
@@ -283,7 +301,7 @@ export function BubblesCluster({
                   className="text-white/90 font-medium mt-0 text-center leading-tight"
                   style={{
                     fontSize: Math.max(8, bubble.r * 0.2),
-                    opacity: 0.5,
+                    opacity: 0.85,
                   }}
                 >
                   {bubble.category.label}

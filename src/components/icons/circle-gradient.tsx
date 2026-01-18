@@ -21,7 +21,7 @@ export const CircleGradientIcon = (props: React.SVGProps<SVGSVGElement>) => {
       </mask>
       <g mask="url(#mask0_10405_4)">
         <g
-          clip-path="url(#paint0_angular_10405_4_clip_path)"
+          clipPath="url(#paint0_angular_10405_4_clip_path)"
           data-figma-skip-parse="true"
         >
           <g transform="matrix(0.0574286 -0.103981 0.106649 0.0589026 204.045 209.701)">

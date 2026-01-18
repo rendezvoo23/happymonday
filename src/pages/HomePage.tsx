@@ -334,7 +334,9 @@ export function HomePage() {
                 >
                   <BubblesCluster
                     transactions={prevMonthTransactions}
-                    mode="separated"
+                    mode="cluster"
+                    animateBubbles={false}
+                    key="prev-month-bubbles"
                     height={380}
                   />
                 </div>
@@ -358,8 +360,10 @@ export function HomePage() {
                   >
                     <BubblesCluster
                       transactions={nextMonthTransactions}
-                      mode="separated"
+                      mode="cluster"
+                      animateBubbles={false}
                       height={380}
+                      key="next-month-bubbles"
                     />
                   </div>
                 )}
