@@ -68,15 +68,19 @@ export function BottomNav() {
           }}
           className={cn(
             "relative flex items-center justify-center w-12 h-12 rounded-full transition-all",
-            isHomeActive
-              ? "text-blue-500 dark:text-blue-400"
-              : "text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
+            !isHomeActive &&
+              "text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
           )}
+          style={isHomeActive ? { color: "var(--primary-color)" } : undefined}
         >
           {isHomeActive && (
             <motion.div
               layoutId="nav-indicator-left"
-              className="absolute inset-0 bg-blue-50 dark:bg-blue-900/30 rounded-full"
+              className="absolute inset-0 rounded-full"
+              style={{
+                backgroundColor:
+                  "color-mix(in srgb, var(--primary-color) 10%, transparent)",
+              }}
               transition={{ type: "spring", stiffness: 400, damping: 30 }}
             />
           )}
@@ -98,15 +102,19 @@ export function BottomNav() {
           }}
           className={cn(
             "relative flex items-center justify-center w-12 h-12 rounded-full transition-all",
-            isStatsActive
-              ? "text-blue-500 dark:text-blue-400"
-              : "text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
+            !isStatsActive &&
+              "text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
           )}
+          style={isStatsActive ? { color: "var(--primary-color)" } : undefined}
         >
           {isStatsActive && (
             <motion.div
               layoutId="nav-indicator-left"
-              className="absolute inset-0 bg-blue-50 dark:bg-blue-900/30 rounded-full"
+              className="absolute inset-0 rounded-full"
+              style={{
+                backgroundColor:
+                  "color-mix(in srgb, var(--primary-color) 10%, transparent)",
+              }}
               transition={{ type: "spring", stiffness: 400, damping: 30 }}
             />
           )}
@@ -133,15 +141,21 @@ export function BottomNav() {
             }}
             className={cn(
               "relative flex items-center justify-center w-12 h-12 rounded-full transition-all",
-              isSettingsOpen
-                ? "text-blue-500 dark:text-blue-400"
-                : "text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
+              !isSettingsOpen &&
+                "text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
             )}
+            style={
+              isSettingsOpen ? { color: "var(--primary-color)" } : undefined
+            }
           >
             {isSettingsOpen && (
               <motion.div
                 layoutId="nav-indicator-right"
-                className="absolute inset-0 bg-blue-50 dark:bg-blue-900/30 rounded-full"
+                className="absolute inset-0 rounded-full"
+                style={{
+                  backgroundColor:
+                    "color-mix(in srgb, var(--primary-color) 10%, transparent)",
+                }}
                 transition={{ type: "spring", stiffness: 400, damping: 30 }}
               />
             )}

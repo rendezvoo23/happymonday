@@ -369,26 +369,16 @@ export function HomePage() {
             )}
           </div>
 
-          <div className="text-center space-y-1">
-            <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-              {t("transactions.total")}
-            </p>
-            <p className="text-xl font-bold text-gray-900 dark:text-gray-100">
-              {formatAmount(totalExpenses)}
-            </p>
-          </div>
+          <MonthSelector
+            totalExpenses={formatAmount(totalExpenses)}
+            onPrevMonth={handlePrevMonthClick}
+            onNextMonth={handleNextMonthClick}
+          />
 
-          <header className="flex flex-col items-center pt-2 pb-4">
-            <MonthSelector
-              onPrevMonth={handlePrevMonthClick}
-              onNextMonth={handleNextMonthClick}
-            />
-          </header>
-
-          <div className="mt-20 flex justify-center">
+          <div className="mt-10 flex justify-center">
             <Button
               size="icon"
-              className="w-16 h-16 rounded-full shadow-2xl flex items-center justify-center overflow-hidden transition-transform active:scale-90 z-50 relative"
+              className="w-16 h-16 rounded-full shadow-2xl flex items-center justify-center overflow-hidden transition-transform z-50 relative"
               onClick={() => handleOpenAdd("expense")}
             >
               <CircleGradientIcon className="absolute inset-0 w-full h-full" />

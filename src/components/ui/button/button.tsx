@@ -53,6 +53,9 @@ export type buttonProps = PropsWithChildren<{
   tabIndex?: number;
   style?: React.CSSProperties;
   className?: string;
+  onTouchStart?: (event: React.TouchEvent<HTMLButtonElement>) => void;
+  onTouchMove?: (event: React.TouchEvent<HTMLButtonElement>) => void;
+  onTouchEnd?: (event: React.TouchEvent<HTMLButtonElement>) => void;
 }> &
   VariantProps<typeof buttonVariants>;
 
@@ -85,6 +88,9 @@ const LiquidButton = forwardRef<HTMLButtonElement, buttonProps>(
       style,
       tabIndex,
       type = "button",
+      onTouchStart,
+      onTouchMove,
+      onTouchEnd,
     },
     ref
   ) => {
@@ -113,6 +119,9 @@ const LiquidButton = forwardRef<HTMLButtonElement, buttonProps>(
         type={type}
         tabIndex={tabIndex}
         data-size={size}
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
         whileHover={
           size === "lg"
             ? skipEffects
