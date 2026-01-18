@@ -295,6 +295,9 @@ export function HomePage() {
   };
 
   const handleOpenAdd = (type: TransactionDirection) => {
+    if (window.Telegram?.WebApp?.HapticFeedback) {
+      window.Telegram.WebApp.HapticFeedback.impactOccurred("heavy");
+    }
     setTransactionType(type);
     setIsTransactionDrawerOpen(true);
   };
@@ -382,10 +385,10 @@ export function HomePage() {
             />
           </header>
 
-          <div className="mt-28 flex justify-center">
+          <div className="mt-20 flex justify-center">
             <Button
               size="icon"
-              className="w-16 h-16 rounded-full shadow-2xl border-2 border-white flex items-center justify-center overflow-hidden transition-transform active:scale-95 z-50 relative"
+              className="w-16 h-16 rounded-full shadow-2xl flex items-center justify-center overflow-hidden transition-transform active:scale-90 z-50 relative"
               onClick={() => handleOpenAdd("expense")}
             >
               <CircleGradientIcon className="absolute inset-0 w-full h-full" />

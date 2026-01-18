@@ -44,7 +44,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         whileTap={{ scale: 0.98 }}
         onTap={() => {
           if (window.Telegram?.WebApp?.HapticFeedback) {
-            window.Telegram.WebApp.HapticFeedback.impactOccurred("light");
+            window.Telegram.WebApp.HapticFeedback.impactOccurred("medium");
           }
         }}
         className={cn(

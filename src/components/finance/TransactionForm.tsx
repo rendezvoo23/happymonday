@@ -11,7 +11,8 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { type Subcategory, getSubcategories } from "@/lib/api";
 import { useCategoryStore } from "@/stores/categoryStore";
 import type { CategoryId, TransactionType } from "@/types";
-import { Loader2 } from "lucide-react";
+import { Loader2, X } from "lucide-react";
+import { LiquidButton } from "../ui/button/button";
 import { CategorySelector } from "./CategorySelector";
 import { SubcategorySelector } from "./SubcategorySelector";
 
@@ -205,12 +206,8 @@ export function TransactionForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="space-y-4">
-        <div className="text-sm font-medium text-gray-500 dark:text-gray-400 ml-1">
-          {t("transactions.amount")}
-        </div>
-
         {/* Amount Display */}
-        <div className="relative flex items-center justify-center min-h-[64px] bg-gray-50 dark:bg-gray-800 rounded-2xl px-6 py-4">
+        <div className="relative flex items-center justify-center min-h-[64px] bg-gray-50 dark:bg-gray-800 rounded-2xl px-6 py-4 mt-10">
           <div className="flex items-center gap-2 text-4xl font-bold text-gray-900 dark:text-gray-100">
             {isSymbolPrefix && (
               <span className="text-gray-400 dark:text-gray-500">{symbol}</span>
@@ -312,6 +309,15 @@ export function TransactionForm({
       </div>
 
       <div className="pt-4 pb-4 flex gap-3">
+        <LiquidButton
+          type="button"
+          variant="liquid"
+          size="icon-lg"
+          onClick={onCancel}
+          className="absolute left-4 top-[14px]"
+        >
+          <X className="w-5 h-5" />
+        </LiquidButton>
         <Button
           type="button"
           variant="secondary"

@@ -56,9 +56,9 @@ export function BottomNav() {
   }, []);
 
   return (
-    <div className="fixed bottom-8 left-0 right-0 z-40 flex justify-between px-6 pointer-events-none">
+    <div className="fixed bottom-8 left-0 right-0 z-40 flex items-center justify-center px-6 pointer-events-none">
       {/* Left Pill: Home & Stats */}
-      <div className="flex items-center bg-white/80 dark:bg-gray-900/80 backdrop-blur-2xl rounded-full shadow-medium p-1.5 pointer-events-auto border border-white/20 dark:border-white/10 gap-1">
+      <div className="flex items-center bg-white/50 dark:bg-gray-900/80 backdrop-blur-xl rounded-full shadow-medium p-1.5 pointer-events-auto border border-white/20 dark:border-white/10 gap-1">
         <Link
           to="/home"
           onClick={() => {
@@ -121,34 +121,36 @@ export function BottomNav() {
       </div>
 
       {/* Right Pill: Settings */}
-      <div className="flex items-center bg-white/80 dark:bg-gray-900/80 backdrop-blur-2xl rounded-full shadow-medium p-1.5 pointer-events-auto border border-white/20 dark:border-white/10">
-        <button
-          type="button"
-          onClick={() => {
-            if (window.Telegram?.WebApp?.HapticFeedback) {
-              window.Telegram.WebApp.HapticFeedback.selectionChanged();
-            }
-            setIsSettingsOpen(true);
-          }}
-          className={cn(
-            "relative flex items-center justify-center w-12 h-12 rounded-full transition-all",
-            isSettingsOpen
-              ? "text-blue-500 dark:text-blue-400"
-              : "text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
-          )}
-        >
-          {isSettingsOpen && (
-            <motion.div
-              layoutId="nav-indicator-right"
-              className="absolute inset-0 bg-blue-50 dark:bg-blue-900/30 rounded-full"
-              transition={{ type: "spring", stiffness: 400, damping: 30 }}
-            />
-          )}
-          <motion.div whileTap={{ scale: 0.88 }} className="relative z-10">
-            <GearBigIcon className="w-6 h-6" />
-          </motion.div>
-        </button>
-      </div>
+      {false && (
+        <div className="flex items-center bg-white/80 dark:bg-gray-900/80 backdrop-blur-2xl rounded-full shadow-medium p-1.5 pointer-events-auto border border-white/20 dark:border-white/10">
+          <button
+            type="button"
+            onClick={() => {
+              if (window.Telegram?.WebApp?.HapticFeedback) {
+                window.Telegram.WebApp.HapticFeedback.selectionChanged();
+              }
+              setIsSettingsOpen(true);
+            }}
+            className={cn(
+              "relative flex items-center justify-center w-12 h-12 rounded-full transition-all",
+              isSettingsOpen
+                ? "text-blue-500 dark:text-blue-400"
+                : "text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
+            )}
+          >
+            {isSettingsOpen && (
+              <motion.div
+                layoutId="nav-indicator-right"
+                className="absolute inset-0 bg-blue-50 dark:bg-blue-900/30 rounded-full"
+                transition={{ type: "spring", stiffness: 400, damping: 30 }}
+              />
+            )}
+            <motion.div whileTap={{ scale: 0.88 }} className="relative z-10">
+              <GearBigIcon className="w-6 h-6" />
+            </motion.div>
+          </button>
+        </div>
+      )}
 
       {/* Settings Drawer */}
       <SettingsDrawer

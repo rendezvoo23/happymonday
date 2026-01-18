@@ -17,6 +17,7 @@ import {
 import type * as React from "react";
 import { useState } from "react";
 import { Drawer } from "vaul";
+import { LiquidButton } from "../ui/button/button";
 
 type SettingsScreen = "main" | "language" | "currency" | "theme" | "donate";
 
@@ -127,13 +128,15 @@ export function SettingsDrawer({ isOpen, onClose }: SettingsDrawerProps) {
           {/* Header */}
           <div className="flex-shrink-0 px-6 pb-4 relative">
             {currentScreen !== "main" && (
-              <button
+              <LiquidButton
                 type="button"
+                variant="liquid"
+                size="icon-lg"
                 onClick={navigateBack}
-                className="absolute left-4 top-0 p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                className="absolute left-4 top-[-6px]"
               >
-                <ChevronLeft className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-              </button>
+                <ChevronLeft className="w-5 h-5" />
+              </LiquidButton>
             )}
             <Drawer.Title className="text-xl font-semibold text-gray-900 dark:text-gray-100 text-center">
               {currentScreen === "main" && t("settings.title")}
