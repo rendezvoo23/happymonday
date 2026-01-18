@@ -57,8 +57,8 @@ export {
   CarIcon,
   CarrotIcon,
   CartIcon,
-  ChartIcon,
   ChartFillIcon,
+  ChartIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   CreditCardIcon,
@@ -80,8 +80,8 @@ export {
   MoreIcon,
   PaintPaletteIcon,
   PencilIcon,
-  PersonIcon,
   PersonFillIcon,
+  PersonIcon,
   PillIcon,
   PlaneIcon,
   StethoscopeIcon,
@@ -149,14 +149,15 @@ export const Icons: Record<string, React.FC> = {
  * @returns The React node (JSX) if found in Icons map, null otherwise
  */
 export const getIconComponent = (
-  icon: string | null | undefined
+  icon: string | null | undefined,
+  style?: React.CSSProperties
 ): React.ReactNode => {
   if (!icon) return null;
   const Component = Icons[icon] as React.FC | undefined;
   if (!Component) return null;
 
   return (
-    <div className={styles.iconContainer}>
+    <div className={styles.iconContainer} style={style}>
       <Component />
     </div>
   );

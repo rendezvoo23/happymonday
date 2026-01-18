@@ -5,6 +5,7 @@ import { packCircles } from "@/utils/circlePacking";
 import { motion } from "framer-motion";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { getIconComponent } from "../icons";
 
 type Transaction = Tables<"transactions">;
 
@@ -287,15 +288,6 @@ export function BubblesCluster({
                 marginTop: -bubble.r,
               }}
             >
-              <span
-                className="text-white font-bold text-lg text-center leading-tight"
-                style={{
-                  fontSize: Math.max(10, bubble.r * 0.3),
-                  opacity: 0.95,
-                }}
-              >
-                {formatCompactAmount(bubble.value)}
-              </span>
               {bubble.r > 30 && (
                 <span
                   className="text-white/90 font-medium mt-0 text-center leading-tight"
@@ -304,13 +296,53 @@ export function BubblesCluster({
                     opacity: 0.85,
                   }}
                 >
-                  {bubble.category.label}
+                  {mapIconToLabel(
+                    bubble.category.label,
+                    bubble.r > 50 ? "large" : "medium"
+                  )}
                 </span>
               )}
+              <span
+                className="text-white font-bold text-lg text-center leading-tight mt-1"
+                style={{
+                  fontSize: Math.max(10, bubble.r * 0.3),
+                  opacity: 1,
+                }}
+              >
+                {formatCompactAmount(bubble.value)}
+              </span>
             </motion.div>
           );
         })}
       </div>
     </div>
   );
+}
+
+function mapIconToLabel(
+  label: string,
+  variant: "small" | "medium" | "large" = "medium"
+) {
+  const sizeMap = {
+    small: 10,
+    medium: 20,
+    large: 40,
+  };
+  const size = sizeMap[variant] || 20;
+  switch (label.toLowerCase()) {
+    case "food & drink":
+      return getIconComponent(":fork:", { width: size, height: size });
+    case "transport":
+      return getIconComponent(":car:", { width: size, height: size });
+    case "health":
+      return getIconComponent(":leaf:", { width: size, height: size });
+    case "entertainment":
+      return getIconComponent(":film:", { width: size, height: size });
+    case "shopping":
+      return getIconComponent(":lamp:", { width: size, height: size });
+    case "services":
+      return getIconComponent(":bolt:", { width: size, height: size });
+    default:
+      return label;
+  }
 }

@@ -1,3 +1,5 @@
+import { FILL_OPACITY } from "./const";
+
 export const PillIcon = () => {
   return (
     <svg
@@ -11,12 +13,12 @@ export const PillIcon = () => {
         <path
           d="M5.58677 6.61835L1.71958 10.4855C-0.546042 12.7512-0.526511 15.5734 1.50474 17.6144C3.54575 19.6457 6.36802 19.6652 8.63365 17.3996L12.5008 13.5324Z"
           fill="white"
-          fillOpacity="0.85"
+          fillOpacity={FILL_OPACITY}
         />
         <path
           d="M17.618 1.50116C15.577-0.530086 12.745-0.539851 10.4989 1.71601L6.62193 5.5832L13.536 12.4973L17.4032 8.6203C19.6688 6.36445 19.6493 3.54218 17.618 1.50116Z"
           fill="white"
-          fillOpacity="0.85"
+          fillOpacity={FILL_OPACITY}
         />
       </g>
     </svg>
