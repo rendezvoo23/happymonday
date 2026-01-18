@@ -1,5 +1,5 @@
 import { useUserStore } from "@/stores/userStore";
-import { useMemo } from "react";
+import React, { useMemo } from "react";
 
 /**
  * Map of currencies to their "native" or most "standard" locale for symbol placement.
@@ -155,7 +155,16 @@ export function useCurrency() {
     if (isSymbolPrefix) {
       return `${currency.symbol}${formatted}${suffix}`;
     }
-    return `${formatted}${suffix}`;
+    return React.createElement(
+      "div",
+      null,
+      React.createElement("span", { style: { opacity: 1.0 } }, formatted),
+      React.createElement(
+        "span",
+        { style: { opacity: 0.8, fontWeight: 400, marginLeft: 2 } },
+        suffix
+      )
+    );
   };
 
   return {
