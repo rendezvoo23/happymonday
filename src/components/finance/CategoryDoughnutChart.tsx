@@ -25,6 +25,7 @@ interface CategoryDoughnutChartProps {
   initialExpandedCategory?: string | null;
 }
 
+// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 const renderActiveShape = (props: any) => {
   const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill } =
     props;

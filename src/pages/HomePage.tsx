@@ -1,8 +1,6 @@
 import { BubblesCluster } from "@/components/finance/BubblesCluster";
 import { TransactionDrawer } from "@/components/finance/TransactionDrawer";
-import { CircleGradientIcon } from "@/components/icons/circle-gradient";
 import { PageShell } from "@/components/layout/PageShell";
-import { Button } from "@/components/ui/Button";
 import { MonthSelector } from "@/components/ui/MonthSelector";
 import { useDate } from "@/context/DateContext";
 import { useCurrency } from "@/hooks/useCurrency";
@@ -12,6 +10,7 @@ import type { Enums, Tables } from "@/types/supabase";
 import { subMonths } from "date-fns";
 import { Loader2, Plus } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import "./button.css";
 
 type TransactionDirection = Enums<"transaction_direction">;
 type TransactionWithCategory = Tables<"transactions"> & {
@@ -305,7 +304,7 @@ export function HomePage() {
       <PageShell allowScroll={true}>
         <main
           ref={containerRef}
-          className="flex flex-col items-center gap-2 pb-10 touch-none"
+          className="flex flex-col items-center gap-2 pb-32 touch-none min-h-[calc(100vh-env(safe-area-inset-top))]"
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
@@ -377,15 +376,18 @@ export function HomePage() {
             onNextMonth={handleNextMonthClick}
           />
 
-          <div className="mt-10 flex justify-center">
-            <Button
-              size="icon"
-              className="w-16 h-16 rounded-full shadow-2xl flex items-center justify-center overflow-hidden transition-transform z-50 relative"
-              onClick={() => handleOpenAdd("expense")}
-            >
-              <CircleGradientIcon className="absolute inset-0 w-full h-full" />
-              <Plus className="w-8 h-8 text-white relative z-10" />
-            </Button>
+          <div className="flex-1 flex items-center justify-center">
+            <div className="glassmorphic-plus-wrap">
+              <button
+                type="button"
+                title="Add expense"
+                className="glassmorphic-plus-button"
+                onClick={() => handleOpenAdd("expense")}
+              >
+                <Plus className="plus-icon" />
+              </button>
+              <div className="glassmorphic-plus-shadow" />
+            </div>
           </div>
         </main>
       </PageShell>

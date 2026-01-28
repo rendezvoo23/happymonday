@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { useEffect } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   ChartFillIcon,
   ChartIcon,
@@ -9,16 +9,17 @@ import {
   HouseFillIcon,
   HouseIcon,
 } from "../icons";
-import { SettingsDrawer } from "./SettingsDrawer";
+import "@/pages/button.css";
 
 export function BottomNav() {
   const location = useLocation();
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const navigate = useNavigate();
 
   const isHomeActive = location.pathname === "/home";
   const isStatsActive = location.pathname === "/statistics";
+  const isSettingsActive = location.pathname === "/settings";
 
-  // Setup Telegram Settings Button
+  // Setup Telegram Settings Button - navigate to settings page instead of drawer
   useEffect(() => {
     console.log("BottomNav: Setting up Telegram Settings Button");
     console.log("Telegram WebApp exists:", !!window.Telegram?.WebApp);
@@ -36,7 +37,7 @@ export function BottomNav() {
         if (window.Telegram?.WebApp?.HapticFeedback) {
           window.Telegram.WebApp.HapticFeedback.impactOccurred("light");
         }
-        setIsSettingsOpen(true);
+        navigate("/settings");
       };
 
       // Show the settings button and register click handler
@@ -53,124 +54,87 @@ export function BottomNav() {
         settingsButton.hide();
       };
     }
-  }, []);
+  }, [navigate]);
 
   return (
     <div className="fixed bottom-8 left-0 right-0 z-40 flex items-center justify-center px-6 pointer-events-none">
-      {/* Left Pill: Home & Stats */}
-      <div className="flex items-center bg-white/50 dark:bg-gray-900/80 backdrop-blur-xl rounded-full shadow-medium p-1.5 pointer-events-auto border border-white/20 dark:border-white/10 gap-1">
-        <Link
-          to="/home"
-          onClick={() => {
-            if (window.Telegram?.WebApp?.HapticFeedback) {
-              window.Telegram.WebApp.HapticFeedback.selectionChanged();
-            }
-          }}
-          className={cn(
-            "relative flex items-center justify-center w-12 h-12 rounded-full transition-all",
-            !isHomeActive &&
-              "text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
-          )}
-          style={isHomeActive ? { color: "var(--primary-color)" } : undefined}
-        >
-          {isHomeActive && (
-            <motion.div
-              layoutId="nav-indicator-left"
-              className="absolute inset-0 rounded-full"
-              style={{
-                backgroundColor:
-                  "color-mix(in srgb, var(--primary-color) 10%, transparent)",
-              }}
-              transition={{ type: "spring", stiffness: 400, damping: 30 }}
-            />
-          )}
-          <motion.div whileTap={{ scale: 0.88 }} className="relative z-10">
-            {isHomeActive ? (
-              <HouseFillIcon className="w-6 h-6" />
-            ) : (
-              <HouseIcon className="w-6 h-6" />
-            )}
-          </motion.div>
-        </Link>
-
-        <Link
-          to="/statistics"
-          onClick={() => {
-            if (window.Telegram?.WebApp?.HapticFeedback) {
-              window.Telegram.WebApp.HapticFeedback.selectionChanged();
-            }
-          }}
-          className={cn(
-            "relative flex items-center justify-center w-12 h-12 rounded-full transition-all",
-            !isStatsActive &&
-              "text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
-          )}
-          style={isStatsActive ? { color: "var(--primary-color)" } : undefined}
-        >
-          {isStatsActive && (
-            <motion.div
-              layoutId="nav-indicator-left"
-              className="absolute inset-0 rounded-full"
-              style={{
-                backgroundColor:
-                  "color-mix(in srgb, var(--primary-color) 10%, transparent)",
-              }}
-              transition={{ type: "spring", stiffness: 400, damping: 30 }}
-            />
-          )}
-          <motion.div whileTap={{ scale: 0.88 }} className="relative z-10">
-            {isStatsActive ? (
-              <ChartFillIcon className="w-6 h-6" />
-            ) : (
-              <ChartIcon className="w-6 h-6" />
-            )}
-          </motion.div>
-        </Link>
-      </div>
-
-      {/* Right Pill: Settings */}
-      {false && (
-        <div className="flex items-center bg-white/80 dark:bg-gray-900/80 backdrop-blur-2xl rounded-full shadow-medium p-1.5 pointer-events-auto border border-white/20 dark:border-white/10">
-          <button
-            type="button"
+      {/* Liquid Glass Navigation */}
+      <div className="liquid-glass-nav-wrap">
+        <div className="liquid-glass-nav">
+          <Link
+            to="/home"
             onClick={() => {
               if (window.Telegram?.WebApp?.HapticFeedback) {
                 window.Telegram.WebApp.HapticFeedback.selectionChanged();
               }
-              setIsSettingsOpen(true);
+            }}
+            className={cn("liquid-glass-nav-item", isHomeActive && "active")}
+          >
+            <motion.div whileTap={{ scale: 0.88 }} className="relative z-10">
+              {isHomeActive ? (
+                <HouseFillIcon
+                  className="nav-icon"
+                  style={
+                    isHomeActive ? { color: "var(--primary-color)" } : undefined
+                  }
+                />
+              ) : (
+                <HouseIcon className="nav-icon" />
+              )}
+            </motion.div>
+          </Link>
+
+          <Link
+            to="/statistics"
+            onClick={() => {
+              if (window.Telegram?.WebApp?.HapticFeedback) {
+                window.Telegram.WebApp.HapticFeedback.selectionChanged();
+              }
+            }}
+            className={cn("liquid-glass-nav-item", isStatsActive && "active")}
+          >
+            <motion.div whileTap={{ scale: 0.88 }} className="relative z-10">
+              {isStatsActive ? (
+                <ChartFillIcon
+                  className="nav-icon"
+                  style={
+                    isStatsActive
+                      ? { color: "var(--primary-color)" }
+                      : undefined
+                  }
+                />
+              ) : (
+                <ChartIcon className="nav-icon" />
+              )}
+            </motion.div>
+          </Link>
+
+          <Link
+            to="/settings"
+            onClick={() => {
+              if (window.Telegram?.WebApp?.HapticFeedback) {
+                window.Telegram.WebApp.HapticFeedback.selectionChanged();
+              }
             }}
             className={cn(
-              "relative flex items-center justify-center w-12 h-12 rounded-full transition-all",
-              !isSettingsOpen &&
-                "text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
+              "liquid-glass-nav-item",
+              isSettingsActive && "active"
             )}
-            style={
-              isSettingsOpen ? { color: "var(--primary-color)" } : undefined
-            }
           >
-            {isSettingsOpen && (
-              <motion.div
-                layoutId="nav-indicator-right"
-                className="absolute inset-0 rounded-full"
-                style={{
-                  backgroundColor:
-                    "color-mix(in srgb, var(--primary-color) 10%, transparent)",
-                }}
-                transition={{ type: "spring", stiffness: 400, damping: 30 }}
-              />
-            )}
             <motion.div whileTap={{ scale: 0.88 }} className="relative z-10">
-              <GearBigIcon className="w-6 h-6" />
+              <GearBigIcon
+                className="nav-icon"
+                style={
+                  isSettingsActive
+                    ? { color: "var(--primary-color)" }
+                    : undefined
+                }
+              />
             </motion.div>
-          </button>
+          </Link>
         </div>
-      )}
-
-      {/* Settings Drawer */}
-      <SettingsDrawer
-        isOpen={isSettingsOpen}
-        onClose={() => setIsSettingsOpen(false)}
-      />
+        <div className="liquid-glass-nav-shadow" />
+      </div>
     </div>
   );
 }

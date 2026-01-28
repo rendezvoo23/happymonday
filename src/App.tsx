@@ -9,6 +9,7 @@ import { AddTransactionPage } from "@/pages/AddTransactionPage";
 import { EditTransactionPage } from "@/pages/EditTransactionPage";
 import { HistoryPage } from "@/pages/HistoryPage";
 import { HomePage } from "@/pages/HomePage";
+import { SettingsPage } from "@/pages/SettingsPage";
 import { StatisticsPage } from "@/pages/StatisticsPage";
 import { useUserStore } from "@/stores/userStore";
 import { AnimatePresence } from "framer-motion";
@@ -245,6 +246,14 @@ export default function App() {
             element={
               <ProtectedRoute isLoading={isAuthLoading}>
                 <StatisticsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <ProtectedRoute isLoading={isAuthLoading}>
+                <SettingsPage />
               </ProtectedRoute>
             }
           />
