@@ -25,7 +25,6 @@
   pointer-events: none;
   background: 0 0;
   border-radius: 999vw;
-  width: 280px;
   transition: all .4s cubic-bezier(0.25, 1, 0.5, 1);
   position: relative;
 }
