@@ -12,6 +12,7 @@ import type { Enums, Tables } from "@/types/supabase";
 import { subMonths } from "date-fns";
 import { Loader2, Plus } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import "./button.css";
 
 type TransactionDirection = Enums<"transaction_direction">;
 type TransactionWithCategory = Tables<"transactions"> & {
@@ -376,7 +377,16 @@ export function HomePage() {
             onPrevMonth={handlePrevMonthClick}
             onNextMonth={handleNextMonthClick}
           />
-
+          <div className="glassmorphic-button-wrap">
+            <button
+              type="submit"
+              title="Submit email to waitlist"
+              className="glassmorphic-button"
+            >
+              <span className="dark:!text-white">Join waitlist</span>
+            </button>
+            <div className="glassmorphic-button-shadow" />
+          </div>
           <div className="mt-10 flex justify-center">
             <Button
               size="icon"
