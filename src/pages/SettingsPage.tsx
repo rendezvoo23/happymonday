@@ -3,6 +3,7 @@ import { PageShell } from "@/components/layout/PageShell";
 import { Modal } from "@/components/ui/Modal";
 import { useLocale } from "@/context/LocaleContext";
 import { useTheme } from "@/context/ThemeContext";
+import { env } from "@/env";
 import { useUserStore } from "@/stores/userStore";
 import {
   Check,
@@ -10,6 +11,7 @@ import {
   Code2,
   Monitor,
   Palette,
+  Search,
   Sun,
 } from "lucide-react";
 import type * as React from "react";
@@ -24,6 +26,7 @@ export function SettingsPage() {
   const [isCurrencyModalOpen, setIsCurrencyModalOpen] = useState(false);
   const [isThemeModalOpen, setIsThemeModalOpen] = useState(false);
   const [isLanguageModalOpen, setIsLanguageModalOpen] = useState(false);
+  const [currencySearchQuery, setCurrencySearchQuery] = useState("");
 
   const handleCurrencySelect = async (code: string) => {
     await updateSettings({ default_currency: code });
@@ -104,21 +107,23 @@ export function SettingsPage() {
           />
         </div>
 
-        {/* Examples Section */}
-        <div className="space-y-2">
-          <SettingsRow
-            icon={Code2}
-            label="Localization Example"
-            value="i18n Demo"
-            onClick={() => navigate("/examples/localization")}
-          />
-          <SettingsRow
-            icon={Palette}
-            label="Theme System Example"
-            value="Card Levels"
-            onClick={() => navigate("/examples/theme")}
-          />
-        </div>
+        {/* Developer Examples Section - only visible in dev mode */}
+        {env.isDev && (
+          <div className="space-y-2">
+            <SettingsRow
+              icon={Code2}
+              label="Localization Example"
+              value="i18n Demo"
+              onClick={() => navigate("/examples/localization")}
+            />
+            <SettingsRow
+              icon={Palette}
+              label="Theme System Example"
+              value="Card Levels"
+              onClick={() => navigate("/examples/theme")}
+            />
+          </div>
+        )}
       </main>
 
       {/* Language Selection Modal */}
@@ -154,35 +159,61 @@ export function SettingsPage() {
       {/* Currency Selection Modal */}
       <Modal
         isOpen={isCurrencyModalOpen}
-        onClose={() => setIsCurrencyModalOpen(false)}
+        onClose={() => {
+          setIsCurrencyModalOpen(false);
+          setCurrencySearchQuery("");
+        }}
         title={t("settings.selectCurrency")}
       >
-        <div className="space-y-1 max-h-[60vh] overflow-y-auto no-scrollbar">
-          {currencies.map((currency) => (
-            <button
-              type="button"
-              key={currency.code}
-              onClick={() => handleCurrencySelect(currency.code)}
-              className="w-full flex items-center justify-between p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-            >
-              <div className="flex flex-col items-start">
-                <span className="font-semibold text-gray-900 dark:text-gray-100">
-                  {currency.code}
-                </span>
-                <span className="text-xs text-gray-500 dark:text-gray-400">
-                  {currency.name}
-                </span>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="text-lg font-medium text-gray-400 dark:text-gray-500">
-                  {currency.symbol}
-                </span>
-                {settings?.default_currency === currency.code && (
-                  <Check className="w-5 h-5 text-blue-500 dark:text-blue-400" />
-                )}
-              </div>
-            </button>
-          ))}
+        <div className="space-y-3">
+          {/* Search Input */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
+            <input
+              type="text"
+              value={currencySearchQuery}
+              onChange={(e) => setCurrencySearchQuery(e.target.value)}
+              placeholder="Search currencies..."
+              className="w-full pl-10 pr-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-blue-400 dark:focus:border-blue-500 focus:outline-none transition-colors"
+            />
+          </div>
+
+          {/* Currency List */}
+          <div className="space-y-1 min-h-[50vh] max-h-[50vh] overflow-y-auto no-scrollbar">
+            {currencies
+              .filter((currency) => {
+                const query = currencySearchQuery.toLowerCase();
+                return (
+                  currency.code.toLowerCase().includes(query) ||
+                  currency.name.toLowerCase().includes(query)
+                );
+              })
+              .map((currency) => (
+                <button
+                  type="button"
+                  key={currency.code}
+                  onClick={() => handleCurrencySelect(currency.code)}
+                  className="w-full flex items-center justify-between p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                >
+                  <div className="flex flex-col items-start">
+                    <span className="font-semibold text-gray-900 dark:text-gray-100">
+                      {currency.code}
+                    </span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                      {currency.name}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-lg font-medium text-gray-400 dark:text-gray-500">
+                      {currency.symbol}
+                    </span>
+                    {settings?.default_currency === currency.code && (
+                      <Check className="w-5 h-5 text-blue-500 dark:text-blue-400" />
+                    )}
+                  </div>
+                </button>
+              ))}
+          </div>
         </div>
       </Modal>
 
