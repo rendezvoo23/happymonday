@@ -50,8 +50,8 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
   loadTransactions: async (date: Date) => {
     set({ isLoading: true, error: null });
     try {
-      const start = startOfMonth(date).toISOString();
-      const end = endOfMonth(date).toISOString();
+      const start = startOfMonth(date);
+      const end = endOfMonth(date);
 
       const { data, error } = await supabase
         .from("transactions")
@@ -71,8 +71,8 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
                     )
                 `
         )
-        .gte("occurred_at", start)
-        .lt("occurred_at", end)
+        .gte("occurred_at", start.toISOString())
+        .lte("occurred_at", end.toISOString())
         .is("deleted_at", null)
         .order("occurred_at", { ascending: false });
 

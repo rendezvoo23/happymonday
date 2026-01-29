@@ -7,7 +7,7 @@ import { useCurrency } from "@/hooks/useCurrency";
 import { useCategoryStore } from "@/stores/categoryStore";
 import { useTransactionStore } from "@/stores/transactionStore";
 import type { Enums, Tables } from "@/types/supabase";
-import { subMonths } from "date-fns";
+import { addMonths, subMonths } from "date-fns";
 import { Loader2, Plus } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import "./button.css";
@@ -58,20 +58,24 @@ export function HomePage() {
 
   // Helper to load and cache a month's transactions
   const loadAndCacheMonth = useCallback(
-    async (date: Date) => {
+    async (date: Date, forceReload = false) => {
       const monthKey = getMonthKey(date);
 
-      // Return from cache if already loaded
+      // Return from cache if already loaded and not forcing reload
       const cached = monthsCacheRef.current.get(monthKey);
-      if (cached) {
+      if (cached && !forceReload) {
         return cached;
       }
 
+      console.log(`[HomePage] Loading transactions for ${monthKey}...`);
       // Load from API
       const txs = await loadTransactions(date);
+
       setMonthsCache((prev) => {
         const newCache = new Map(prev);
         newCache.set(monthKey, txs || []);
+        // Update ref immediately so other calls see it
+        monthsCacheRef.current = newCache;
         return newCache;
       });
 
@@ -82,43 +86,23 @@ export function HomePage() {
 
   // Function to reload transactions (used after adding a new transaction)
   const reloadTransactions = useCallback(async () => {
-    // Clear cache for current month to force reload
-    const currentKey = getMonthKey(selectedDate);
-    setMonthsCache((prev) => {
-      const newCache = new Map(prev);
-      newCache.delete(currentKey);
-      return newCache;
-    });
+    console.log("[HomePage] Reloading current month and neighbors...");
 
-    // Reload current month
-    await loadAndCacheMonth(selectedDate);
+    // Simply call loadAndCacheMonth with forceReload=true
+    // This will fetch fresh data and update state/ref in one go
+    // without clearing the state first (preventing disappearing bubbles)
+    await loadAndCacheMonth(selectedDate, true);
 
-    // Also reload adjacent months if they're in cache
+    // Also reload adjacent months if they're in cache (background)
     const prevDate = subMonths(selectedDate, 1);
-    const prevKey = getMonthKey(prevDate);
-    if (monthsCacheRef.current.has(prevKey)) {
-      setMonthsCache((prev) => {
-        const newCache = new Map(prev);
-        newCache.delete(prevKey);
-        return newCache;
-      });
-      loadAndCacheMonth(prevDate);
+    if (monthsCacheRef.current.has(getMonthKey(prevDate))) {
+      loadAndCacheMonth(prevDate, true);
     }
 
     if (canGoNext) {
-      const nextDate = new Date(
-        selectedDate.getFullYear(),
-        selectedDate.getMonth() + 1,
-        1
-      );
-      const nextKey = getMonthKey(nextDate);
-      if (monthsCacheRef.current.has(nextKey)) {
-        setMonthsCache((prev) => {
-          const newCache = new Map(prev);
-          newCache.delete(nextKey);
-          return newCache;
-        });
-        loadAndCacheMonth(nextDate);
+      const nextDate = addMonths(selectedDate, 1);
+      if (monthsCacheRef.current.has(getMonthKey(nextDate))) {
+        loadAndCacheMonth(nextDate, true);
       }
     }
   }, [selectedDate, getMonthKey, loadAndCacheMonth, canGoNext]);
