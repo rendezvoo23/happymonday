@@ -1,6 +1,11 @@
 /// <reference types="vite/client" />
 /// <reference types="vite-plugin-pwa/client" />
 
+declare module "*.PNG" {
+  const src: string;
+  export default src;
+}
+
 type TelegramUser = {
   allows_write_to_pm: boolean;
   first_name: string;

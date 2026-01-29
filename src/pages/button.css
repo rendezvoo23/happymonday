@@ -13,11 +13,47 @@
   --btn-shadow-height: calc(100% - var(--shadow-cuttoff-fix) - .25em);
   --btn-shadow-top: calc(var(--shadow-cuttoff-fix) - .5em);
   --btn-shadow-left: calc(var(--shadow-cuttoff-fix) - .875em);
+  --ring-width-1\.5: 1.5px;
+
+  /* Brand Colors */
   --color-brand-grey: #f0f0f0;
   --color-brand-black: #191919;
   --color-close-bg: #ebebeb80;
   --color-dark-notification-bg: #2d2d2de6;
-  --ring-width-1\.5: 1.5px;
+
+  /* Text Colors */
+  --color-text-primary: #323232;
+  --color-text-light: #e5e5e5;
+
+  /* Transparent Colors */
+  --color-transparent: #0000;
+  --color-transparent-white: #fff0;
+
+  /* Black Opacity Variants */
+  --color-black-03: #0003;
+  --color-black-05: rgba(0, 0, 0, 0.05);
+  --color-black-10: rgba(0, 0, 0, 0.1);
+  --color-black-13: #0000000d;
+  --color-black-15: #00000014;
+  --color-black-26: #0000001a;
+  --color-black-38: #00000026;
+  --color-black-40: #00000040;
+  --color-black-50: #00000080;
+
+  /* White Opacity Variants */
+  --color-white-13: #ffffff0d;
+  --color-white-20: #fff3;
+  --color-white-rgba-20: rgba(255, 255, 255, 0.2);
+  --color-white-rgba-25: rgba(255, 255, 255, 0.25);
+  --color-white-rgba-30: rgba(255, 255, 255, 0.3);
+  --color-white-50: #ffffff80;
+  --color-white-rgba-50: rgba(255, 255, 255, 0.5);
+  --color-white-60: #ffffff60;
+  --color-white-75: #ffffffbf;
+
+  /* Special Effect Colors */
+  --color-shadow-primary: #0000000f;
+  --color-mask-black: #000;
 }
 
 .glassmorphic-button-wrap {
@@ -54,14 +90,16 @@
   -webkit-mask-source-type: auto, auto;
   -webkit-mask-composite: xor;
   -webkit-mask-source-type: auto, auto;
-  background: linear-gradient(#0003, #0000001a);
+  background: linear-gradient(var(--color-black-03), var(--color-black-26));
   border-radius: 999vw;
   padding: .125em;
   transition: all .4s cubic-bezier(0.25, 1, 0.5, 1);
   position: absolute;
   overflow: visible;
-  -webkit-mask-image: linear-gradient(#000 0 0), linear-gradient(#000 0 0);
-  mask-image: linear-gradient(#000 0 0), linear-gradient(#000 0 0);
+  -webkit-mask-image: linear-gradient(var(--color-mask-black) 0 0),
+    linear-gradient(var(--color-mask-black) 0 0);
+  mask-image: linear-gradient(var(--color-mask-black) 0 0),
+    linear-gradient(var(--color-mask-black) 0 0);
   -webkit-mask-position: 0 0, 0 0;
   mask-position: 0 0, 0 0;
   -webkit-mask-size: auto, auto;
@@ -81,12 +119,17 @@
   --border-width: clamp(1px, .0625em, 4px);
   all: unset;
   cursor: pointer;
-  -webkit-tap-highlight-color: #0000;
+  -webkit-tap-highlight-color: var(--color-transparent);
   pointer-events: auto;
   z-index: 3;
   -webkit-backdrop-filter: blur(clamp(1px, .125em, 4px));
   backdrop-filter: blur(clamp(1px, .125em, 4px));
-  background: linear-gradient(-75deg, #ffffff0d, #fff3, #ffffff0d);
+  background: linear-gradient(
+    -75deg,
+    var(--color-white-13),
+    var(--color-white-20),
+    var(--color-white-13)
+  );
   border-radius: 999vw;
   justify-content: center;
   align-items: center;
@@ -96,7 +139,11 @@
   display: flex;
   position: relative;
   box-shadow:
-    inset 0 .125em .125em #0000000d, inset 0 -.125em .125em #ffffff80, 0 .25em .125em -.125em #0003, inset 0 0 .1em .25em #fff3, 0 0 #fff;
+    inset 0 .125em .125em var(--color-black-13), inset 0 -.125em .125em var(
+      --color-white-50
+    ), 0 .25em .125em -.125em var(--color-black-03), inset 0 0 .1em .25em var(
+      --color-white-20
+    ), 0 0 var(--color-transparent-white);
 }
 @media (min-width: 48rem) {
   .glassmorphic-button {
@@ -111,13 +158,17 @@
   backdrop-filter: blur(.01em);
   transform: scale(0.975);
   box-shadow:
-    inset 0 .125em .125em #0000000d, inset 0 -.125em .125em #ffffff80, 0 .15em .05em -.1em #00000040, inset 0 0 .05em .1em #ffffff80, 0 0 #fff;
+    inset 0 .125em .125em var(--color-black-13), inset 0 -.125em .125em var(
+      --color-white-50
+    ), 0 .15em .05em -.1em var(--color-black-40), inset 0 0 .05em .1em var(
+      --color-white-50
+    ), 0 0 var(--color-transparent-white);
 }
 .glassmorphic-button span {
   -webkit-user-select: none;
   user-select: none;
-  color: #323232;
-  text-shadow: 0 .05em .05em #0000000d;
+  color: var(--color-text-primary);
+  text-shadow: 0 .05em .05em var(--color-black-13);
   letter-spacing: -.18px;
   white-space: nowrap;
   justify-content: center;
@@ -132,7 +183,7 @@
   position: relative;
 }
 .glassmorphic-button:hover span {
-  text-shadow: .025em .025em .025em #0000000f;
+  text-shadow: .025em .025em .025em var(--color-shadow-primary);
 }
 .glassmorphic-button span:after {
   content: "";
@@ -144,9 +195,9 @@
   box-sizing: border-box;
   background: linear-gradient(
     var(--angle-2),
-    #fff0 0%,
-    #ffffff80 40% 50%,
-    #fff0 55%
+    var(--color-transparent-white) 0%,
+    var(--color-white-50) 40% 50%,
+    var(--color-transparent-white) 55%
   );
   z-index: 3;
   mix-blend-mode: screen;
@@ -186,13 +237,13 @@
   box-sizing: border-box;
   background: conic-gradient(
       from var(--angle-1) at 50% 50%,
-      #00000080,
-      #0000 5% 40%,
-      #00000080 50%,
-      #0000 60% 95%,
-      #00000080
-    ), linear-gradient(180deg, #ffffff80, #ffffff80);
-  box-shadow: inset 0 0 0 calc(var(--border-width) / 2) #ffffff80;
+      var(--color-black-50),
+      var(--color-transparent) 5% 40%,
+      var(--color-black-50) 50%,
+      var(--color-transparent) 60% 95%,
+      var(--color-black-50)
+    ), linear-gradient(180deg, var(--color-white-50), var(--color-white-50));
+  box-shadow: inset 0 0 0 calc(var(--border-width) / 2) var(--color-white-50);
   -webkit-mask-composite: xor;
   -webkit-mask-source-type: auto, auto;
   -webkit-mask-composite: xor;
@@ -200,8 +251,10 @@
   border-radius: 999vw;
   transition: all .4s cubic-bezier(0.25, 1, 0.5, 1), --angle-1 .5s;
   position: absolute;
-  -webkit-mask-image: linear-gradient(#000 0 0), linear-gradient(#000 0 0);
-  mask-image: linear-gradient(#000 0 0), linear-gradient(#000 0 0);
+  -webkit-mask-image: linear-gradient(var(--color-mask-black) 0 0),
+    linear-gradient(var(--color-mask-black) 0 0);
+  mask-image: linear-gradient(var(--color-mask-black) 0 0),
+    linear-gradient(var(--color-mask-black) 0 0);
   -webkit-mask-position: 0 0, 0 0;
   mask-position: 0 0, 0 0;
   -webkit-mask-size: auto, auto;
@@ -243,7 +296,13 @@
 }
 .glassmorphic-button-wrap:has(button:active) .glassmorphic-button {
   box-shadow:
-    inset 0 .125em .125em #0000000d, inset 0 -.125em .125em #ffffff80, 0 .125em .125em -.125em #0003, inset 0 0 .1em .25em #fff3, 0 .225em .05em #0000000d, 0 .25em #ffffffbf, inset 0 .25em .05em #00000026;
+    inset 0 .125em .125em var(--color-black-13), inset 0 -.125em .125em var(
+      --color-white-50
+    ), 0 .125em .125em -.125em var(--color-black-03), inset 0 0 .1em .25em var(
+      --color-white-20
+    ), 0 .225em .05em var(--color-black-13), 0 .25em var(--color-white-75), inset 0 .25em .05em var(
+      --color-black-38
+    );
 }
 .glassmorphic-button-wrap:has(button:active) .glassmorphic-button-shadow {
   filter: blur(clamp(2px, .125em, 12px));
@@ -253,7 +312,7 @@
   opacity: 0.75;
 }
 .glassmorphic-button-wrap:has(button:active) span {
-  text-shadow: .025em .1em .05em #00000014;
+  text-shadow: .025em .1em .05em var(--color-black-15);
 }
 
 /* Hide the original waitlist button */
@@ -295,14 +354,16 @@
   left: var(--btn-shadow-left);
   box-sizing: border-box;
   opacity: 1;
-  background: linear-gradient(#0003, #0000001a);
+  background: linear-gradient(var(--color-black-03), var(--color-black-26));
   border-radius: 50%;
   padding: .125em;
   transition: all .4s cubic-bezier(0.25, 1, 0.5, 1);
   position: absolute;
   overflow: visible;
-  -webkit-mask-image: linear-gradient(#000 0 0), linear-gradient(#000 0 0);
-  mask-image: linear-gradient(#000 0 0), linear-gradient(#000 0 0);
+  -webkit-mask-image: linear-gradient(var(--color-mask-black) 0 0),
+    linear-gradient(var(--color-mask-black) 0 0);
+  mask-image: linear-gradient(var(--color-mask-black) 0 0),
+    linear-gradient(var(--color-mask-black) 0 0);
   -webkit-mask-position: 0 0, 0 0;
   mask-position: 0 0, 0 0;
   -webkit-mask-size: auto, auto;
@@ -321,12 +382,17 @@
   --border-width: clamp(1px, .0625em, 4px);
   all: unset;
   cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
+  -webkit-tap-highlight-color: var(--color-transparent);
   pointer-events: auto;
   z-index: 3;
   -webkit-backdrop-filter: blur(clamp(1px, .125em, 4px));
   backdrop-filter: blur(clamp(1px, .125em, 4px));
-  background: linear-gradient(-75deg, #ffffff0d, #fff3, #ffffff0d);
+  background: linear-gradient(
+    -75deg,
+    var(--color-white-13),
+    var(--color-white-20),
+    var(--color-white-13)
+  );
   border-radius: 50%;
   justify-content: center;
   align-items: center;
@@ -336,11 +402,11 @@
   display: flex;
   position: relative;
   box-shadow:
-    inset 0 .125em .125em #0000000d,
-    inset 0 -.125em .125em #ffffff80,
-    0 .25em .125em -.125em #0003,
-    inset 0 0 .1em .25em #fff3,
-    0 0 #fff;
+    inset 0 .125em .125em var(--color-black-13),
+    inset 0 -.125em .125em var(--color-white-50),
+    0 .25em .125em -.125em var(--color-black-03),
+    inset 0 0 .1em .25em var(--color-white-20),
+    0 0 var(--color-transparent-white);
 }
 
 .glassmorphic-plus-button:disabled {
@@ -353,26 +419,26 @@
   backdrop-filter: blur(.01em);
   transform: scale(0.95);
   box-shadow:
-    inset 0 .125em .125em #0000000d,
-    inset 0 -.125em .125em #ffffff80,
-    0 .15em .05em -.1em #00000040,
-    inset 0 0 .05em .1em #ffffff80,
-    0 0 #fff;
+    inset 0 .125em .125em var(--color-black-13),
+    inset 0 -.125em .125em var(--color-white-50),
+    0 .15em .05em -.1em var(--color-black-40),
+    inset 0 0 .05em .1em var(--color-white-50),
+    0 0 var(--color-transparent-white);
 }
 
 /* Plus icon inside the button */
 .glassmorphic-plus-button .plus-icon {
   width: 32px;
   height: 32px;
-  color: #323232;
-  filter: drop-shadow(0 .05em .05em #0000000d);
+  color: var(--color-text-primary);
+  filter: drop-shadow(0 .05em .05em var(--color-black-13));
   transition: all .4s cubic-bezier(0.25, 1, 0.5, 1);
   position: relative;
   z-index: 10;
 }
 
 .glassmorphic-plus-button:hover .plus-icon {
-  filter: drop-shadow(.025em .025em .025em #0000000f);
+  filter: drop-shadow(.025em .025em .025em var(--color-shadow-primary));
 }
 
 /* Shine effect pseudo-element */
@@ -386,9 +452,9 @@
   box-sizing: border-box;
   background: linear-gradient(
     var(--angle-2, -45deg),
-    #fff0 0%,
-    #ffffff80 40% 50%,
-    #fff0 55%
+    var(--color-transparent-white) 0%,
+    var(--color-white-50) 40% 50%,
+    var(--color-transparent-white) 55%
   );
   mix-blend-mode: screen;
   pointer-events: none;
@@ -431,18 +497,20 @@
   box-sizing: border-box;
   background: conic-gradient(
       from var(--angle-1, -75deg) at 50% 50%,
-      #00000080,
-      #0000 5% 40%,
-      #00000080 50%,
-      #0000 60% 95%,
-      #00000080
-    ), linear-gradient(180deg, #ffffff80, #ffffff80);
-  box-shadow: inset 0 0 0 calc(var(--border-width) / 2) #ffffff80;
+      var(--color-black-50),
+      var(--color-transparent) 5% 40%,
+      var(--color-black-50) 50%,
+      var(--color-transparent) 60% 95%,
+      var(--color-black-50)
+    ), linear-gradient(180deg, var(--color-white-50), var(--color-white-50));
+  box-shadow: inset 0 0 0 calc(var(--border-width) / 2) var(--color-white-50);
   border-radius: 50%;
   transition: all .4s cubic-bezier(0.25, 1, 0.5, 1), --angle-1 .5s;
   position: absolute;
-  -webkit-mask-image: linear-gradient(#000 0 0), linear-gradient(#000 0 0);
-  mask-image: linear-gradient(#000 0 0), linear-gradient(#000 0 0);
+  -webkit-mask-image: linear-gradient(var(--color-mask-black) 0 0),
+    linear-gradient(var(--color-mask-black) 0 0);
+  mask-image: linear-gradient(var(--color-mask-black) 0 0),
+    linear-gradient(var(--color-mask-black) 0 0);
   -webkit-mask-position: 0 0, 0 0;
   mask-position: 0 0, 0 0;
   -webkit-mask-size: auto, auto;
@@ -490,13 +558,13 @@
 
 .glassmorphic-plus-wrap:has(button:active) .glassmorphic-plus-button {
   box-shadow:
-    inset 0 .125em .125em #0000000d,
-    inset 0 -.125em .125em #ffffff80,
-    0 .125em .125em -.125em #0003,
-    inset 0 0 .1em .25em #fff3,
-    0 .225em .05em #0000000d,
-    0 .25em #ffffffbf,
-    inset 0 .25em .05em #00000026;
+    inset 0 .125em .125em var(--color-black-13),
+    inset 0 -.125em .125em var(--color-white-50),
+    0 .125em .125em -.125em var(--color-black-03),
+    inset 0 0 .1em .25em var(--color-white-20),
+    0 .225em .05em var(--color-black-13),
+    0 .25em var(--color-white-75),
+    inset 0 .25em .05em var(--color-black-38);
 }
 
 .glassmorphic-plus-wrap:has(button:active) .glassmorphic-plus-shadow {
@@ -509,7 +577,7 @@
 }
 
 .glassmorphic-plus-wrap:has(button:active) .plus-icon {
-  filter: drop-shadow(.025em .1em .05em #00000014);
+  filter: drop-shadow(.025em .1em .05em var(--color-black-15));
 }
 
 /* ====================================
@@ -547,14 +615,16 @@
   left: var(--btn-shadow-left);
   box-sizing: border-box;
   opacity: 1;
-  background: linear-gradient(#0003, #0000001a);
+  background: linear-gradient(var(--color-black-03), var(--color-black-26));
   border-radius: 999vw;
   padding: .125em;
   transition: all .4s cubic-bezier(0.25, 1, 0.5, 1);
   position: absolute;
   overflow: visible;
-  -webkit-mask-image: linear-gradient(#000 0 0), linear-gradient(#000 0 0);
-  mask-image: linear-gradient(#000 0 0), linear-gradient(#000 0 0);
+  -webkit-mask-image: linear-gradient(var(--color-mask-black) 0 0),
+    linear-gradient(var(--color-mask-black) 0 0);
+  mask-image: linear-gradient(var(--color-mask-black) 0 0),
+    linear-gradient(var(--color-mask-black) 0 0);
   -webkit-mask-position: 0 0, 0 0;
   mask-position: 0 0, 0 0;
   -webkit-mask-size: auto, auto;
@@ -575,7 +645,12 @@
   z-index: 3;
   -webkit-backdrop-filter: blur(clamp(8px, .5em, 16px));
   backdrop-filter: blur(clamp(8px, .5em, 16px));
-  background: linear-gradient(-75deg, #ffffff0d, #fff3, #ffffff0d);
+  background: linear-gradient(
+    -75deg,
+    var(--color-white-13),
+    var(--color-white-20),
+    var(--color-white-13)
+  );
   border-radius: 999vw;
   justify-content: center;
   align-items: center;
@@ -585,11 +660,11 @@
   display: flex;
   position: relative;
   box-shadow:
-    inset 0 .125em .125em #0000000d,
-    inset 0 -.125em .125em #ffffff80,
-    0 .25em .125em -.125em #0003,
-    inset 0 0 .1em .25em #fff3,
-    0 0 #fff;
+    inset 0 .125em .125em var(--color-black-13),
+    inset 0 -.125em .125em var(--color-white-50),
+    0 .25em .125em -.125em var(--color-black-03),
+    inset 0 0 .1em .25em var(--color-white-20),
+    0 0 var(--color-transparent-white);
 }
 
 /* Shine effect for nav bar */
@@ -601,7 +676,12 @@
   top: var(--shine-top);
   left: var(--shine-left);
   box-sizing: border-box;
-  background: linear-gradient(-45deg, #fff0 0%, #ffffff60 40% 50%, #fff0 55%);
+  background: linear-gradient(
+    -45deg,
+    var(--color-transparent-white) 0%,
+    var(--color-white-60) 40% 50%,
+    var(--color-transparent-white) 55%
+  );
   mix-blend-mode: screen;
   pointer-events: none;
   background-position: 0%;
@@ -627,18 +707,20 @@
   box-sizing: border-box;
   background: conic-gradient(
       from -75deg at 50% 50%,
-      #00000040,
-      #0000 5% 40%,
-      #00000040 50%,
-      #0000 60% 95%,
-      #00000040
-    ), linear-gradient(180deg, #ffffff80, #ffffff80);
-  box-shadow: inset 0 0 0 calc(var(--border-width) / 2) #ffffff80;
+      var(--color-black-40),
+      var(--color-transparent) 5% 40%,
+      var(--color-black-40) 50%,
+      var(--color-transparent) 60% 95%,
+      var(--color-black-40)
+    ), linear-gradient(180deg, var(--color-white-50), var(--color-white-50));
+  box-shadow: inset 0 0 0 calc(var(--border-width) / 2) var(--color-white-50);
   border-radius: 999vw;
   transition: all .4s cubic-bezier(0.25, 1, 0.5, 1);
   position: absolute;
-  -webkit-mask-image: linear-gradient(#000 0 0), linear-gradient(#000 0 0);
-  mask-image: linear-gradient(#000 0 0), linear-gradient(#000 0 0);
+  -webkit-mask-image: linear-gradient(var(--color-mask-black) 0 0),
+    linear-gradient(var(--color-mask-black) 0 0);
+  mask-image: linear-gradient(var(--color-mask-black) 0 0),
+    linear-gradient(var(--color-mask-black) 0 0);
   -webkit-mask-position: 0 0, 0 0;
   mask-position: 0 0, 0 0;
   -webkit-mask-size: auto, auto;
@@ -657,7 +739,7 @@
 .liquid-glass-nav-item {
   all: unset;
   cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
+  -webkit-tap-highlight-color: var(--color-transparent);
   position: relative;
   display: flex;
   align-items: center;
@@ -670,43 +752,43 @@
 }
 
 .liquid-glass-nav-item:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--color-white-rgba-20);
 }
 
 .liquid-glass-nav-item:active {
   transform: scale(0.92);
-  background: rgba(255, 255, 255, 0.3);
+  background: var(--color-white-rgba-30);
 }
 
 .liquid-glass-nav-item.active {
-  background: rgba(255, 255, 255, 0.25);
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05), inset 0 -1px 2px
-    rgba(255, 255, 255, 0.5);
+  background: var(--color-white-rgba-25);
+  box-shadow: inset 0 1px 2px var(--color-black-05), inset 0 -1px 2px
+    var(--color-white-rgba-50);
 }
 
 .liquid-glass-nav-item .nav-icon {
   width: 24px;
   height: 24px;
-  color: #323232;
-  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.05));
+  color: var(--color-text-primary);
+  filter: drop-shadow(0 1px 1px var(--color-black-05));
   transition: all .3s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 .liquid-glass-nav-item:hover .nav-icon {
-  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+  filter: drop-shadow(0 1px 2px var(--color-black-10));
 }
 
 .liquid-glass-nav-item.active .nav-icon {
-  color: var(--primary-color, #323232);
+  color: var(--primary-color, var(--color-text-primary));
 }
 
 /* Dark mode adjustments */
 @media (prefers-color-scheme: dark) {
   .liquid-glass-nav-item .nav-icon {
-    color: #e5e5e5;
+    color: var(--color-text-light);
   }
 
   .liquid-glass-nav-item.active .nav-icon {
-    color: var(--primary-color, #e5e5e5);
+    color: var(--primary-color, var(--color-text-light));
   }
 }
