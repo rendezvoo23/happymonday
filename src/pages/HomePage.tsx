@@ -168,6 +168,10 @@ export function HomePage() {
   const prevMonthTransactions = monthsCache.get(prevMonthKey) || [];
   const nextMonthTransactions = monthsCache.get(nextMonthKey) || [];
 
+  const isCurrentMonthLoading = !monthsCache.has(currentMonthKey);
+  const isPrevMonthLoading = !monthsCache.has(prevMonthKey);
+  const isNextMonthLoading = !monthsCache.has(nextMonthKey);
+
   // Calculate total expenses for the selected month
   const totalExpenses = useMemo(() => {
     const expenses = transactions.filter((t) => t.direction === "expense");
@@ -333,6 +337,7 @@ export function HomePage() {
                     animateBubbles={false}
                     key="prev-month-bubbles"
                     height={380}
+                    isLoading={isPrevMonthLoading}
                   />
                 </div>
 
@@ -342,6 +347,7 @@ export function HomePage() {
                     transactions={transactions}
                     mode="cluster"
                     height={380}
+                    isLoading={isCurrentMonthLoading || isInitialLoading}
                   />
                 </div>
 
@@ -359,6 +365,7 @@ export function HomePage() {
                       animateBubbles={false}
                       height={380}
                       key="next-month-bubbles"
+                      isLoading={isNextMonthLoading}
                     />
                   </div>
                 )}

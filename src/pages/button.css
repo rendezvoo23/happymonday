@@ -828,15 +828,25 @@
   box-sizing: border-box;
   opacity: 0.8;
   background: radial-gradient(
-    circle at center,
+    circle at 35% 35%,
     var(--circle-color, #000) 0%,
-    transparent 80%
+    rgba(0, 0, 0, 0.4) 100%
   );
   border-radius: 50%;
   padding: .125em;
   transition: all .4s cubic-bezier(0.25, 1, 0.5, 1);
   position: absolute;
   overflow: visible;
+  -webkit-mask-image: linear-gradient(var(--color-mask-black) 0 0),
+    linear-gradient(var(--color-mask-black) 0 0);
+  mask-image: linear-gradient(var(--color-mask-black) 0 0),
+    linear-gradient(var(--color-mask-black) 0 0);
+  -webkit-mask-clip: content-box, border-box;
+  mask-clip: content-box, border-box;
+  -webkit-mask-origin: content-box, border-box;
+  mask-origin: content-box, border-box;
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
 }
 
 .glassmorphic-circle-btn {
@@ -851,10 +861,10 @@
   backdrop-filter: blur(2px);
   /* Combine glass gradient with the dynamic color */
   background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.3),
-    rgba(255, 255, 255, 0.1) 50%,
-    rgba(255, 255, 255, 0)
+    -75deg,
+    var(--color-white-20),
+    var(--color-white-rgba-20) 40%,
+    var(--color-transparent)
   );
   background-color: var(--circle-color);
   border-radius: 50%;
@@ -864,12 +874,13 @@
   height: 100%;
   transition: all .4s cubic-bezier(0.25, 1, 0.5, 1);
   display: flex;
+  flex-direction: column;
   position: relative;
   box-shadow:
     inset 0 .125em .125em var(--color-black-13),
-    inset 0 -.125em .125em rgba(0, 0, 0, 0.1), /* Darker inner bottom shadow for depth on color */
+    inset 0 -.125em .125em rgba(0, 0, 0, 0.2),
     0 .25em .125em -.125em var(--color-black-26),
-    inset 0 0 .1em .25em var(--color-white-13);
+    inset 0 0 .1em .25em var(--color-white-rgba-20);
 }
 
 .glassmorphic-circle-btn:disabled {
@@ -944,14 +955,15 @@
   box-sizing: border-box;
   background: conic-gradient(
       from var(--angle-1, -75deg) at 50% 50%,
-      rgba(0, 0, 0, 0.2),
-      transparent 5% 40%,
-      rgba(0, 0, 0, 0.2) 50%,
-      transparent 60% 95%,
-      rgba(0, 0, 0, 0.2)
+      var(--color-black-50),
+      var(--color-transparent) 5% 40%,
+      var(--color-black-50) 50%,
+      var(--color-transparent) 60% 95%,
+      var(--color-black-50)
     ),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.1));
-  box-shadow: inset 0 0 0 calc(var(--border-width) / 2) rgba(255, 255, 255, 0.2);
+    linear-gradient(180deg, var(--color-white-50), var(--color-white-rgba-20));
+  box-shadow: inset 0 0 0 calc(var(--border-width) / 2)
+    var(--color-white-rgba-50);
   border-radius: 50%;
   transition: all .4s cubic-bezier(0.25, 1, 0.5, 1), --angle-1 .5s;
   position: absolute;

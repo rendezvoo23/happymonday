@@ -3,7 +3,7 @@ import { getCategoryColor, useCategoryStore } from "@/stores/categoryStore";
 import type { Tables } from "@/types/supabase";
 import { packCircles } from "@/utils/circlePacking";
 import { motion } from "framer-motion";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getIconComponent } from "../icons";
 
@@ -22,6 +22,7 @@ interface BubblesClusterProps {
   height?: number;
   onBubbleClick?: (categoryId: string) => void;
   animateBubbles?: boolean;
+  isLoading?: boolean;
 }
 
 export function BubblesCluster({
@@ -30,23 +31,19 @@ export function BubblesCluster({
   height = 320,
   onBubbleClick,
   animateBubbles = true,
+  isLoading = false,
 }: BubblesClusterProps) {
   const navigate = useNavigate();
   const containerRef = useRef<HTMLDivElement>(null);
-  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+  const [dimensions, setDimensions] = useState({
+    width: typeof window !== "undefined" ? window.innerWidth : 400,
+    height: height,
+  });
   const { getCategoryById } = useCategoryStore();
   const { formatCompactAmount } = useCurrency();
 
-  // Helper to convert hex color to rgba with transparency
-  const hexToRgba = (hex: string, alpha: number) => {
-    const r = Number.parseInt(hex.slice(1, 3), 16);
-    const g = Number.parseInt(hex.slice(3, 5), 16);
-    const b = Number.parseInt(hex.slice(5, 7), 16);
-    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-  };
-
   // Measure container size
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!containerRef.current) return;
 
     // Initial measurement
@@ -168,6 +165,11 @@ export function BubblesCluster({
   }, [transactions, mode, dimensions, getCategoryById]);
 
   if (transactions.filter((t) => t.direction === "expense").length === 0) {
+    if (isLoading) {
+      return (
+        <div className="flex items-center justify-center" style={{ height }} />
+      );
+    }
     return (
       <div
         className="flex items-center justify-center text-gray-400 text-sm"
@@ -275,42 +277,48 @@ export function BubblesCluster({
                 }
                 handleBubbleClick(bubble.id);
               }}
-              className={`absolute flex flex-col items-center justify-center rounded-full ${bubbleEffects} ${mode === "cluster" || (mode === "separated" && onBubbleClick) ? "cursor-pointer" : ""}`}
-              style={{
-                width: bubble.r * 2,
-                height: bubble.r * 2,
-                background: `radial-gradient(circle, ${hexToRgba(bubble.category.color, 0.95)} 0%, ${hexToRgba(bubble.category.color, 0.85)} 40%, ${hexToRgba(bubble.category.color, 0.6)} 70%, ${hexToRgba(bubble.category.color, 0.3)} 90%, transparent 100%)`,
-                opacity: 1,
-                zIndex: 10,
-                left: "50%",
-                top: "50%",
-                marginLeft: -bubble.r,
-                marginTop: -bubble.r,
-              }}
+              className={`absolute glassmorphic-circle-wrap ${bubbleEffects} ${
+                mode === "cluster" || (mode === "separated" && onBubbleClick)
+                  ? "cursor-pointer"
+                  : ""
+              }`}
+              style={
+                {
+                  width: bubble.r * 2,
+                  height: bubble.r * 2,
+                  zIndex: 10,
+                  left: "50%",
+                  top: "50%",
+                  marginLeft: -bubble.r,
+                  marginTop: -bubble.r,
+                  "--circle-color": bubble.category.color,
+                } as React.CSSProperties
+              }
             >
-              {bubble.r > 30 && (
+              <div className="glassmorphic-circle-shadow" />
+              <div className="glassmorphic-circle-btn">
+                {bubble.r > 30 && (
+                  <span
+                    className="circle-icon text-white/90 font-medium text-center leading-tight mb-1"
+                    style={{
+                      fontSize: Math.max(8, bubble.r * 0.2),
+                    }}
+                  >
+                    {mapIconToLabel(
+                      bubble.category.label,
+                      bubble.r > 50 ? "large" : "medium"
+                    )}
+                  </span>
+                )}
                 <span
-                  className="text-white/90 font-medium mt-0 text-center leading-tight"
+                  className="text-white font-bold text-center leading-tight mt-1"
                   style={{
-                    fontSize: Math.max(8, bubble.r * 0.2),
-                    opacity: 0.85,
+                    fontSize: Math.max(10, bubble.r * 0.3),
                   }}
                 >
-                  {mapIconToLabel(
-                    bubble.category.label,
-                    bubble.r > 50 ? "large" : "medium"
-                  )}
+                  {formatCompactAmount(bubble.value)}
                 </span>
-              )}
-              <span
-                className="text-white font-bold text-lg text-center leading-tight mt-1"
-                style={{
-                  fontSize: Math.max(10, bubble.r * 0.3),
-                  opacity: 1,
-                }}
-              >
-                {formatCompactAmount(bubble.value)}
-              </span>
+              </div>
             </motion.div>
           );
         })}
