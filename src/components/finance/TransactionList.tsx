@@ -100,7 +100,7 @@ export function TransactionList({
           <Button
             variant="secondary"
             fullWidth
-            className="mt-6 rounded-2xl h-12 text-blue-600 dark:text-blue-400 font-medium bg-white dark:bg-gray-800 border-none shadow-sm"
+            className="mt-6 rounded-2xl h-12 text-blue-600 dark:text-blue-400 font-medium"
             onClick={() => navigate("/history")}
           >
             {t("transactions.viewAll")}
