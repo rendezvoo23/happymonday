@@ -293,12 +293,22 @@ export function HomePage() {
             // background: `linear-gradient(to bottom, var(--background), rgba(0, 0, 0, 0.3)), url(${darkBgVariant1}) bottom / auto 100% no-repeat fixed`,
             // backgroundBlendMode: "normal, multiply",
             // backgroundPositionY: "200px",
-            marginTop: "calc(env(safe-area-inset-top) + 50px)",
+            background:
+              "linear-gradient(to top, var(--primary-color) 0%, var(--background) 50%, var(--background) 100%)",
+            paddingTop: "calc(env(safe-area-inset-top) + 50px)",
           }}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
         >
+          <div className="sticky top-0 z-10">
+            <MonthSelector
+              totalExpenses={formatAmount(totalExpenses)}
+              onPrevMonth={handlePrevMonthClick}
+              onNextMonth={handleNextMonthClick}
+            />
+          </div>
+
           <div className="w-full flex justify-center relative overflow-hidden">
             {isInitialLoading ? (
               <div className="text-gray-500 mt-6 h-[380px] flex items-center justify-center">
@@ -359,12 +369,6 @@ export function HomePage() {
               </div>
             )}
           </div>
-
-          <MonthSelector
-            totalExpenses={formatAmount(totalExpenses)}
-            onPrevMonth={handlePrevMonthClick}
-            onNextMonth={handleNextMonthClick}
-          />
 
           <div className="flex-1 flex items-center justify-center">
             <div className="glassmorphic-plus-wrap">

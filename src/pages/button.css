@@ -38,7 +38,7 @@
   --color-black-26: #0000001a;
   --color-black-38: #00000010;
   --color-black-40: #2500b82c;
-  --color-black-50: #0008f168;
+  --color-black-50: #9599ff9c;
 
   /* White Opacity Variants */
   --glassmorphic-background-gradient-start: #ffffff0d;
@@ -46,8 +46,8 @@
   --color-white-rgba-20: rgba(255, 255, 255, 0.2);
   --color-white-rgba-25: rgba(255, 255, 255, 0.25);
   --color-white-rgba-30: rgba(255, 255, 255, 0.3);
-  --color-white-50: #ffffff80;
-  --color-white-rgba-50: rgba(255, 255, 255, 0.5);
+  --color-white-50: #ffffff5e;
+  --color-white-rgba-50: rgba(255, 255, 255, 0.269);
   --color-white-60: #ffffff60;
   --color-white-75: #ffffffbf;
 

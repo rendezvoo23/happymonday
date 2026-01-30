@@ -29,7 +29,7 @@ export function BubblesCluster({
   mode = "cluster",
   height = 320,
   onBubbleClick,
-  animateBubbles = true,
+  animateBubbles = false,
 }: BubblesClusterProps) {
   const navigate = useNavigate();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -108,9 +108,9 @@ export function BubblesCluster({
     const packed = packCircles(
       data.map((d) => ({ id: d.id, value: d.value })),
       {
-        minRadius: mode === "cluster" ? 30 : 60,
-        maxRadius: mode === "cluster" ? 120 : 100,
-        padding: mode === "cluster" ? -20 : 10,
+        minRadius: mode === "cluster" ? 40 : 60,
+        maxRadius: mode === "cluster" ? 150 : 100,
+        padding: mode === "cluster" ? 0 : 10,
       }
     );
 
@@ -136,7 +136,7 @@ export function BubblesCluster({
     const contentWidth = maxX - minX;
     const contentHeight = maxY - minY;
 
-    const padding = 20;
+    const padding = 10;
     const containerWidth = dimensions.width - padding * 2;
     const containerHeight = dimensions.height - padding * 2;
 
@@ -279,7 +279,7 @@ export function BubblesCluster({
               style={{
                 width: bubble.r * 2,
                 height: bubble.r * 2,
-                background: `radial-gradient(circle, ${hexToRgba(bubble.category.color, 0.95)} 0%, ${hexToRgba(bubble.category.color, 0.85)} 40%, ${hexToRgba(bubble.category.color, 0.6)} 70%, ${hexToRgba(bubble.category.color, 0.3)} 90%, transparent 100%)`,
+                background: `radial-gradient(circle, ${hexToRgba(bubble.category.color, 0.95)} 0%, ${hexToRgba(bubble.category.color, 0.85)} 40%, ${hexToRgba(bubble.category.color, 1)} 70%, ${hexToRgba(bubble.category.color, 1)} 90%, transparent 100%)`,
                 opacity: 1,
                 zIndex: 10,
                 left: "50%",
@@ -342,6 +342,10 @@ function mapIconToLabel(
       return getIconComponent(":lamp:", { width: size, height: size });
     case "services":
       return getIconComponent(":bolt:", { width: size, height: size });
+    case "travel":
+      return getIconComponent(":plane:", { width: size, height: size });
+    case "other":
+      return getIconComponent(":more:", { width: size, height: size });
     default:
       return label;
   }
