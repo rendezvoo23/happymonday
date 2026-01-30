@@ -15,7 +15,7 @@ export function CategorySelector({
   onSelect,
 }: CategorySelectorProps) {
   return (
-    <div className="grid grid-cols-4 gap-4 py-4">
+    <div className="grid grid-cols-4 gap-4">
       {categories.map((category) => {
         const isSelected = selectedId === category.id;
 
