@@ -262,13 +262,13 @@ export function TransactionForm({
       </div>
 
       {selectedType === "transactions.category" && (
-        <div className="space-y-2">
+        <div className="space-y-1">
           {categoriesLoading ? (
-            <div className="text-center py-8 text-gray-400 dark:text-gray-500">
-              {t("transactions.loadingCategories")}
+            <div className="text-center py-0 text-gray-400 dark:text-gray-500 flex items-center justify-center h-[200px]">
+              <Loader2 className="w-6 h-6 animate-spin" />
             </div>
           ) : categories.length === 0 ? (
-            <div className="text-center py-8 text-gray-400 dark:text-gray-500">
+            <div className="text-center py-0 text-gray-400 dark:text-gray-500">
               {t("transactions.noCategories")}
             </div>
           ) : (
@@ -282,12 +282,12 @@ export function TransactionForm({
       )}
 
       {selectedType === "transactions.subcategory" && (
-        <div>
+        <div className="min-h-[200px]">
           {categoryId &&
             (isLoadingSubcategories || subcategories.length > 0) && (
               <div className="space-y-2 py-1">
                 {isLoadingSubcategories ? (
-                  <div className="text-center py-4 text-gray-400 dark:text-gray-500 text-sm min-h-[100px] flex items-center justify-center">
+                  <div className="text-center py-4 text-gray-400 dark:text-gray-500 text-sm min-h-[200px] flex items-center justify-center">
                     <Loader2 className="w-6 h-6 animate-spin" />
                   </div>
                 ) : (

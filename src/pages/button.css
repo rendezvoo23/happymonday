@@ -657,6 +657,8 @@
 
 .liquid-glass-nav {
   --border-width: clamp(1px, .0625em, 4px);
+  --nav-item-width: 96px;
+  --nav-gap: 4px;
   pointer-events: auto;
   z-index: 3;
   -webkit-backdrop-filter: blur(clamp(8px, .5em, 16px));
@@ -671,7 +673,7 @@
   justify-content: center;
   align-items: center;
   padding: 6px;
-  gap: 4px;
+  gap: var(--nav-gap);
   transition: all .4s cubic-bezier(0.25, 1, 0.5, 1);
   display: flex;
   position: relative;
@@ -751,6 +753,36 @@
   mask-composite: exclude;
 }
 
+/* Animated background slider */
+.liquid-glass-nav-slider {
+  position: absolute;
+  left: 6px;
+  top: 6px;
+  width: var(--nav-item-width);
+  height: calc(100% - 12px);
+  border-radius: 999vw;
+  z-index: 1;
+  pointer-events: none;
+
+  /* Liquid glass effect */
+  background: linear-gradient(
+    -75deg,
+    rgba(10, 132, 255, 0.15),
+    rgba(10, 132, 255, 0.25),
+    rgba(10, 132, 255, 0.15)
+  );
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow:
+    inset 0 1px 3px rgba(0, 0, 0, 0.08),
+    inset 0 -1px 3px rgba(255, 255, 255, 0.4),
+    0 4px 16px rgba(10, 132, 255, 0.2),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+
+  /* Smooth transition */
+  transition: transform .5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
 /* Nav item buttons */
 .liquid-glass-nav-item {
   all: unset;
@@ -760,51 +792,116 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
+  width: var(--nav-item-width);
+  height: 56px;
+  border-radius: 999vw;
   transition: all .3s cubic-bezier(0.25, 1, 0.5, 1);
   z-index: 10;
+  overflow: visible;
 }
 
-.liquid-glass-nav-item:hover {
-  background: var(--color-white-rgba-20);
+/* Content wrapper for icon and label */
+.liquid-glass-nav-content {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  height: 100%;
+  transition: all .3s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
-.liquid-glass-nav-item:active {
-  transform: scale(0.92);
-  background: var(--color-white-rgba-30);
-}
-
-.liquid-glass-nav-item.active {
-  background: var(--color-white-rgba-25);
-  box-shadow: inset 0 1px 2px var(--color-black-05), inset 0 -1px 2px
-    var(--color-white-rgba-50);
-}
-
+/* Icon styling */
 .liquid-glass-nav-item .nav-icon {
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   color: var(--color-text-primary);
   filter: drop-shadow(0 1px 1px var(--color-black-05));
   transition: all .3s cubic-bezier(0.25, 1, 0.5, 1);
+  flex-shrink: 0;
 }
 
-.liquid-glass-nav-item:hover .nav-icon {
-  filter: drop-shadow(0 1px 2px var(--color-black-10));
+/* Label styling */
+.liquid-glass-nav-item .nav-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  transition: all .3s cubic-bezier(0.25, 1, 0.5, 1);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  opacity: 0.7;
+}
+
+/* Active state styling */
+.liquid-glass-nav-item.active .nav-label {
+  color: var(--accent-color);
+  opacity: 1;
 }
 
 .liquid-glass-nav-item.active .nav-icon {
-  color: var(--primary-color, var(--color-text-primary));
+  filter: drop-shadow(0 2px 4px rgba(10, 132, 255, 0.3));
+}
+
+/* Hover state */
+.liquid-glass-nav-item:hover .nav-icon {
+  transform: scale(1.1);
+  filter: drop-shadow(0 2px 3px var(--color-black-10));
+}
+
+.liquid-glass-nav-item:hover .nav-label {
+  opacity: 1;
+}
+
+/* Press/tap effect */
+.liquid-glass-nav-item:active {
+  transform: scale(0.96);
 }
 
 /* Dark mode adjustments */
 @media (prefers-color-scheme: dark) {
-  .liquid-glass-nav-item .nav-icon {
-    color: var(--color-text-light);
+  .liquid-glass-nav-slider {
+    background: linear-gradient(
+      -75deg,
+      rgba(10, 132, 255, 0.2),
+      rgba(10, 132, 255, 0.35),
+      rgba(10, 132, 255, 0.2)
+    );
   }
 
-  .liquid-glass-nav-item.active .nav-icon {
-    color: var(--primary-color, var(--color-text-light));
+  .liquid-glass-nav-item .nav-icon {
+    color: var(--color-text-primary);
   }
+
+  .liquid-glass-nav-item .nav-label {
+    color: var(--color-text-primary);
+  }
+
+  .liquid-glass-nav-item.active .nav-icon,
+  .liquid-glass-nav-item.active .nav-label {
+    color: var(--accent-color);
+  }
+}
+
+.dark .liquid-glass-nav-slider {
+  background: linear-gradient(
+    -75deg,
+    rgba(10, 132, 255, 0.2),
+    rgba(10, 132, 255, 0.35),
+    rgba(10, 132, 255, 0.2)
+  );
+}
+
+.dark .liquid-glass-nav-item .nav-icon {
+  color: var(--color-text-light);
+}
+
+.dark .liquid-glass-nav-item .nav-label {
+  color: var(--color-text-light);
+}
+
+.dark .liquid-glass-nav-item.active .nav-icon,
+.dark .liquid-glass-nav-item.active .nav-label {
+  color: var(--accent-color);
 }

@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { motion } from "framer-motion";
+import "@/pages/button.css";
 import { useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
@@ -9,7 +9,6 @@ import {
   HouseFillIcon,
   HouseIcon,
 } from "../icons";
-import "@/pages/button.css";
 
 export function BottomNav() {
   const location = useLocation();
@@ -56,82 +55,76 @@ export function BottomNav() {
     }
   }, [navigate]);
 
+  const navItems = [
+    {
+      to: "/home",
+      icon: HouseIcon,
+      iconFill: HouseFillIcon,
+      label: "Home",
+      isActive: isHomeActive,
+    },
+    {
+      to: "/statistics",
+      icon: ChartIcon,
+      iconFill: ChartFillIcon,
+      label: "Statistics",
+      isActive: isStatsActive,
+    },
+    {
+      to: "/settings",
+      icon: GearBigIcon,
+      iconFill: GearBigIcon,
+      label: "Settings",
+      isActive: isSettingsActive,
+    },
+  ];
+
+  // Get active item index for background position
+  const activeIndex = navItems.findIndex((item) => item.isActive);
+
   return (
     <div className="fixed bottom-8 left-0 right-0 z-40 flex items-center justify-center px-6 pointer-events-none">
       {/* Liquid Glass Navigation */}
       <div className="liquid-glass-nav-wrap">
         <div className="liquid-glass-nav">
-          <Link
-            to="/home"
-            onClick={() => {
-              if (window.Telegram?.WebApp?.HapticFeedback) {
-                window.Telegram.WebApp.HapticFeedback.selectionChanged();
-              }
+          {/* Animated background slider */}
+          <div
+            className="liquid-glass-nav-slider"
+            style={{
+              transform: `translateX(calc(var(--nav-item-width) * ${activeIndex} + var(--nav-gap) * ${activeIndex}))`,
             }}
-            className={cn("liquid-glass-nav-item", isHomeActive && "active")}
-          >
-            <motion.div whileTap={{ scale: 0.88 }} className="relative z-10">
-              {isHomeActive ? (
-                <HouseFillIcon
-                  className="nav-icon"
-                  style={
-                    isHomeActive ? { color: "var(--primary-color)" } : undefined
-                  }
-                />
-              ) : (
-                <HouseIcon className="nav-icon" />
-              )}
-            </motion.div>
-          </Link>
+          />
 
-          <Link
-            to="/statistics"
-            onClick={() => {
-              if (window.Telegram?.WebApp?.HapticFeedback) {
-                window.Telegram.WebApp.HapticFeedback.selectionChanged();
-              }
-            }}
-            className={cn("liquid-glass-nav-item", isStatsActive && "active")}
-          >
-            <motion.div whileTap={{ scale: 0.88 }} className="relative z-10">
-              {isStatsActive ? (
-                <ChartFillIcon
-                  className="nav-icon"
-                  style={
-                    isStatsActive
-                      ? { color: "var(--primary-color)" }
-                      : undefined
+          {navItems.map((item) => {
+            const Icon = item.isActive ? item.iconFill : item.icon;
+            return (
+              <Link
+                key={item.to}
+                to={item.to}
+                onClick={() => {
+                  if (window.Telegram?.WebApp?.HapticFeedback) {
+                    window.Telegram.WebApp.HapticFeedback.selectionChanged();
                   }
-                />
-              ) : (
-                <ChartIcon className="nav-icon" />
-              )}
-            </motion.div>
-          </Link>
-
-          <Link
-            to="/settings"
-            onClick={() => {
-              if (window.Telegram?.WebApp?.HapticFeedback) {
-                window.Telegram.WebApp.HapticFeedback.selectionChanged();
-              }
-            }}
-            className={cn(
-              "liquid-glass-nav-item",
-              isSettingsActive && "active"
-            )}
-          >
-            <motion.div whileTap={{ scale: 0.88 }} className="relative z-10">
-              <GearBigIcon
-                className="nav-icon"
-                style={
-                  isSettingsActive
-                    ? { color: "var(--primary-color)" }
-                    : undefined
-                }
-              />
-            </motion.div>
-          </Link>
+                }}
+                className={cn(
+                  "liquid-glass-nav-item",
+                  item.isActive && "active"
+                )}
+              >
+                <div className="liquid-glass-nav-content">
+                  <Icon
+                    className="nav-icon"
+                    style={
+                      item.isActive
+                        ? { color: "var(--accent-color)" }
+                        : undefined
+                    }
+                  />
+                  <span className="nav-label">{item.label}</span>
+                </div>
+              </Link>
+            );
+          })}
         </div>
         <div className="liquid-glass-nav-shadow" />
       </div>

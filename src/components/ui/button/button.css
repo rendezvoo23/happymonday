@@ -346,7 +346,7 @@
 .button__variant--liquid {
   background-color: var(--liquid-background-color, rgba(100, 100, 100, 0.5));
   @apply backdrop-blur-sm;
-  color: var(--liquid-foreground-color, white);
+  color: var(--text-primary-color);
   position: relative;
   border: 1px solid transparent;
   background-clip: padding-box;
