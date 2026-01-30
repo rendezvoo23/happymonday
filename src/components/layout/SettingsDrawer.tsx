@@ -1,14 +1,15 @@
 import { DollarSignIcon, GlobeIcon } from "@/components/icons";
 import { useLocale } from "@/context/LocaleContext";
 import { useTheme } from "@/context/ThemeContext";
+import { supabase } from "@/lib/supabaseClient";
 import { cn } from "@/lib/utils";
+import type { Language } from "@/locales";
 import { useUserStore } from "@/stores/userStore";
-import { format } from "date-fns";
-import { motion } from "framer-motion";
 import {
   Check,
   ChevronLeft,
   HeartIcon,
+  Monitor,
   Moon as MoonIcon,
   Search,
   Star,
@@ -18,6 +19,40 @@ import { useEffect, useMemo, useState } from "react";
 import { Drawer } from "vaul";
 import { Button } from "../ui/Button";
 import { SettingsRow } from "../ui/SettingsRow";
+
+interface MainScreenProps {
+  navigateToScreen: (screen: SettingsScreen) => void;
+  currentLanguage?: { nativeName: string };
+  currentCurrency?: { code: string; symbol: string };
+  getThemeLabel: (theme: string) => string;
+  theme: string;
+  settings: any; // UserSettings type from store can be complex, keeping as is for now but without lint warning if possible
+  t: (key: string) => string;
+  onClose: () => void;
+}
+
+interface LanguageScreenProps {
+  languages: { code: string; name: string; nativeName: string }[];
+  locale: Language;
+  onSelect: (code: string) => void;
+}
+
+interface CurrencyScreenProps {
+  currencies: { code: string; name: string; symbol: string }[];
+  selectedCurrency: string;
+  onSelect: (code: string) => void;
+}
+
+interface ThemeScreenProps {
+  theme: string;
+  onSelect: (mode: "light" | "dark" | "system") => void;
+  t: (key: string) => string;
+}
+
+interface DonateScreenProps {
+  onClose: () => void;
+  t: (key: string) => string;
+}
 
 type SettingsScreen = "main" | "language" | "currency" | "theme" | "donate";
 
@@ -108,10 +143,9 @@ export function SettingsDrawer({ isOpen, onClose }: SettingsDrawerProps) {
                   languages={languages}
                   locale={locale}
                   onSelect={(code) => {
-                    setLocale(code as any);
+                    setLocale(code as Language);
                     navigateBack();
                   }}
-                  t={t}
                 />
               )}
               {currentScreen === "currency" && (
@@ -122,7 +156,6 @@ export function SettingsDrawer({ isOpen, onClose }: SettingsDrawerProps) {
                     updateSettings({ default_currency: code });
                     navigateBack();
                   }}
-                  t={t}
                 />
               )}
               {currentScreen === "theme" && (
@@ -135,9 +168,7 @@ export function SettingsDrawer({ isOpen, onClose }: SettingsDrawerProps) {
                   t={t}
                 />
               )}
-              {currentScreen === "donate" && (
-                <DonateScreen onClose={onClose} t={t} />
-              )}
+              {currentScreen === "donate" && <DonateScreen onClose={onClose} />}
             </div>
           </div>
         </Drawer.Content>
@@ -154,7 +185,7 @@ function MainScreen({
   theme,
   settings,
   t,
-}: any) {
+}: MainScreenProps) {
   return (
     <div className="flex flex-col gap-6">
       <div className="space-y-1">
@@ -200,10 +231,10 @@ function MainScreen({
   );
 }
 
-function LanguageScreen({ languages, locale, onSelect, t }: any) {
+function LanguageScreen({ languages, locale, onSelect }: LanguageScreenProps) {
   return (
     <div className="space-y-1">
-      {languages.map((language: any) => (
+      {languages.map((language) => (
         <button
           key={language.code}
           type="button"
@@ -227,13 +258,17 @@ function LanguageScreen({ languages, locale, onSelect, t }: any) {
   );
 }
 
-function CurrencyScreen({ currencies, selectedCurrency, onSelect, t }: any) {
+function CurrencyScreen({
+  currencies,
+  selectedCurrency,
+  onSelect,
+}: CurrencyScreenProps) {
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredCurrencies = useMemo(() => {
     const query = searchQuery.toLowerCase();
     return currencies.filter(
-      (c: any) =>
+      (c) =>
         c.code.toLowerCase().includes(query) ||
         c.name.toLowerCase().includes(query)
     );
@@ -254,7 +289,7 @@ function CurrencyScreen({ currencies, selectedCurrency, onSelect, t }: any) {
 
       <div className="space-y-1">
         {filteredCurrencies.length > 0 ? (
-          filteredCurrencies.map((currency: any) => (
+          filteredCurrencies.map((currency) => (
             <button
               key={currency.code}
               type="button"
@@ -289,7 +324,7 @@ function CurrencyScreen({ currencies, selectedCurrency, onSelect, t }: any) {
   );
 }
 
-function ThemeScreen({ theme, onSelect, t }: any) {
+function ThemeScreen({ theme, onSelect, t }: ThemeScreenProps) {
   const themes = [
     {
       value: "light" as const,
@@ -345,7 +380,7 @@ function ThemeScreen({ theme, onSelect, t }: any) {
   );
 }
 
-function DonateScreen({ onClose, t }: any) {
+function DonateScreen({ onClose }: Omit<DonateScreenProps, "t">) {
   const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
   const [customAmount, setCustomAmount] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
@@ -363,7 +398,7 @@ function DonateScreen({ onClose, t }: any) {
       if (window.Telegram?.WebApp?.openInvoice) {
         let invoiceUrl = "";
         try {
-          const { data, error } = await window.supabase.functions.invoke(
+          const { data, error } = await supabase.functions.invoke(
             "create-stars-invoice",
             {
               body: {
@@ -408,7 +443,7 @@ function DonateScreen({ onClose, t }: any) {
 
   const handleCustomDonate = () => {
     const amount = Number.parseInt(customAmount, 10);
-    if (!isNaN(amount) && amount > 0) {
+    if (!Number.isNaN(amount) && amount > 0) {
       handleDonate(amount);
     }
   };

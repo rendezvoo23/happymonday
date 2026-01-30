@@ -1,6 +1,5 @@
 import { DollarSignIcon, GlobeIcon, MoonIcon } from "@/components/icons";
 import { PageShell } from "@/components/layout/PageShell";
-import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { SettingsRow } from "@/components/ui/SettingsRow";
 import { useLocale } from "@/context/LocaleContext";
