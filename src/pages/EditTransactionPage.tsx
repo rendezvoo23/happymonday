@@ -1,5 +1,6 @@
 import { TransactionForm } from "@/components/finance/TransactionForm";
 import { PageShell } from "@/components/layout/PageShell";
+import { Button } from "@/components/ui/Button";
 import { useDate } from "@/context/DateContext";
 import { useTransactionStore } from "@/stores/transactionStore";
 import type { CategoryId, TransactionType } from "@/types";
@@ -37,13 +38,14 @@ export function EditTransactionPage() {
       <PageShell>
         <div className="flex flex-col items-center justify-center h-[60vh]">
           <p className="text-gray-500">Transaction not found</p>
-          <button
+          <Button
             type="button"
             onClick={() => navigate(-1)}
-            className="mt-4 text-blue-600 font-medium"
+            variant="secondary"
+            className="mt-4"
           >
             Go Back
-          </button>
+          </Button>
         </div>
       </PageShell>
     );

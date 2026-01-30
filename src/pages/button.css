@@ -63,6 +63,7 @@
   border-radius: 999vw;
   transition: all .4s cubic-bezier(0.25, 1, 0.5, 1);
   position: relative;
+  perspective: 500px;
 }
 
 .glassmorphic-button-shadow {
@@ -133,8 +134,9 @@
   border-radius: 999vw;
   justify-content: center;
   align-items: center;
-  width: 280px;
-  height: 68px;
+  width: 100%;
+  height: 100%;
+  min-height: 48px;
   transition: all .4s cubic-bezier(0.25, 1, 0.5, 1);
   display: flex;
   position: relative;
@@ -145,14 +147,11 @@
       --color-white-20
     ), 0 0 var(--color-transparent-white);
 }
-@media (min-width: 48rem) {
-  .glassmorphic-button {
-    width: 154px;
-  }
-}
 .glassmorphic-button:disabled {
   pointer-events: none;
+  opacity: 0.5;
 }
+/* Handled above */
 .glassmorphic-button:hover {
   -webkit-backdrop-filter: blur(.01em);
   backdrop-filter: blur(.01em);
@@ -315,12 +314,7 @@
   text-shadow: .025em .1em .05em var(--color-black-15);
 }
 
-/* Hide the original waitlist button */
-.glassmorphic-button-wrap:has(
-    .glassmorphic-button:not(.glassmorphic-plus-button)
-  ) {
-  display: none;
-}
+/* Removed hidden constraint */
 
 /* Glassmorphic Plus Button - Circular Version */
 .glassmorphic-plus-wrap {
@@ -411,7 +405,8 @@
 
 .glassmorphic-plus-button:disabled {
   pointer-events: none;
-  opacity: 0.5;
+  opacity: 0.4;
+  filter: grayscale(1);
 }
 
 .glassmorphic-plus-button:hover {

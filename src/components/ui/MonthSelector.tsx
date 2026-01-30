@@ -17,7 +17,7 @@ import {
   zhCN,
 } from "date-fns/locale";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { LiquidButton } from "./button/button";
+import { Button } from "./Button";
 
 interface MonthSelectorProps {
   className?: string;
@@ -75,18 +75,17 @@ export function MonthSelector({
 
   return (
     <div className={cn("flex items-center gap-4", className)}>
-      <LiquidButton
+      <Button
         type="button"
         onClick={handlePrevClick}
         onTouchStart={handleTouchEvent}
         onTouchMove={handleTouchEvent}
         onTouchEnd={handleTouchEvent}
         aria-label="Previous month"
-        variant="liquid"
-        size="icon-lg"
+        size="icon-sm"
       >
         <ChevronLeft className="w-5 h-5 text-gray-700 dark:text-gray-300" />
-      </LiquidButton>
+      </Button>
 
       <button
         type="button"
@@ -117,7 +116,7 @@ export function MonthSelector({
         </span>
       </button>
 
-      <LiquidButton
+      <Button
         type="button"
         onClick={handleNextClick}
         onTouchStart={handleTouchEvent}
@@ -125,8 +124,7 @@ export function MonthSelector({
         onTouchEnd={handleTouchEvent}
         disabled={!canGoNext}
         aria-label="Next month"
-        variant="liquid"
-        size="icon-lg"
+        size="icon-sm"
       >
         <ChevronRight
           className={cn(
@@ -136,7 +134,7 @@ export function MonthSelector({
               : "text-gray-400 dark:text-gray-600"
           )}
         />
-      </LiquidButton>
+      </Button>
     </div>
   );
 }

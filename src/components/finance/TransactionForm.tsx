@@ -12,7 +12,7 @@ import { type Subcategory, getSubcategories } from "@/lib/api";
 import { useCategoryStore } from "@/stores/categoryStore";
 import type { CategoryId, TransactionType } from "@/types";
 import { Loader2, X } from "lucide-react";
-import { LiquidButton } from "../ui/button/button";
+// LiquidButton import removed
 import { CategorySelector } from "./CategorySelector";
 import { SubcategorySelector } from "./SubcategorySelector";
 
@@ -309,15 +309,14 @@ export function TransactionForm({
       </div>
 
       <div className="pt-4 pb-4 flex gap-3">
-        <LiquidButton
+        <Button
           type="button"
-          variant="liquid"
-          size="icon-lg"
+          size="icon-sm"
           onClick={onCancel}
           className="absolute left-4 top-[14px]"
         >
           <X className="w-5 h-5" />
-        </LiquidButton>
+        </Button>
         <Button
           type="button"
           variant="secondary"

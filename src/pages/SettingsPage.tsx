@@ -1,22 +1,13 @@
 import { DollarSignIcon, GlobeIcon, MoonIcon } from "@/components/icons";
 import { PageShell } from "@/components/layout/PageShell";
+import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
-// import { backgrounds } from "@/config/backgrounds";
+import { SettingsRow } from "@/components/ui/SettingsRow";
 import { useLocale } from "@/context/LocaleContext";
 import { useTheme } from "@/context/ThemeContext";
 import { env } from "@/env";
-// import { useBackgroundStore } from "@/stores/backgroundStore";
 import { useUserStore } from "@/stores/userStore";
-import {
-  Check,
-  ChevronRight,
-  Code2,
-  Monitor,
-  Palette,
-  Search,
-  Sun,
-} from "lucide-react";
-import type * as React from "react";
+import { Check, Code2, Monitor, Palette, Search, Sun } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -25,11 +16,9 @@ export function SettingsPage() {
   const { settings, currencies, updateSettings, isLoading } = useUserStore();
   const { theme, setTheme } = useTheme();
   const { locale, setLocale, t, languages } = useLocale();
-  // const { activeBackgroundId, setBackground } = useBackgroundStore();
   const [isCurrencyModalOpen, setIsCurrencyModalOpen] = useState(false);
   const [isThemeModalOpen, setIsThemeModalOpen] = useState(false);
   const [isLanguageModalOpen, setIsLanguageModalOpen] = useState(false);
-  /* const [isBackgroundModalOpen, setIsBackgroundModalOpen] = useState(false); */
   const [currencySearchQuery, setCurrencySearchQuery] = useState("");
 
   const handleCurrencySelect = async (code: string) => {
@@ -41,11 +30,6 @@ export function SettingsPage() {
     setTheme(selectedTheme);
     setIsThemeModalOpen(false);
   };
-
-  // const handleBackgroundSelect = (id: string) => {
-  //   setBackground(id as any); // Type assertion to satisfy the store's strict typing
-  //   setIsBackgroundModalOpen(false);
-  // };
 
   const getThemeLabel = (themeValue: string) => {
     switch (themeValue) {
@@ -66,9 +50,6 @@ export function SettingsPage() {
   };
 
   const currentLanguage = languages.find((l) => l.code === locale);
-  // const currentBackground = backgrounds.find(
-  //   (b) => b.id === activeBackgroundId
-  // );
 
   if (isLoading && !settings) {
     return (
@@ -93,7 +74,6 @@ export function SettingsPage() {
       </header>
 
       <main className="flex flex-col gap-6">
-        {/* Settings List */}
         <div className="space-y-2">
           <SettingsRow
             icon={GlobeIcon}
@@ -117,15 +97,8 @@ export function SettingsPage() {
             value={getThemeLabel(theme)}
             onClick={() => setIsThemeModalOpen(true)}
           />
-          {/* <SettingsRow
-            icon={ImageIcon}
-            label="Background"
-            value={currentBackground?.name || "Default"}
-            onClick={() => setIsBackgroundModalOpen(true)}
-          /> */}
         </div>
 
-        {/* Developer Examples Section - only visible in dev mode */}
         {env.isDev && (
           <div className="space-y-2">
             <SettingsRow
@@ -144,7 +117,6 @@ export function SettingsPage() {
         )}
       </main>
 
-      {/* Language Selection Modal */}
       <Modal
         isOpen={isLanguageModalOpen}
         onClose={() => setIsLanguageModalOpen(false)}
@@ -153,12 +125,12 @@ export function SettingsPage() {
         <div className="space-y-1 max-h-[60vh] overflow-y-auto no-scrollbar">
           {languages.map((language) => (
             <button
-              type="button"
               key={language.code}
+              type="button"
               onClick={() => handleLanguageSelect(language.code)}
-              className="w-full flex items-center justify-between p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+              className="w-full flex items-center justify-between p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors mb-2"
             >
-              <div className="flex flex-col items-start">
+              <div className="flex flex-col items-start text-left">
                 <span className="font-semibold text-gray-900 dark:text-gray-100">
                   {language.nativeName}
                 </span>
@@ -174,7 +146,6 @@ export function SettingsPage() {
         </div>
       </Modal>
 
-      {/* Currency Selection Modal */}
       <Modal
         isOpen={isCurrencyModalOpen}
         onClose={() => {
@@ -184,7 +155,6 @@ export function SettingsPage() {
         title={t("settings.selectCurrency")}
       >
         <div className="space-y-3">
-          {/* Search Input */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
             <input
@@ -196,7 +166,6 @@ export function SettingsPage() {
             />
           </div>
 
-          {/* Currency List */}
           <div className="space-y-1 min-h-[50vh] max-h-[50vh] overflow-y-auto no-scrollbar">
             {currencies
               .filter((currency) => {
@@ -208,12 +177,12 @@ export function SettingsPage() {
               })
               .map((currency) => (
                 <button
-                  type="button"
                   key={currency.code}
+                  type="button"
                   onClick={() => handleCurrencySelect(currency.code)}
-                  className="w-full flex items-center justify-between p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                  className="w-full flex items-center justify-between p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors mb-2"
                 >
-                  <div className="flex flex-col items-start">
+                  <div className="flex flex-col items-start text-left">
                     <span className="font-semibold text-gray-900 dark:text-gray-100">
                       {currency.code}
                     </span>
@@ -235,7 +204,6 @@ export function SettingsPage() {
         </div>
       </Modal>
 
-      {/* Theme Selection Modal */}
       <Modal
         isOpen={isThemeModalOpen}
         onClose={() => setIsThemeModalOpen(false)}
@@ -265,14 +233,14 @@ export function SettingsPage() {
             const Icon = themeOption.icon;
             return (
               <button
-                type="button"
                 key={themeOption.value}
+                type="button"
                 onClick={() => handleThemeSelect(themeOption.value)}
-                className="w-full flex items-center justify-between p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                className="w-full flex items-center justify-between p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors mb-2 text-left"
               >
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-lg">
-                    <Icon className="w-5 h-5 text-gray-700 dark:text-gray-300" />
+                  <div className="p-2 bg-black/5 dark:bg-white/5 rounded-lg text-gray-700 dark:text-gray-300">
+                    <Icon className="w-5 h-5" />
                   </div>
                   <div className="flex flex-col items-start">
                     <span className="font-semibold text-gray-900 dark:text-gray-100">
@@ -291,81 +259,6 @@ export function SettingsPage() {
           })}
         </div>
       </Modal>
-
-      {/* Background Selection Modal */}
-      {/* <Modal
-        isOpen={isBackgroundModalOpen}
-        onClose={() => setIsBackgroundModalOpen(false)}
-        title="Select Background"
-      >
-        <div className="grid grid-cols-2 gap-3 max-h-[60vh] overflow-y-auto no-scrollbar p-1">
-          {backgrounds.map((bg) => (
-            <button
-              type="button"
-              key={bg.id}
-              onClick={() => handleBackgroundSelect(bg.id)}
-              className={`relative aspect-[3/4] rounded-xl overflow-hidden border-2 transition-all ${
-                activeBackgroundId === bg.id
-                  ? "border-blue-500 scale-[1.02] shadow-lg"
-                  : "border-transparent hover:scale-[1.02]"
-              }`}
-            >
-              <img
-                src={bg.src}
-                alt={bg.name}
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-black/40 flex items-end p-3">
-                <span className="text-white text-xs font-medium truncate w-full text-left">
-                  {bg.name}
-                </span>
-              </div>
-              {activeBackgroundId === bg.id && (
-                <div className="absolute top-2 right-2 bg-blue-500 rounded-full p-1">
-                  <Check className="w-3 h-3 text-white" />
-                </div>
-              )}
-            </button>
-          ))}
-        </div>
-      </Modal> */}
     </PageShell>
-  );
-}
-
-function SettingsRow({
-  icon: Icon,
-  label,
-  value,
-  onClick,
-}: {
-  icon: React.ComponentType<{ className?: string }>;
-  label: string;
-  value?: string;
-  onClick?: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="w-full flex items-center justify-between p-4 bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm rounded-2xl hover:bg-white/80 dark:hover:bg-gray-800/80 transition-colors"
-    >
-      <div className="flex items-center gap-3">
-        <div className="p-2 bg-white dark:bg-gray-700 rounded-full shadow-sm text-gray-600 dark:text-gray-300">
-          <Icon className="w-5 h-5" />
-        </div>
-        <span className="font-medium text-gray-900 dark:text-gray-100">
-          {label}
-        </span>
-      </div>
-      <div className="flex items-center gap-2">
-        {value && (
-          <span className="text-sm text-gray-500 dark:text-gray-400">
-            {value}
-          </span>
-        )}
-        <ChevronRight className="w-5 h-5 text-gray-400 dark:text-gray-500" />
-      </div>
-    </button>
   );
 }
