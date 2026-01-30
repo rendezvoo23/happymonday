@@ -5,17 +5,16 @@ import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { authenticateWithTelegram } from "@/lib/authTelegram";
 import { supabase } from "@/lib/supabaseClient";
 import { parseInitData } from "@/lib/utils";
-import { AddTransactionPage } from "@/pages/AddTransactionPage";
 import { EditTransactionPage } from "@/pages/EditTransactionPage";
 import { HistoryPage } from "@/pages/HistoryPage";
 import { HomePage } from "@/pages/HomePage";
-import { SettingsPage } from "@/pages/SettingsPage";
 import { StatisticsPage } from "@/pages/StatisticsPage";
 import { useUserStore } from "@/stores/userStore";
 import { AnimatePresence } from "framer-motion";
 import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
+import { SettingsDrawer } from "./components/layout/SettingsDrawer";
 import { env } from "./env";
 
 function ProtectedRoute({
@@ -253,15 +252,7 @@ export default function App() {
             path="/settings"
             element={
               <ProtectedRoute isLoading={isAuthLoading}>
-                <SettingsPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/add"
-            element={
-              <ProtectedRoute isLoading={isAuthLoading}>
-                <AddTransactionPage />
+                <SettingsDrawer isOpen={true} onClose={() => {}} />
               </ProtectedRoute>
             }
           />

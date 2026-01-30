@@ -1,4 +1,3 @@
-import darkBgVariant1 from "@/assets/dark-bg-variant-3.PNG";
 import { BubblesCluster } from "@/components/finance/BubblesCluster";
 import { TransactionDrawer } from "@/components/finance/TransactionDrawer";
 import { PageShell } from "@/components/layout/PageShell";
@@ -291,8 +290,10 @@ export function HomePage() {
           ref={containerRef}
           className="flex flex-col items-center gap-2 pb-32 touch-none min-h-[calc(100vh-env(safe-area-inset-top))]"
           style={{
-            background: `linear-gradient(to bottom, var(--background), rgba(0, 0, 0, 0.3)), url(${darkBgVariant1}) bottom / auto 100% no-repeat fixed`,
-            backgroundBlendMode: "normal, multiply",
+            // background: `linear-gradient(to bottom, var(--background), rgba(0, 0, 0, 0.3)), url(${darkBgVariant1}) bottom / auto 100% no-repeat fixed`,
+            // backgroundBlendMode: "normal, multiply",
+            // backgroundPositionY: "200px",
+            marginTop: "calc(env(safe-area-inset-top) + 50px)",
           }}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
@@ -373,7 +374,7 @@ export function HomePage() {
                 className="glassmorphic-plus-button"
                 onClick={() => handleOpenAdd("expense")}
               >
-                <Plus className="plus-icon" color="var(--primary-color)" />
+                <Plus className="plus-icon" color="var(--primary-text-color)" />
               </button>
               <div className="glassmorphic-plus-shadow" />
             </div>

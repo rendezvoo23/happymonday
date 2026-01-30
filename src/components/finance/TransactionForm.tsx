@@ -1,5 +1,4 @@
 import { format } from "date-fns";
-import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/Button";
@@ -12,6 +11,7 @@ import { type Subcategory, getSubcategories } from "@/lib/api";
 import { useCategoryStore } from "@/stores/categoryStore";
 import type { CategoryId, TransactionType } from "@/types";
 import { Loader2, X } from "lucide-react";
+import { SegmentedControl } from "../ui/SegmentedControl";
 import { LiquidButton } from "../ui/button/button";
 import { CategorySelector } from "./CategorySelector";
 import { SubcategorySelector } from "./SubcategorySelector";
@@ -47,6 +47,9 @@ export function TransactionForm({
   const { t } = useTranslation();
 
   const [type] = useState<TransactionType>(initialData?.type || initialType);
+  const [selectedType, setSelectedType] = useState<
+    "transactions.category" | "transactions.subcategory"
+  >("transactions.category");
   const [amount, setAmount] = useState(initialData?.amount?.toString() || "");
   const [categoryId, setCategoryId] = useState<CategoryId>(
     initialData?.categoryId || ""
@@ -207,8 +210,18 @@ export function TransactionForm({
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="space-y-4">
         {/* Amount Display */}
-        <div className="relative flex items-center justify-center min-h-[64px] bg-gray-50 dark:bg-gray-800 rounded-2xl px-6 py-4 mt-10">
-          <div className="flex items-center gap-2 text-4xl font-bold text-gray-900 dark:text-gray-100">
+
+        <div className="absolute right-4 top-[14px]">
+          <Input
+            id="date-input"
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+          />
+        </div>
+
+        <div className="relative flex items-center justify-center min-h-[64px] rounded-2xl px-6 py-4 mt-10">
+          <div className="flex items-center gap-2 text-2xl">
             {isSymbolPrefix && (
               <span className="text-gray-400 dark:text-gray-500">{symbol}</span>
             )}
@@ -228,70 +241,67 @@ export function TransactionForm({
         />
       </div>
 
-      <div className="space-y-2 flex items-center justify-center">
-        <div className="relative">
-          <Input
-            id="date-input"
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            className="w-[200px] border-none focus:border-none focus:ring-0"
-          />
-        </div>
+      <div className="flex justify-center">
+        <SegmentedControl
+          layoutId="segmented-control-category-subcategory"
+          options={["transactions.category", "transactions.subcategory"].map(
+            (cat) => ({
+              value: cat,
+              label: t(cat),
+            })
+          )}
+          value={selectedType}
+          onChange={(value) =>
+            setSelectedType(
+              value as unknown as
+                | "transactions.category"
+                | "transactions.subcategory"
+            )
+          }
+        />
       </div>
 
-      <div className="space-y-2">
-        <div className="text-sm font-medium text-gray-500 dark:text-gray-400 ml-1">
-          {t("transactions.category")}
-        </div>
-        {categoriesLoading ? (
-          <div className="text-center py-8 text-gray-400 dark:text-gray-500">
-            {t("transactions.loadingCategories")}
-          </div>
-        ) : categories.length === 0 ? (
-          <div className="text-center py-8 text-gray-400 dark:text-gray-500">
-            {t("transactions.noCategories")}
-          </div>
-        ) : (
-          <CategorySelector
-            categories={categories}
-            selectedId={categoryId}
-            onSelect={setCategoryId}
-          />
-        )}
-      </div>
-
-      <AnimatePresence mode="wait">
-        {categoryId && (isLoadingSubcategories || subcategories.length > 0) && (
-          <motion.div
-            initial={{ opacity: 0, height: 0, y: -10 }}
-            animate={{ opacity: 1, height: "auto", y: 0 }}
-            exit={{ opacity: 0, height: 0, y: -10 }}
-            transition={{
-              type: "spring",
-              stiffness: 500,
-              damping: 30,
-              mass: 1,
-            }}
-            className="overflow-hidden"
-          >
-            <div className="space-y-2 py-1">
-              {isLoadingSubcategories ? (
-                <div className="text-center py-4 text-gray-400 dark:text-gray-500 text-sm min-h-[100px] flex items-center justify-center">
-                  <Loader2 className="w-6 h-6 animate-spin" />
-                </div>
-              ) : (
-                <SubcategorySelector
-                  subcategories={subcategories}
-                  selectedId={subcategoryId}
-                  onSelect={setSubcategoryId}
-                  categoryColor={selectedCategory?.color}
-                />
-              )}
+      {selectedType === "transactions.category" && (
+        <div className="space-y-2">
+          {categoriesLoading ? (
+            <div className="text-center py-8 text-gray-400 dark:text-gray-500">
+              {t("transactions.loadingCategories")}
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          ) : categories.length === 0 ? (
+            <div className="text-center py-8 text-gray-400 dark:text-gray-500">
+              {t("transactions.noCategories")}
+            </div>
+          ) : (
+            <CategorySelector
+              categories={categories}
+              selectedId={categoryId}
+              onSelect={setCategoryId}
+            />
+          )}
+        </div>
+      )}
+
+      {selectedType === "transactions.subcategory" && (
+        <div>
+          {categoryId &&
+            (isLoadingSubcategories || subcategories.length > 0) && (
+              <div className="space-y-2 py-1">
+                {isLoadingSubcategories ? (
+                  <div className="text-center py-4 text-gray-400 dark:text-gray-500 text-sm min-h-[100px] flex items-center justify-center">
+                    <Loader2 className="w-6 h-6 animate-spin" />
+                  </div>
+                ) : (
+                  <SubcategorySelector
+                    subcategories={subcategories}
+                    selectedId={subcategoryId}
+                    onSelect={setSubcategoryId}
+                    categoryColor={selectedCategory?.color}
+                  />
+                )}
+              </div>
+            )}
+        </div>
+      )}
 
       <div className="space-y-2">
         <label
@@ -326,7 +336,12 @@ export function TransactionForm({
         >
           {t("common.cancel")}
         </Button>
-        <Button type="submit" className="flex-[2]" disabled={!amount}>
+        <Button
+          type="submit"
+          className="flex-[2]"
+          disabled={!amount}
+          style={{ backgroundColor: "var(--accent-color)", color: "white" }}
+        >
           {initialData ? t("common.saveChanges") : t("common.add")}
         </Button>
       </div>

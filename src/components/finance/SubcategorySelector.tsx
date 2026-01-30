@@ -1,4 +1,3 @@
-import { useLocale } from "@/context/LocaleContext";
 import type { Subcategory } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
@@ -18,7 +17,7 @@ export function SubcategorySelector({
   onSelect,
   categoryColor = "#6B7280",
 }: SubcategorySelectorProps) {
-  const { t } = useLocale();
+  // const { t } = useLocale();
 
   if (subcategories.length === 0) {
     return null;
@@ -26,9 +25,6 @@ export function SubcategorySelector({
 
   return (
     <div className="space-y-2">
-      <div className="text-sm font-medium text-gray-500 ml-1">
-        {t("transactions.subcategoryOptional")}
-      </div>
       <div className="grid grid-cols-4 gap-3 py-2">
         {subcategories.map((subcategory) => {
           const isSelected = selectedId === subcategory.id;

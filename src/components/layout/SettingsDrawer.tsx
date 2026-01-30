@@ -16,8 +16,8 @@ import {
 } from "lucide-react";
 import type * as React from "react";
 import { useState } from "react";
-import { Drawer } from "vaul";
 import { LiquidButton } from "../ui/button/button";
+import { PageShell } from "./PageShell";
 
 type SettingsScreen = "main" | "language" | "currency" | "theme" | "donate";
 
@@ -29,7 +29,7 @@ interface SettingsDrawerProps {
   onClose: () => void;
 }
 
-export function SettingsDrawer({ isOpen, onClose }: SettingsDrawerProps) {
+export function SettingsDrawer({ onClose }: SettingsDrawerProps) {
   const { settings, currencies, updateSettings, isLoading } = useUserStore();
   const { theme, setTheme } = useTheme();
   const { locale, setLocale, t, languages } = useLocale();
@@ -89,13 +89,13 @@ export function SettingsDrawer({ isOpen, onClose }: SettingsDrawerProps) {
     }
   };
 
-  const handleDrawerClose = (open: boolean) => {
-    if (!open) {
-      onClose();
-      // Reset to main screen after drawer closes
-      setTimeout(() => setCurrentScreen("main"), 300);
-    }
-  };
+  // const handleDrawerClose = (open: boolean) => {
+  //   if (!open) {
+  //     onClose();
+  //     // Reset to main screen after drawer closes
+  //     setTimeout(() => setCurrentScreen("main"), 300);
+  //   }
+  // };
 
   const currentLanguage = languages.find((l) => l.code === locale);
   const currentCurrency = currencies.find(
@@ -118,97 +118,88 @@ export function SettingsDrawer({ isOpen, onClose }: SettingsDrawerProps) {
   };
 
   return (
-    <Drawer.Root open={isOpen} onOpenChange={handleDrawerClose}>
-      <Drawer.Portal>
-        <Drawer.Overlay className="fixed inset-0 bg-black/40 z-50" />
-        <Drawer.Content className="bg-white dark:bg-gray-900 flex flex-col rounded-t-[24px] h-[500px] mt-24 fixed bottom-0 left-0 right-0 z-50 outline-none overflow-hidden">
-          {/* Handle */}
-          <div className="flex-shrink-0 mx-auto w-12 h-1.5 rounded-full bg-gray-300 dark:bg-gray-700 mt-4 mb-6" />
+    <PageShell>
+      <div className="flex-shrink-0 mx-auto w-12 h-1.5 rounded-full  mt-4 mb-6" />
 
-          {/* Header */}
-          <div className="flex-shrink-0 px-6 pb-4 relative">
-            {currentScreen !== "main" && (
-              <LiquidButton
-                type="button"
-                variant="liquid"
-                size="icon-lg"
-                onClick={navigateBack}
-                className="absolute left-4 top-[-6px]"
-              >
-                <ChevronLeft className="w-5 h-5" />
-              </LiquidButton>
+      {/* Header */}
+      <div className="flex-shrink-0 px-6 pb-4 relative">
+        {currentScreen !== "main" && (
+          <LiquidButton
+            type="button"
+            variant="liquid"
+            size="icon-lg"
+            onClick={navigateBack}
+            className="absolute left-4 top-[-6px]"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </LiquidButton>
+        )}
+        <div className="text-xl font-semibold text-gray-900 dark:text-gray-100 text-center">
+          {currentScreen === "main" && t("settings.title")}
+          {currentScreen === "language" && t("settings.selectLanguage")}
+          {currentScreen === "currency" && t("settings.selectCurrency")}
+          {currentScreen === "theme" && t("settings.selectTheme")}
+          {currentScreen === "donate" && "Support Us"}
+        </div>
+      </div>
+
+      {/* Content with slide animation */}
+      <div
+        className="flex-1 overflow-hidden relative"
+        style={{ height: "100vh" }}
+      >
+        <AnimatePresence initial={false} mode="wait" custom={direction}>
+          <motion.div
+            key={currentScreen}
+            custom={direction}
+            variants={slideVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={{
+              x: { type: "spring", stiffness: 300, damping: 30 },
+              opacity: { duration: 0.2 },
+            }}
+            className="absolute inset-0 overflow-y-auto px-6 pb-8"
+          >
+            {currentScreen === "main" && (
+              <MainScreen
+                isLoading={isLoading}
+                settings={settings}
+                currentLanguage={currentLanguage}
+                currentCurrency={currentCurrency}
+                theme={theme}
+                getThemeLabel={getThemeLabel}
+                navigateToScreen={navigateToScreen}
+                t={t}
+              />
             )}
-            <Drawer.Title className="text-xl font-semibold text-gray-900 dark:text-gray-100 text-center">
-              {currentScreen === "main" && t("settings.title")}
-              {currentScreen === "language" && t("settings.selectLanguage")}
-              {currentScreen === "currency" && t("settings.selectCurrency")}
-              {currentScreen === "theme" && t("settings.selectTheme")}
-              {currentScreen === "donate" && "Support Us"}
-            </Drawer.Title>
-          </div>
 
-          {/* Content with slide animation */}
-          <div className="flex-1 overflow-hidden relative">
-            <AnimatePresence initial={false} mode="wait" custom={direction}>
-              <motion.div
-                key={currentScreen}
-                custom={direction}
-                variants={slideVariants}
-                initial="enter"
-                animate="center"
-                exit="exit"
-                transition={{
-                  x: { type: "spring", stiffness: 300, damping: 30 },
-                  opacity: { duration: 0.2 },
-                }}
-                className="absolute inset-0 overflow-y-auto px-6 pb-8"
-              >
-                {currentScreen === "main" && (
-                  <MainScreen
-                    isLoading={isLoading}
-                    settings={settings}
-                    currentLanguage={currentLanguage}
-                    currentCurrency={currentCurrency}
-                    theme={theme}
-                    getThemeLabel={getThemeLabel}
-                    navigateToScreen={navigateToScreen}
-                    t={t}
-                  />
-                )}
+            {currentScreen === "language" && (
+              <LanguageScreen
+                languages={languages}
+                locale={locale}
+                onSelect={handleLanguageSelect}
+              />
+            )}
 
-                {currentScreen === "language" && (
-                  <LanguageScreen
-                    languages={languages}
-                    locale={locale}
-                    onSelect={handleLanguageSelect}
-                  />
-                )}
+            {currentScreen === "currency" && (
+              <CurrencyScreen
+                currencies={currencies}
+                selectedCurrency={settings?.default_currency}
+                onSelect={handleCurrencySelect}
+              />
+            )}
 
-                {currentScreen === "currency" && (
-                  <CurrencyScreen
-                    currencies={currencies}
-                    selectedCurrency={settings?.default_currency}
-                    onSelect={handleCurrencySelect}
-                  />
-                )}
+            {currentScreen === "theme" && (
+              <ThemeScreen theme={theme} onSelect={handleThemeSelect} t={t} />
+            )}
 
-                {currentScreen === "theme" && (
-                  <ThemeScreen
-                    theme={theme}
-                    onSelect={handleThemeSelect}
-                    t={t}
-                  />
-                )}
-
-                {currentScreen === "donate" && (
-                  <DonateScreen onClose={onClose} />
-                )}
-              </motion.div>
-            </AnimatePresence>
-          </div>
-        </Drawer.Content>
-      </Drawer.Portal>
-    </Drawer.Root>
+            {currentScreen === "donate" && <DonateScreen onClose={onClose} />}
+          </motion.div>
+        </AnimatePresence>
+      </div>
+    </PageShell>
   );
 }
 

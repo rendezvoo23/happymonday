@@ -11,6 +11,7 @@ interface SegmentedControlProps {
   value: string;
   onChange: (value: string) => void;
   className?: string;
+  layoutId?: string;
 }
 
 export function SegmentedControl({
@@ -18,11 +19,10 @@ export function SegmentedControl({
   value,
   onChange,
   className,
+  layoutId = "segmented-indicator",
 }: SegmentedControlProps) {
   return (
-    <div
-      className={cn("flex p-1 bg-gray-200/50 rounded-full relative", className)}
-    >
+    <div className={cn("flex p-1 rounded-full relative gap-1", className)}>
       {options.map((option) => {
         const isActive = value === option.value;
         return (
@@ -31,18 +31,22 @@ export function SegmentedControl({
             key={option.value}
             onClick={() => onChange(option.value)}
             className={cn(
-              "relative flex-1 py-2 text-sm font-medium transition-colors z-10",
-              isActive ? "text-black" : "text-gray-500 hover:text-gray-700"
+              "relative flex-1 py-1 px-2 text-sm font-medium transition-colors z-10 rounded-full",
+              isActive
+                ? "text-white bg-[var(--accent-color)]"
+                : "text-gray-500 hover:text-gray-700"
             )}
           >
             {isActive && (
               <motion.div
-                layoutId="segmented-indicator"
-                className="absolute inset-0 bg-white rounded-full shadow-sm"
+                layoutId={layoutId}
+                className="absolute inset-0  rounded-full shadow-sm"
                 transition={{ type: "spring", stiffness: 300, damping: 30 }}
               />
             )}
-            <span className="relative z-10">{option.label}</span>
+            <span className="relative z-10 whitespace-nowrap">
+              {option.label}
+            </span>
           </button>
         );
       })}
