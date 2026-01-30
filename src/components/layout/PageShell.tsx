@@ -22,6 +22,7 @@ export function PageShell({
       className={cn(
         "max-w-md mx-auto relative z-10",
         allowScroll ? "min-h-screen" : "h-screen overflow-hidden",
+        "pt-12", // Added top padding for system buttons/island
         className
       )}
     >

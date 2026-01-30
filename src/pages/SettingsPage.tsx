@@ -1,9 +1,11 @@
 import { DollarSignIcon, GlobeIcon, MoonIcon } from "@/components/icons";
 import { PageShell } from "@/components/layout/PageShell";
 import { Modal } from "@/components/ui/Modal";
+// import { backgrounds } from "@/config/backgrounds";
 import { useLocale } from "@/context/LocaleContext";
 import { useTheme } from "@/context/ThemeContext";
 import { env } from "@/env";
+// import { useBackgroundStore } from "@/stores/backgroundStore";
 import { useUserStore } from "@/stores/userStore";
 import {
   Check,
@@ -23,9 +25,11 @@ export function SettingsPage() {
   const { settings, currencies, updateSettings, isLoading } = useUserStore();
   const { theme, setTheme } = useTheme();
   const { locale, setLocale, t, languages } = useLocale();
+  // const { activeBackgroundId, setBackground } = useBackgroundStore();
   const [isCurrencyModalOpen, setIsCurrencyModalOpen] = useState(false);
   const [isThemeModalOpen, setIsThemeModalOpen] = useState(false);
   const [isLanguageModalOpen, setIsLanguageModalOpen] = useState(false);
+  /* const [isBackgroundModalOpen, setIsBackgroundModalOpen] = useState(false); */
   const [currencySearchQuery, setCurrencySearchQuery] = useState("");
 
   const handleCurrencySelect = async (code: string) => {
@@ -37,6 +41,11 @@ export function SettingsPage() {
     setTheme(selectedTheme);
     setIsThemeModalOpen(false);
   };
+
+  // const handleBackgroundSelect = (id: string) => {
+  //   setBackground(id as any); // Type assertion to satisfy the store's strict typing
+  //   setIsBackgroundModalOpen(false);
+  // };
 
   const getThemeLabel = (themeValue: string) => {
     switch (themeValue) {
@@ -57,6 +66,9 @@ export function SettingsPage() {
   };
 
   const currentLanguage = languages.find((l) => l.code === locale);
+  // const currentBackground = backgrounds.find(
+  //   (b) => b.id === activeBackgroundId
+  // );
 
   if (isLoading && !settings) {
     return (
@@ -105,6 +117,12 @@ export function SettingsPage() {
             value={getThemeLabel(theme)}
             onClick={() => setIsThemeModalOpen(true)}
           />
+          {/* <SettingsRow
+            icon={ImageIcon}
+            label="Background"
+            value={currentBackground?.name || "Default"}
+            onClick={() => setIsBackgroundModalOpen(true)}
+          /> */}
         </div>
 
         {/* Developer Examples Section - only visible in dev mode */}
@@ -273,6 +291,44 @@ export function SettingsPage() {
           })}
         </div>
       </Modal>
+
+      {/* Background Selection Modal */}
+      {/* <Modal
+        isOpen={isBackgroundModalOpen}
+        onClose={() => setIsBackgroundModalOpen(false)}
+        title="Select Background"
+      >
+        <div className="grid grid-cols-2 gap-3 max-h-[60vh] overflow-y-auto no-scrollbar p-1">
+          {backgrounds.map((bg) => (
+            <button
+              type="button"
+              key={bg.id}
+              onClick={() => handleBackgroundSelect(bg.id)}
+              className={`relative aspect-[3/4] rounded-xl overflow-hidden border-2 transition-all ${
+                activeBackgroundId === bg.id
+                  ? "border-blue-500 scale-[1.02] shadow-lg"
+                  : "border-transparent hover:scale-[1.02]"
+              }`}
+            >
+              <img
+                src={bg.src}
+                alt={bg.name}
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-black/40 flex items-end p-3">
+                <span className="text-white text-xs font-medium truncate w-full text-left">
+                  {bg.name}
+                </span>
+              </div>
+              {activeBackgroundId === bg.id && (
+                <div className="absolute top-2 right-2 bg-blue-500 rounded-full p-1">
+                  <Check className="w-3 h-3 text-white" />
+                </div>
+              )}
+            </button>
+          ))}
+        </div>
+      </Modal> */}
     </PageShell>
   );
 }

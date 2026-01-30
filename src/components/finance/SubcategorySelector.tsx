@@ -33,54 +33,66 @@ export function SubcategorySelector({
         {subcategories.map((subcategory) => {
           const isSelected = selectedId === subcategory.id;
           return (
-            <button
-              type="button"
+            <div
               key={subcategory.id}
-              onClick={() => {
-                if (window.Telegram?.WebApp?.HapticFeedback) {
-                  window.Telegram.WebApp.HapticFeedback.selectionChanged();
-                }
-                onSelect(isSelected ? null : subcategory.id);
-              }}
-              className="flex flex-col items-center gap-2 group outline-none"
+              className="flex flex-col items-center gap-1 group"
             >
-              <div className="relative">
-                <motion.div
-                  className={cn(
-                    "w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300",
-                    isSelected
-                      ? "shadow-sm scale-110"
-                      : "scale-100 opacity-85 hover:opacity-100"
-                  )}
-                  style={{ backgroundColor: categoryColor }}
-                  whileTap={{ scale: 0.9 }}
+              <div
+                className={cn(
+                  "glassmorphic-circle-wrap",
+                  isSelected && "selected"
+                )}
+                style={
+                  {
+                    "--circle-color": categoryColor,
+                    "--circle-size": "48px",
+                  } as React.CSSProperties
+                }
+              >
+                <div className="glassmorphic-circle-shadow" />
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (window.Telegram?.WebApp?.HapticFeedback) {
+                      window.Telegram.WebApp.HapticFeedback.selectionChanged();
+                    }
+                    onSelect(isSelected ? null : subcategory.id);
+                  }}
+                  className="glassmorphic-circle-btn"
                 >
                   {isSelected ? (
                     <motion.div
                       initial={{ scale: 0, opacity: 0 }}
                       animate={{ scale: 1, opacity: 1 }}
-                      className="text-white"
+                      transition={{
+                        type: "spring",
+                        stiffness: 500,
+                        damping: 30,
+                      }}
+                      className="circle-icon"
                     >
-                      <Check strokeWidth={3} className="w-5 h-5" />
+                      <Check strokeWidth={3} className="w-5 h-5 text-white" />
                     </motion.div>
                   ) : (
-                    <div className="relative z-10 flex items-center justify-center">
+                    <div className="circle-icon text-white/90">
                       {getIconComponent(subcategory.icon)}
                     </div>
                   )}
-                </motion.div>
+                </button>
               </div>
-              <span
+              <button
+                type="button"
+                onClick={() => onSelect(isSelected ? null : subcategory.id)}
                 className={cn(
-                  "text-xs font-medium text-center leading-tight transition-colors duration-200",
+                  "text-xs font-medium text-center leading-tight transition-colors duration-200 mt-1 outline-none",
                   isSelected
                     ? "text-gray-900 dark:text-gray-100"
                     : "text-gray-500"
                 )}
               >
                 {subcategory.name}
-              </span>
-            </button>
+              </button>
+            </div>
           );
         })}
       </div>

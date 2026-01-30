@@ -1,10 +1,11 @@
-import darkBgVariant1 from "@/assets/dark-bg-variant-3.PNG";
 import { BubblesCluster } from "@/components/finance/BubblesCluster";
 import { TransactionDrawer } from "@/components/finance/TransactionDrawer";
 import { PageShell } from "@/components/layout/PageShell";
 import { MonthSelector } from "@/components/ui/MonthSelector";
+// import { backgrounds } from "@/config/backgrounds";
 import { useDate } from "@/context/DateContext";
 import { useCurrency } from "@/hooks/useCurrency";
+// import { useBackgroundStore } from "@/stores/backgroundStore";
 import { useCategoryStore } from "@/stores/categoryStore";
 import { useTransactionStore } from "@/stores/transactionStore";
 import type { Enums, Tables } from "@/types/supabase";
@@ -26,6 +27,10 @@ export function HomePage() {
   const { loadCategories } = useCategoryStore();
   const { selectedDate, prevMonth, nextMonth, canGoNext } = useDate();
   const { formatAmount } = useCurrency();
+  // const { activeBackgroundId } = useBackgroundStore();
+
+  // const currentBackground =
+  //   backgrounds.find((b) => b.id === activeBackgroundId) || backgrounds[2]; // Default to variant-3 if not found
 
   // Transaction drawer state
   const [isTransactionDrawerOpen, setIsTransactionDrawerOpen] = useState(false);
@@ -290,10 +295,12 @@ export function HomePage() {
         <main
           ref={containerRef}
           className="flex flex-col items-center gap-2 pb-32 touch-none min-h-[calc(100vh-env(safe-area-inset-top))]"
-          style={{
-            background: `linear-gradient(to bottom, var(--background), rgba(0, 0, 0, 0.3)), url(${darkBgVariant1}) bottom / auto 100% no-repeat fixed`,
-            backgroundBlendMode: "normal, multiply",
-          }}
+          style={
+            {
+              // background: `linear-gradient(to bottom, var(--background), rgba(0, 0, 0, 0.3)), url(${currentBackground.src}) bottom / auto 100% no-repeat fixed`,
+              // backgroundBlendMode: "normal, multiply",
+            }
+          }
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}

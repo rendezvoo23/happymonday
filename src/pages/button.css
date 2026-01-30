@@ -792,3 +792,221 @@
     color: var(--primary-color, var(--color-text-light));
   }
 }
+
+/* ====================================
+   GLASSMORPHIC COLORED CIRCLE BUTTONS
+   (For Categories & Subcategories)
+   ==================================== */
+
+.glassmorphic-circle-wrap {
+  z-index: 10;
+  pointer-events: none;
+  background: transparent;
+  border-radius: 50%;
+  transition: all .4s cubic-bezier(0.25, 1, 0.5, 1);
+  position: relative;
+  perspective: 500px;
+  /* Default size, can be overridden */
+  width: var(--circle-size, 56px);
+  height: var(--circle-size, 56px);
+}
+
+.glassmorphic-circle-shadow {
+  width: calc(100% + var(--shadow-cuttoff-fix));
+  height: calc(100% + var(--shadow-cuttoff-fix));
+  top: calc(0% - var(--shadow-cuttoff-fix) / 2);
+  left: calc(0% - var(--shadow-cuttoff-fix) / 2);
+  filter: blur(clamp(2px, .125em, 12px));
+  pointer-events: none;
+  position: absolute;
+  overflow: visible;
+}
+
+.glassmorphic-circle-shadow:after {
+  content: "";
+  z-index: 0;
+  width: var(--btn-shadow-width);
+  height: var(--btn-shadow-height);
+  inset: 0;
+  top: var(--btn-shadow-top);
+  left: var(--btn-shadow-left);
+  box-sizing: border-box;
+  opacity: 0.8;
+  background: radial-gradient(
+    circle at center,
+    var(--circle-color, #000) 0%,
+    transparent 80%
+  );
+  border-radius: 50%;
+  padding: .125em;
+  transition: all .4s cubic-bezier(0.25, 1, 0.5, 1);
+  position: absolute;
+  overflow: visible;
+}
+
+.glassmorphic-circle-btn {
+  --border-width: clamp(1px, .0625em, 4px);
+  all: unset;
+  cursor: pointer;
+  -webkit-tap-highlight-color: var(--color-transparent);
+  pointer-events: auto;
+  z-index: 3;
+  /* reduced blur to keep color visible */
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+  /* Combine glass gradient with the dynamic color */
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.3),
+    rgba(255, 255, 255, 0.1) 50%,
+    rgba(255, 255, 255, 0)
+  );
+  background-color: var(--circle-color);
+  border-radius: 50%;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  transition: all .4s cubic-bezier(0.25, 1, 0.5, 1);
+  display: flex;
+  position: relative;
+  box-shadow:
+    inset 0 .125em .125em var(--color-black-13),
+    inset 0 -.125em .125em rgba(0, 0, 0, 0.1), /* Darker inner bottom shadow for depth on color */
+    0 .25em .125em -.125em var(--color-black-26),
+    inset 0 0 .1em .25em var(--color-white-13);
+}
+
+.glassmorphic-circle-btn:disabled {
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+.glassmorphic-circle-btn:hover {
+  transform: scale(0.98);
+  box-shadow:
+    inset 0 .125em .125em var(--color-black-13),
+    inset 0 -.125em .125em rgba(0, 0, 0, 0.2),
+    0 .15em .05em -.1em var(--color-black-40),
+    inset 0 0 .05em .1em var(--color-white-20);
+}
+
+/* Icon Styles */
+.glassmorphic-circle-btn .circle-icon {
+  position: relative;
+  z-index: 10;
+  color: white; /* Icons on colored backgrounds usually white */
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+  transition: all 0.3s ease;
+}
+
+/* Shine effect pseudo-element */
+.glassmorphic-circle-btn:before {
+  content: "";
+  z-index: 5;
+  width: var(--shine-width);
+  height: var(--shine-height);
+  top: var(--shine-top);
+  left: var(--shine-left);
+  box-sizing: border-box;
+  background: linear-gradient(
+    var(--angle-2, -45deg),
+    var(--color-transparent-white) 0%,
+    var(--color-white-50) 40% 50%,
+    var(--color-transparent-white) 55%
+  );
+  mix-blend-mode: overlay; /* Better for colors than screen */
+  pointer-events: none;
+  background-position: 0%;
+  background-repeat: no-repeat;
+  background-size: 200% 200%;
+  border-radius: 50%;
+  transition: background-position .5s cubic-bezier(0.25, 1, 0.5, 1);
+  display: block;
+  position: absolute;
+  overflow: clip;
+}
+
+.glassmorphic-circle-btn:hover:before {
+  background-position: 25%;
+}
+
+.glassmorphic-circle-btn:active:before {
+  --angle-2: -15deg;
+  background-position: 50% 15%;
+}
+
+/* Border/outline effect */
+.glassmorphic-circle-btn:after {
+  content: "";
+  z-index: 1;
+  width: var(--outline-width);
+  height: var(--outline-height);
+  inset: 0;
+  top: var(--outline-top);
+  left: var(--outline-left);
+  padding: var(--border-width);
+  box-sizing: border-box;
+  background: conic-gradient(
+      from var(--angle-1, -75deg) at 50% 50%,
+      rgba(0, 0, 0, 0.2),
+      transparent 5% 40%,
+      rgba(0, 0, 0, 0.2) 50%,
+      transparent 60% 95%,
+      rgba(0, 0, 0, 0.2)
+    ),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.1));
+  box-shadow: inset 0 0 0 calc(var(--border-width) / 2) rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  transition: all .4s cubic-bezier(0.25, 1, 0.5, 1), --angle-1 .5s;
+  position: absolute;
+  -webkit-mask-image: linear-gradient(#000 0 0), linear-gradient(#000 0 0);
+  mask-image: linear-gradient(#000 0 0), linear-gradient(#000 0 0);
+  -webkit-mask-clip: content-box, border-box;
+  mask-clip: content-box, border-box;
+  -webkit-mask-origin: content-box, border-box;
+  mask-origin: content-box, border-box;
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+
+.glassmorphic-circle-btn:hover:after {
+  --angle-1: -125deg;
+}
+
+.glassmorphic-circle-btn:active:after {
+  --angle-1: -75deg;
+}
+
+/* Wrapper States */
+
+.glassmorphic-circle-wrap:has(button:hover) .glassmorphic-circle-shadow {
+  filter: blur(clamp(2px, .0625em, 8px));
+  transition: filter .4s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.glassmorphic-circle-wrap:has(button:active) {
+  transform: scale(0.95);
+}
+
+.glassmorphic-circle-wrap:has(button:active) .glassmorphic-circle-shadow {
+  filter: blur(clamp(2px, .125em, 6px));
+  opacity: 0.6;
+}
+
+/* Selected State - Glow */
+.glassmorphic-circle-wrap.selected .glassmorphic-circle-shadow:after {
+  background: radial-gradient(
+    circle at center,
+    var(--circle-color) 0%,
+    var(--circle-color) 40%,
+    transparent 70%
+  );
+  opacity: 0.6;
+  filter: blur(4px);
+}
+
+.glassmorphic-circle-wrap.selected .glassmorphic-circle-btn {
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.5), 0 4px 12px
+    rgba(0, 0, 0, 0.3);
+}

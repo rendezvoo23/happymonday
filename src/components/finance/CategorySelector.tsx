@@ -20,51 +20,62 @@ export function CategorySelector({
         const isSelected = selectedId === category.id;
 
         return (
-          <button
-            type="button"
+          <div
             key={category.id}
-            onClick={() => {
-              if (window.Telegram?.WebApp?.HapticFeedback) {
-                window.Telegram.WebApp.HapticFeedback.selectionChanged();
-              }
-              onSelect(category.id);
-            }}
-            className="flex flex-col items-center gap-2 group outline-none"
+            className="flex flex-col items-center gap-1 group"
           >
-            <div className="relative">
-              <motion.div
-                className={cn(
-                  "w-14 h-14 rounded-full flex items-center justify-center transition-all duration-300",
-                  isSelected
-                    ? "shadow-medium scale-110"
-                    : "scale-100 shadow-none hover:scale-105"
-                )}
-                style={{ backgroundColor: category.color }}
-                whileTap={{ scale: 0.9 }}
-                transition={{ type: "spring", stiffness: 400, damping: 25 }}
+            <div
+              className={cn(
+                "glassmorphic-circle-wrap",
+                isSelected && "selected"
+              )}
+              style={
+                {
+                  "--circle-color": category.color,
+                  "--circle-size": "56px",
+                } as React.CSSProperties
+              }
+            >
+              <div className="glassmorphic-circle-shadow" />
+              <button
+                type="button"
+                onClick={() => {
+                  if (window.Telegram?.WebApp?.HapticFeedback) {
+                    window.Telegram.WebApp.HapticFeedback.selectionChanged();
+                  }
+                  onSelect(category.id);
+                }}
+                className="glassmorphic-circle-btn"
               >
                 {isSelected && (
                   <motion.div
                     initial={{ scale: 0, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
-                    className="absolute inset-0 flex items-center justify-center rounded-full"
+                    transition={{
+                      type: "spring",
+                      stiffness: 500,
+                      damping: 30,
+                    }}
+                    className="circle-icon"
                   >
                     <Check className="w-6 h-6 text-white" strokeWidth={3} />
                   </motion.div>
                 )}
-              </motion.div>
+              </button>
             </div>
-            <span
+            <button
+              type="button"
+              onClick={() => onSelect(category.id)}
               className={cn(
-                "text-xs font-medium text-center leading-tight transition-colors duration-200",
+                "text-xs font-medium text-center leading-tight transition-colors duration-200 mt-1 outline-none",
                 isSelected
                   ? "text-gray-900 dark:text-gray-100"
                   : "text-gray-500"
               )}
             >
               {category.label}
-            </span>
-          </button>
+            </button>
+          </div>
         );
       })}
     </div>
