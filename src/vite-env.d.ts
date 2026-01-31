@@ -45,6 +45,8 @@ interface TelegramWebApp {
   openInvoice: (url: string, callback?: (status: string) => void) => void;
   onEvent: (eventType: string, callback: () => void) => void;
   offEvent: (eventType: string, callback: () => void) => void;
+  setHeaderColor: (color: "bg_color" | "secondary_bg_color" | string) => void;
+  setBackgroundColor: (color: "bg_color" | "secondary_bg_color" | string) => void;
   version?: string;
   platform?: string;
 }

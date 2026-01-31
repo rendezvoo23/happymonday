@@ -156,6 +156,15 @@ export default function App() {
                 }, 500);
               }
             },
+            setHeaderColor(color: string) {
+              console.log("Telegram WebApp setHeaderColor (mocked):", color);
+            },
+            setBackgroundColor(color: string) {
+              console.log(
+                "Telegram WebApp setBackgroundColor (mocked):",
+                color
+              );
+            },
             version: "7.0",
             platform: "web",
           },

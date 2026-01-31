@@ -34,6 +34,21 @@ function applyTheme(theme: "light" | "dark") {
   } else {
     root.classList.remove("dark");
   }
+
+  // Update Telegram WebApp colors to match theme
+  if (window.Telegram?.WebApp) {
+    const tg = window.Telegram.WebApp;
+    
+    if (theme === "dark") {
+      // For dark background → white time/icons
+      tg.setHeaderColor("secondary_bg_color");
+      tg.setBackgroundColor("secondary_bg_color");
+    } else {
+      // For light background → black time/icons
+      tg.setHeaderColor("bg_color");
+      tg.setBackgroundColor("bg_color");
+    }
+  }
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {

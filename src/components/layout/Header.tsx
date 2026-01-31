@@ -11,7 +11,7 @@ export function Header({ children }: HeaderProps) {
       style={{
         zIndex: 1,
         position: "sticky",
-        top: 0,
+        top: "max(env(safe-area-inset-top), var(--tg-safe-area-inset-top, 0px))",
       }}
     >
       {/* Background blur layer */}
@@ -19,6 +19,8 @@ export function Header({ children }: HeaderProps) {
         style={{
           position: "absolute",
           inset: 0,
+          paddingTop:
+            "max(env(safe-area-inset-top), var(--tg-safe-area-inset-top, 0px))",
           backdropFilter: "blur(10px)",
           WebkitBackdropFilter: "blur(10px)",
           background:

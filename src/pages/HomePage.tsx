@@ -383,6 +383,17 @@ export function HomePage() {
               <div className="glassmorphic-plus-shadow" />
             </div>
           </div>
+
+          {transactions.length > 0 && (
+            <div className="absolute bottom-0 left-0 z-[-1] w-full">
+              <BubblesCluster
+                transactions={transactions}
+                mode="blurred"
+                animateBubbles={false}
+                height={280}
+              />
+            </div>
+          )}
         </main>
       </PageShell>
 

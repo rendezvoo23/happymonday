@@ -18,7 +18,7 @@ interface TransactionWithCategory extends Transaction {
 
 interface BubblesClusterProps {
   transactions: TransactionWithCategory[];
-  mode?: "cluster" | "separated";
+  mode?: "cluster" | "blurred";
   height?: number;
   onBubbleClick?: (categoryId: string) => void;
   animateBubbles?: boolean;
@@ -110,7 +110,7 @@ export function BubblesCluster({
       {
         minRadius: mode === "cluster" ? 20 : 60,
         maxRadius: mode === "cluster" ? 150 : 100,
-        padding: mode === "cluster" ? 0 : 10,
+        padding: mode === "cluster" ? -1 : 10,
       }
     );
 
@@ -179,7 +179,7 @@ export function BubblesCluster({
   }
 
   const handleBubbleClick = (categoryId: string) => {
-    if (onBubbleClick && mode === "separated") {
+    if (onBubbleClick && mode === "blurred") {
       onBubbleClick(categoryId);
     } else if (mode === "cluster") {
       navigate(`/statistics?category=${categoryId}`);
@@ -222,7 +222,7 @@ export function BubblesCluster({
       <div
         className="relative w-full h-full"
         style={{
-          filter: mode === "cluster" ? "url(#goo)" : "none",
+          filter: mode === "cluster" ? "url(#goo)" : "blur(70px)",
           // WebKit sometimes needs this to force hardware acceleration for filters
           transform: "translate3d(0,0,0)",
         }}
@@ -232,7 +232,12 @@ export function BubblesCluster({
           const bubbleEffects =
             mode === "cluster"
               ? "" // Gooey mode handles the look
-              : "shadow-lg backdrop-blur-md"; // Separated mode gets shadows/blur
+              : "shadow-lg backdrop-blur-md"; // Blurred mode gets shadows/blur
+
+          // In blurred mode, hide bubbles without color (uncategorized)
+          const shouldHide =
+            mode === "blurred" && bubble.category.color === "#8E8E93";
+          if (shouldHide) return null;
 
           return (
             <motion.div
@@ -275,7 +280,7 @@ export function BubblesCluster({
                 }
                 handleBubbleClick(bubble.id);
               }}
-              className={`absolute flex flex-col items-center justify-center rounded-full ${bubbleEffects} ${mode === "cluster" || (mode === "separated" && onBubbleClick) ? "cursor-pointer" : ""}`}
+              className={`absolute flex flex-col items-center justify-center rounded-full ${bubbleEffects} ${mode === "cluster" || (mode === "blurred" && onBubbleClick) ? "cursor-pointer" : ""}`}
               style={{
                 width: bubble.r * 2,
                 height: bubble.r * 2,
@@ -288,7 +293,7 @@ export function BubblesCluster({
                 marginTop: -bubble.r,
               }}
             >
-              {bubble.r > 30 && (
+              {bubble.r > 30 && mode !== "blurred" && (
                 <span
                   className="text-white/90 font-medium mt-0 text-center leading-tight"
                   style={{
@@ -302,15 +307,17 @@ export function BubblesCluster({
                   )}
                 </span>
               )}
-              <span
-                className="text-white font-bold text-lg text-center leading-tight mt-1"
-                style={{
-                  fontSize: Math.max(10, bubble.r * 0.3),
-                  opacity: 1,
-                }}
-              >
-                {formatCompactAmount(bubble.value)}
-              </span>
+              {mode !== "blurred" && (
+                <span
+                  className="text-white font-bold text-lg text-center leading-tight mt-1"
+                  style={{
+                    fontSize: Math.max(10, bubble.r * 0.3),
+                    opacity: 1,
+                  }}
+                >
+                  {formatCompactAmount(bubble.value)}
+                </span>
+              )}
             </motion.div>
           );
         })}

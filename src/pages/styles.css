@@ -761,12 +761,12 @@
   /* Liquid glass effect */
   background: linear-gradient(
     -75deg,
+    rgba(100, 100, 100, 0.1),
     rgba(100, 100, 100, 0.15),
-    rgba(100, 100, 100, 0.25),
-    rgba(100, 100, 100, 0.15)
+    rgba(100, 100, 100, 0.1)
   );
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 
   /* Smooth transition */
   transition: transform .5s cubic-bezier(0.34, 1.56, 0.64, 1);
