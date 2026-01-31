@@ -169,7 +169,7 @@ export function StatisticsPage(_props: StatisticsPageProps = {}) {
                   Month
                 </button>
               </div>
-              
+
               <CategoryAverageChart
                 transactions={transactions}
                 selectedDate={selectedDate}

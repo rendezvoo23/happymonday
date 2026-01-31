@@ -1,6 +1,6 @@
-import { QueryClient } from '@tanstack/react-query';
-import { createRouter } from '@tanstack/react-router';
-import { routeTree } from './route-tree.gen';
+import { QueryClient } from "@tanstack/react-query";
+import { createRouter } from "@tanstack/react-router";
+import { routeTree } from "./route-tree.gen";
 
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -18,11 +18,11 @@ export const router = createRouter({
   context: {
     queryClient,
   },
-  defaultPreload: 'intent',
+  defaultPreload: "intent",
   defaultPreloadStaleTime: 0,
 });
 
-declare module '@tanstack/react-router' {
+declare module "@tanstack/react-router" {
   interface Register {
     router: typeof router;
   }

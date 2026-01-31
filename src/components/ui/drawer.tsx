@@ -1,6 +1,6 @@
-import { useDrawerStore } from '@/stores/drawer-store';
-import { AnimatePresence, motion } from 'framer-motion';
-import { Drawer as VaulDrawer } from 'vaul';
+import { useDrawerStore } from "@/stores/drawer-store";
+import { AnimatePresence, motion } from "framer-motion";
+import { Drawer as VaulDrawer } from "vaul";
 
 interface DrawerProps {
   id: string;
@@ -24,15 +24,15 @@ export function Drawer({
   const { getDrawerLevel, getMaxLevel } = useDrawerStore();
   const level = getDrawerLevel(id);
   const maxLevel = getMaxLevel();
-  
+
   // Calculate z-index based on level
   const baseZIndex = 100;
   const overlayZIndex = baseZIndex + level * 10;
   const contentZIndex = overlayZIndex + 1;
-  
+
   // Calculate opacity for overlay based on level
   const overlayOpacity = level === 0 ? 0.4 : 0.2;
-  
+
   return (
     <VaulDrawer.Root
       open={isOpen}
@@ -59,7 +59,7 @@ export function Drawer({
           <div className="flex justify-center pt-4 pb-2">
             <div className="w-12 h-1.5 bg-gray-300 dark:bg-gray-700 rounded-full" />
           </div>
-          
+
           {/* Title */}
           {title && (
             <div className="px-4 pb-4 border-b border-gray-200 dark:border-gray-800">
@@ -68,7 +68,7 @@ export function Drawer({
               </h2>
             </div>
           )}
-          
+
           {/* Content - Prevent dragging on content area */}
           <div
             className="flex-1 overflow-y-auto overflow-x-hidden"
@@ -96,7 +96,7 @@ export function Drawer({
 // Drawer Manager Component - renders all active drawers
 export function DrawerManager() {
   const { drawers, closeDrawer } = useDrawerStore();
-  
+
   return (
     <>
       {drawers.map((drawer) => {
@@ -108,7 +108,10 @@ export function DrawerManager() {
             isOpen={true}
             onClose={() => closeDrawer(drawer.id)}
           >
-            <Component {...drawer.props} onClose={() => closeDrawer(drawer.id)} />
+            <Component
+              {...drawer.props}
+              onClose={() => closeDrawer(drawer.id)}
+            />
           </Drawer>
         );
       })}
@@ -118,8 +121,9 @@ export function DrawerManager() {
 
 // Hook to manage drawer state
 export function useDrawer() {
-  const { openDrawer, closeDrawer, closeAllDrawers, isDrawerOpen } = useDrawerStore();
-  
+  const { openDrawer, closeDrawer, closeAllDrawers, isDrawerOpen } =
+    useDrawerStore();
+
   return {
     openDrawer,
     closeDrawer,

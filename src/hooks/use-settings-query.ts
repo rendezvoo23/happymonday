@@ -1,10 +1,10 @@
-import { useQuery } from '@tanstack/react-query';
-import { getSettings } from '@/lib/api';
+import { getSettings } from "@/lib/api";
+import { useQuery } from "@tanstack/react-query";
 
 // Query keys
 export const settingsKeys = {
-  all: ['settings'] as const,
-  detail: () => [...settingsKeys.all, 'detail'] as const,
+  all: ["settings"] as const,
+  detail: () => [...settingsKeys.all, "detail"] as const,
 };
 
 // Hook to fetch user settings

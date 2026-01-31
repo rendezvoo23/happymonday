@@ -1,17 +1,19 @@
-import { TransactionForm } from '@/components/finance/TransactionForm';
-import { PageShell } from '@/components/layout/PageShell';
-import { useDate } from '@/context/DateContext';
-import { useTransactionStore } from '@/stores/transactionStore';
-import type { CategoryId, TransactionType } from '@/types';
-import { useNavigate } from '@tanstack/react-router';
-import { motion } from 'framer-motion';
-import { useEffect } from 'react';
+import { TransactionForm } from "@/components/finance/TransactionForm";
+import { PageShell } from "@/components/layout/PageShell";
+import { useDate } from "@/context/DateContext";
+import { useTransactionStore } from "@/stores/transactionStore";
+import type { CategoryId, TransactionType } from "@/types";
+import { useNavigate } from "@tanstack/react-router";
+import { motion } from "framer-motion";
+import { useEffect } from "react";
 
 interface EditTransactionPageProps {
   transactionId: string;
 }
 
-export function EditTransactionPage({ transactionId }: EditTransactionPageProps) {
+export function EditTransactionPage({
+  transactionId,
+}: EditTransactionPageProps) {
   const navigate = useNavigate();
   const { transactions, updateTransaction, loadTransactions, isLoading } =
     useTransactionStore();
@@ -40,10 +42,12 @@ export function EditTransactionPage({ transactionId }: EditTransactionPageProps)
     return (
       <PageShell>
         <div className="flex flex-col items-center justify-center h-[60vh]">
-          <p className="text-gray-500 dark:text-gray-400">Transaction not found</p>
+          <p className="text-gray-500 dark:text-gray-400">
+            Transaction not found
+          </p>
           <button
             type="button"
-            onClick={() => navigate({ to: '/statistics' })}
+            onClick={() => navigate({ to: "/statistics" })}
             className="mt-4 text-blue-600 dark:text-blue-400 font-medium"
           >
             Go Back
@@ -59,7 +63,7 @@ export function EditTransactionPage({ transactionId }: EditTransactionPageProps)
     amount: transaction.amount,
     categoryId: transaction.category_id as CategoryId,
     subcategoryId: transaction.subcategory_id || null,
-    note: transaction.note || '',
+    note: transaction.note || "",
     date: transaction.occurred_at,
   };
 
@@ -73,7 +77,7 @@ export function EditTransactionPage({ transactionId }: EditTransactionPageProps)
       <PageShell className="pb-6 pt-[72px]">
         <TransactionForm
           initialData={formData}
-          onCancel={() => navigate({ to: '/statistics' })}
+          onCancel={() => navigate({ to: "/statistics" })}
           onSubmit={async (data) => {
             // Map form fields back to Supabase fields
             await updateTransaction(transaction.id, {
@@ -84,7 +88,7 @@ export function EditTransactionPage({ transactionId }: EditTransactionPageProps)
               note: data.note,
               occurred_at: data.date,
             });
-            navigate({ to: '/statistics' });
+            navigate({ to: "/statistics" });
           }}
         />
       </PageShell>

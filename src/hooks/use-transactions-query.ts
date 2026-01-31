@@ -1,4 +1,3 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   createTransaction,
   deleteTransaction,
@@ -7,20 +6,21 @@ import {
   listTransactions,
   listTransactionsWithCategories,
   updateTransaction,
-} from '@/lib/api';
-import type { Transaction, TransactionType } from '@/types';
-import { endOfMonth, format, startOfMonth } from 'date-fns';
+} from "@/lib/api";
+import type { Transaction, TransactionType } from "@/types";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { endOfMonth, format, startOfMonth } from "date-fns";
 
 // Query keys
 export const transactionKeys = {
-  all: ['transactions'] as const,
-  lists: () => [...transactionKeys.all, 'list'] as const,
+  all: ["transactions"] as const,
+  lists: () => [...transactionKeys.all, "list"] as const,
   list: (fromISO: string, toISO: string) =>
     [...transactionKeys.lists(), { fromISO, toISO }] as const,
   summary: (fromISO: string, toISO: string) =>
-    [...transactionKeys.all, 'summary', { fromISO, toISO }] as const,
+    [...transactionKeys.all, "summary", { fromISO, toISO }] as const,
   spendByCategory: (fromISO: string, toISO: string) =>
-    [...transactionKeys.all, 'spend-by-category', { fromISO, toISO }] as const,
+    [...transactionKeys.all, "spend-by-category", { fromISO, toISO }] as const,
 };
 
 // Hook to fetch transactions for a date range
@@ -46,7 +46,7 @@ export function useMonthTransactionsWithCategories(date: Date) {
   const toISO = format(endOfMonth(date), "yyyy-MM-dd'T'23:59:59");
 
   return useQuery({
-    queryKey: [...transactionKeys.list(fromISO, toISO), 'with-categories'],
+    queryKey: [...transactionKeys.list(fromISO, toISO), "with-categories"],
     queryFn: () => listTransactionsWithCategories(fromISO, toISO),
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
@@ -112,7 +112,10 @@ export function useUpdateTransaction() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, payload }: { id: string; payload: Partial<Transaction> }) =>
+    mutationFn: ({
+      id,
+      payload,
+    }: { id: string; payload: Partial<Transaction> }) =>
       updateTransaction(id, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: transactionKeys.all });
