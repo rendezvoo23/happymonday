@@ -38,15 +38,15 @@ function applyTheme(theme: "light" | "dark") {
   // Update Telegram WebApp colors to match theme
   if (window.Telegram?.WebApp) {
     const tg = window.Telegram.WebApp;
-    
+
     if (theme === "dark") {
-      // For dark background → white time/icons
-      tg.setHeaderColor("secondary_bg_color");
-      tg.setBackgroundColor("secondary_bg_color");
+      // For dark theme → black header
+      tg.setHeaderColor("#000000");
+      tg.setBackgroundColor("#000000");
     } else {
-      // For light background → black time/icons
-      tg.setHeaderColor("bg_color");
-      tg.setBackgroundColor("bg_color");
+      // For light theme → white header
+      tg.setHeaderColor("#ffffff");
+      tg.setBackgroundColor("#ffffff");
     }
   }
 }

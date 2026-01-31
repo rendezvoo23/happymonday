@@ -1,4 +1,5 @@
 import { useCurrency } from "@/hooks/useCurrency";
+import { useTranslation } from "@/hooks/useTranslation";
 import { getCategoryColor, useCategoryStore } from "@/stores/categoryStore";
 import type { Tables } from "@/types/supabase";
 import { packCircles } from "@/utils/circlePacking";
@@ -36,14 +37,15 @@ export function BubblesCluster({
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const { getCategoryById } = useCategoryStore();
   const { formatCompactAmount } = useCurrency();
+  const { t } = useTranslation();
 
   // Helper to convert hex color to rgba with transparency
-  const hexToRgba = (hex: string, alpha: number) => {
-    const r = Number.parseInt(hex.slice(1, 3), 16);
-    const g = Number.parseInt(hex.slice(3, 5), 16);
-    const b = Number.parseInt(hex.slice(5, 7), 16);
-    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-  };
+  // const hexToRgba = (hex: string, alpha: number) => {
+  //   const r = Number.parseInt(hex.slice(1, 3), 16);
+  //   const g = Number.parseInt(hex.slice(3, 5), 16);
+  //   const b = Number.parseInt(hex.slice(5, 7), 16);
+  //   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  // };
 
   // Measure container size
   useEffect(() => {
@@ -110,7 +112,7 @@ export function BubblesCluster({
       {
         minRadius: mode === "cluster" ? 20 : 60,
         maxRadius: mode === "cluster" ? 150 : 100,
-        padding: mode === "cluster" ? -1 : 10,
+        padding: mode === "cluster" ? 5 : 10,
       }
     );
 
@@ -173,7 +175,7 @@ export function BubblesCluster({
         className="flex items-center justify-center text-gray-400 text-sm"
         style={{ height }}
       >
-        No expenses yet
+        {t("statistics.noData")}
       </div>
     );
   }
@@ -284,7 +286,8 @@ export function BubblesCluster({
               style={{
                 width: bubble.r * 2,
                 height: bubble.r * 2,
-                background: `radial-gradient(circle, ${hexToRgba(bubble.category.color, 0.95)} 0%, ${hexToRgba(bubble.category.color, 0.85)} 40%, ${hexToRgba(bubble.category.color, 1)} 70%, ${hexToRgba(bubble.category.color, 1)} 70%, transparent 100%)`,
+                // background: `radial-gradient(circle, ${hexToRgba(bubble.category.color, 0.95)} 0%, ${hexToRgba(bubble.category.color, 0.85)} 40%, ${hexToRgba(bubble.category.color, 1)} 70%, ${hexToRgba(bubble.category.color, 1)} 70%, transparent 100%)`,
+                background: bubble.category.color,
                 opacity: 1,
                 zIndex: 10,
                 left: "50%",

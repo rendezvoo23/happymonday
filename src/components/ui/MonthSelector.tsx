@@ -84,8 +84,9 @@ export function MonthSelector({
         aria-label="Previous month"
         variant="ghost"
         size="icon-lg"
+        style={{ marginTop: 44 }}
       >
-        <ChevronLeft className="w-5 h-5 text-gray-700 dark:text-gray-300" />
+        <ChevronLeft className="w-5 h-5 text-[var(--accent-color)]" />
       </LiquidButton>
 
       <button
@@ -127,13 +128,14 @@ export function MonthSelector({
         aria-label="Next month"
         variant="ghost"
         size="icon-lg"
+        style={{ marginTop: 44 }}
       >
         <ChevronRight
           className={cn(
             "w-5 h-5",
             canGoNext
-              ? "text-gray-700 dark:text-gray-300"
-              : "text-gray-400 dark:text-gray-600"
+              ? "text-[var(--accent-color)]"
+              : "text-gray-300 dark:text-gray-800"
           )}
         />
       </LiquidButton>

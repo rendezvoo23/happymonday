@@ -7,11 +7,13 @@ interface HeaderProps {
 export function Header({ children }: HeaderProps) {
   return (
     <header
-      className="flex flex-col items-center pt-4 pb-8"
+      className="flex flex-col items-center pb-8"
       style={{
         zIndex: 1,
         position: "sticky",
-        top: "max(env(safe-area-inset-top), var(--tg-safe-area-inset-top, 0px))",
+        top: "0",
+        paddingTop:
+          "max(env(safe-area-inset-top), var(--tg-safe-area-inset-top, 0px))",
       }}
     >
       {/* Background blur layer */}

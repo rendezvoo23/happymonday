@@ -9,10 +9,12 @@ import {
   HouseFillIcon,
   HouseIcon,
 } from "../icons";
+import { useTranslation } from "@/hooks/useTranslation";
 
 export function BottomNav() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const isHomeActive = location.pathname === "/home";
   const isStatsActive = location.pathname === "/statistics";
@@ -60,21 +62,21 @@ export function BottomNav() {
       to: "/home",
       icon: HouseIcon,
       iconFill: HouseFillIcon,
-      label: "Home",
+      label: t("nav.home"),
       isActive: isHomeActive,
     },
     {
       to: "/statistics",
       icon: ChartIcon,
       iconFill: ChartFillIcon,
-      label: "Statistics",
+      label: t("nav.statistics"),
       isActive: isStatsActive,
     },
     {
       to: "/settings",
       icon: GearBigIcon,
       iconFill: GearBigIcon,
-      label: "Settings",
+      label: t("nav.settings"),
       isActive: isSettingsActive,
     },
   ];

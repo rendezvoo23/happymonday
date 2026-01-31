@@ -302,7 +302,7 @@ export function HomePage() {
         >
           <div className="w-full flex justify-center relative overflow-hidden">
             {isInitialLoading ? (
-              <div className="text-gray-500 mt-6 h-[380px] flex items-center justify-center">
+              <div className="text-gray-500 mt-6 h-[400px] flex items-center justify-center">
                 <Loader2 className="w-8 h-8 animate-spin" />
               </div>
             ) : (
@@ -368,8 +368,8 @@ export function HomePage() {
           />
 
           <div
-            className="flex-1 flex items-center justify-center"
-            style={{ marginBottom: "100px" }}
+            className="flex items-center justify-center mt-8"
+            style={{ marginBottom: "140px" }}
           >
             <div className="glassmorphic-plus-wrap">
               <button

@@ -134,6 +134,7 @@ export function SettingsDrawer({ onClose }: SettingsDrawerProps) {
             <ChevronLeft className="w-5 h-5" />
           </LiquidButton>
         )}
+
         <div className="text-xl font-semibold text-gray-900 dark:text-gray-100 text-center">
           {currentScreen === "main" && t("settings.title")}
           {currentScreen === "language" && t("settings.selectLanguage")}
