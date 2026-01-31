@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 import "@/pages/styles.css";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useEffect } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import {
   ChartFillIcon,
   ChartIcon,
@@ -17,8 +17,8 @@ export function BottomNav() {
   const { t } = useTranslation();
 
   const isHomeActive = location.pathname === "/home";
-  const isStatsActive = location.pathname === "/statistics";
-  const isSettingsActive = location.pathname === "/settings";
+  const isStatsActive = location.pathname === "/statistics" || location.pathname.startsWith("/statistics/");
+  const isSettingsActive = location.pathname === "/settings" || location.pathname.startsWith("/settings/");
 
   // Setup Telegram Settings Button - navigate to settings page instead of drawer
   useEffect(() => {
@@ -38,7 +38,7 @@ export function BottomNav() {
         if (window.Telegram?.WebApp?.HapticFeedback) {
           window.Telegram.WebApp.HapticFeedback.impactOccurred("light");
         }
-        navigate("/settings");
+        navigate({ to: "/settings" });
       };
 
       // Show the settings button and register click handler

@@ -316,45 +316,36 @@ export function TransactionForm({
         </div>
       )}
 
-      <div className="pt-4 pb-4 flex gap-3">
-        <LiquidButton
-          type="button"
-          variant="liquid"
-          size="icon-lg"
-          onClick={onCancel}
-          className="absolute left-4 top-[14px]"
-        >
-          <X className="w-5 h-5" />
-        </LiquidButton>
-        {/* <Button
-          type="button"
-          variant="secondary"
-          className="flex-1"
-          onClick={onCancel}
-        >
-          {t("common.cancel")}
-        </Button> */}
+      <LiquidButton
+        type="button"
+        variant="liquid"
+        size="icon-lg"
+        onClick={onCancel}
+        style={{
+          position: "absolute",
+          left: "14px",
+          top: "0px",
+        }}
+      >
+        <X className="w-5 h-5" />
+      </LiquidButton>
 
-        <LiquidButton
-          type="submit"
-          variant="liquid"
-          size="icon-lg"
-          onClick={onCancel}
-          disabled={!amount}
-          className="absolute right-4 top-[14px]"
-          style={{ backgroundColor: "var(--accent-color)", color: "white" }}
-        >
-          <CheckIcon />
-        </LiquidButton>
-        {/* <Button
-          type="submit"
-          className="absolute right-4 top-[14px]"
-          disabled={!amount}
-          style={{ backgroundColor: "var(--accent-color)", color: "white" }}
-        >
-          {initialData ? t("common.saveChanges") : t("common.add")}
-        </Button> */}
-      </div>
+      <LiquidButton
+        type="submit"
+        variant="liquid"
+        size="icon-lg"
+        onClick={onCancel}
+        disabled={!amount}
+        style={{
+          backgroundColor: "var(--accent-color)",
+          color: "white",
+          position: "absolute",
+          right: "14px",
+          top: "0px",
+        }}
+      >
+        <CheckIcon />
+      </LiquidButton>
     </form>
   );
 }

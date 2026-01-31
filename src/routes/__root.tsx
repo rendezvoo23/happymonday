@@ -1,69 +1,45 @@
-import { LocalizationExample } from "@/components/examples/LocalizationExample";
-import { ThemeExample } from "@/components/examples/ThemeExample";
-import { BottomNav } from "@/components/layout/BottomNav";
+import { DrawerManager } from "@/components/ui/drawer";
+import { env } from "@/env";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { authenticateWithTelegram } from "@/lib/authTelegram";
 import { supabase } from "@/lib/supabaseClient";
 import { parseInitData } from "@/lib/utils";
-import { EditTransactionPage } from "@/pages/EditTransactionPage";
-import { HistoryPage } from "@/pages/HistoryPage";
-import { HomePage } from "@/pages/HomePage";
-import { StatisticsPage } from "@/pages/StatisticsPage";
 import { useUserStore } from "@/stores/userStore";
-import { AnimatePresence } from "framer-motion";
+import type { QueryClient } from "@tanstack/react-query";
+import { Outlet, createRootRouteWithContext } from "@tanstack/react-router";
 import { Loader2 } from "lucide-react";
-import { useEffect, useState } from "react";
-import { Navigate, Route, Routes, useLocation } from "react-router-dom";
-import { SettingsDrawer } from "./components/layout/SettingsDrawer";
-import { env } from "./env";
+import { useEffect, useState, lazy, Suspense } from "react";
 
-function ProtectedRoute({
-  children,
-  isLoading,
-}: {
-  children: React.ReactNode;
-  isLoading: boolean;
-}) {
-  const [user] = useLocalStorage("finance-pwa-user", null);
+// Lazy load devtools
+const ReactQueryDevtools = lazy(() =>
+  import("@tanstack/react-query-devtools").then(m => ({
+    default: m.ReactQueryDevtools,
+  }))
+);
+const TanStackRouterDevtools = lazy(() =>
+  import("@tanstack/router-devtools").then(m => ({
+    default: m.TanStackRouterDevtools,
+  }))
+);
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[var(--background)] text-gray-900 dark:text-gray-100 transition-colors duration-200">
-        <Loader2 className="w-8 h-8 animate-spin" />
-      </div>
-    );
-  }
-
-  if (!user) {
-    // In Telegram-only mode, if we aren't authenticated and loading is done,
-    // it means auth failed. We shouldn't redirect to /auth because it doesn't exist.
-    // The App component handles the error state.
-    // If we reach here, it might be a weird state, but let's just show nothing or a specific message.
-    return null;
-  }
-
-  return <>{children}</>;
+interface RouterContext {
+  queryClient: QueryClient;
 }
 
-export default function App() {
-  const location = useLocation();
+export const Route = createRootRouteWithContext<RouterContext>()({
+  component: RootComponent,
+});
+
+function RootComponent() {
   const [isAuthLoading, setIsAuthLoading] = useState(true);
   const [authError, setAuthError] = useState<string | null>(null);
   const { loadProfile, loadSettings, loadCurrencies } = useUserStore();
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [, setUser] = useLocalStorage<{
     name: string;
     email: string;
     joinDate: string;
     avatarUrl?: string;
   } | null>("finance-pwa-user", null);
-
-  const showBottomNav =
-    location.pathname !== "/" &&
-    !location.pathname.startsWith("/add") &&
-    !location.pathname.startsWith("/edit") &&
-    !location.pathname.startsWith("/examples");
 
   useEffect(() => {
     const initAuth = async () => {
@@ -109,8 +85,6 @@ export default function App() {
             onEvent(eventType: string, callback: () => void) {
               console.log("Telegram WebApp onEvent (mocked):", eventType);
               eventCallbacks[eventType] = callback;
-
-              // For settings_button_pressed, connect to SettingsButton callback
               if (eventType === "settings_button_pressed") {
                 settingsButtonCallback = callback;
               }
@@ -146,7 +120,6 @@ export default function App() {
             },
             openInvoice(url: string, callback?: (status: string) => void) {
               console.log("Telegram WebApp openInvoice (mocked):", url);
-              // Simulate payment flow in dev mode
               const shouldSucceed = window.confirm(
                 `Mock Payment\n\nURL: ${url}\n\nClick OK to simulate successful payment, Cancel for failed payment.`
               );
@@ -170,7 +143,6 @@ export default function App() {
           },
         };
 
-        // Add keyboard shortcut to trigger settings button in dev mode
         const handleKeyPress = (e: KeyboardEvent) => {
           if (e.key === "s" && (e.metaKey || e.ctrlKey)) {
             e.preventDefault();
@@ -184,10 +156,9 @@ export default function App() {
         console.log("Dev tip: Press Cmd/Ctrl+S to trigger settings button");
       }
 
-      const success = authenticateWithTelegram();
+      const success = await authenticateWithTelegram();
 
-      // We can treat the promise result
-      if (await success) {
+      if (success) {
         const {
           data: { user: sbUser },
         } = await supabase.auth.getUser();
@@ -213,8 +184,22 @@ export default function App() {
       }
     };
 
-    // Always run auth check on mount to ensure valid session
     initAuth();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Run only once on mount
+
+  // Disable Telegram swipe-to-close behavior for the entire app
+  useEffect(() => {
+    if (window.Telegram?.WebApp) {
+      window.Telegram.WebApp.disableVerticalSwipes();
+      window.Telegram.WebApp.expand();
+    }
+
+    return () => {
+      if (window.Telegram?.WebApp) {
+        window.Telegram.WebApp.enableVerticalSwipes();
+      }
+    };
   }, []);
 
   if (authError) {
@@ -228,72 +213,24 @@ export default function App() {
     );
   }
 
-  return (
-    <div className="min-h-screen">
-      <AnimatePresence mode="wait">
-        <Routes location={location}>
-          <Route path="/" element={<Navigate to="/home" replace />} />
-          <Route
-            path="/history"
-            element={
-              <ProtectedRoute isLoading={isAuthLoading}>
-                <HistoryPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/home"
-            element={
-              <ProtectedRoute isLoading={isAuthLoading}>
-                <HomePage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/statistics"
-            element={
-              <ProtectedRoute isLoading={isAuthLoading}>
-                <StatisticsPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/settings"
-            element={
-              <ProtectedRoute isLoading={isAuthLoading}>
-                <SettingsDrawer isOpen={true} onClose={() => {}} />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/edit/:id"
-            element={
-              <ProtectedRoute isLoading={isAuthLoading}>
-                <EditTransactionPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/examples/localization"
-            element={
-              <ProtectedRoute isLoading={isAuthLoading}>
-                <LocalizationExample />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/examples/theme"
-            element={
-              <ProtectedRoute isLoading={isAuthLoading}>
-                <ThemeExample />
-              </ProtectedRoute>
-            }
-          />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </AnimatePresence>
+  if (isAuthLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[var(--background)] text-gray-900 dark:text-gray-100">
+        <Loader2 className="w-8 h-8 animate-spin" />
+      </div>
+    );
+  }
 
-      {showBottomNav && <BottomNav />}
+  return (
+    <div className="min-h-screen bg-[var(--background)] text-gray-900 dark:text-gray-100 transition-colors duration-200">
+      <Outlet />
+      <DrawerManager />
+      {import.meta.env.DEV && (
+        <Suspense fallback={null}>
+          <ReactQueryDevtools initialIsOpen={false} />
+          <TanStackRouterDevtools position="bottom-right" />
+        </Suspense>
+      )}
     </div>
   );
 }

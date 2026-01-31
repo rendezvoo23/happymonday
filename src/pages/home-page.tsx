@@ -8,6 +8,7 @@ import { useCategoryStore } from "@/stores/categoryStore";
 import { useTransactionStore } from "@/stores/transactionStore";
 import type { Enums, Tables } from "@/types/supabase";
 import { addMonths, subMonths } from "date-fns";
+import { motion } from "framer-motion";
 import { Loader2, Plus } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import "./styles.css";
@@ -34,7 +35,7 @@ export function HomePage() {
   // Touch gesture state
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
   const [touchCurrentX, setTouchCurrentX] = useState<number | null>(null);
-  const [swipeProgress, setSwipeProgress] = useState(0); // -1 to 1, where 1 = full swipe right (prev month), -1 = full swipe left (next month)
+  const [swipeProgress, setSwipeProgress] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const screenWidthRef = useRef(0);
@@ -61,20 +62,17 @@ export function HomePage() {
     async (date: Date, forceReload = false) => {
       const monthKey = getMonthKey(date);
 
-      // Return from cache if already loaded and not forcing reload
       const cached = monthsCacheRef.current.get(monthKey);
       if (cached && !forceReload) {
         return cached;
       }
 
       console.log(`[HomePage] Loading transactions for ${monthKey}...`);
-      // Load from API
       const txs = await loadTransactions(date);
 
       setMonthsCache((prev) => {
         const newCache = new Map(prev);
         newCache.set(monthKey, txs || []);
-        // Update ref immediately so other calls see it
         monthsCacheRef.current = newCache;
         return newCache;
       });
@@ -84,16 +82,12 @@ export function HomePage() {
     [getMonthKey, loadTransactions]
   );
 
-  // Function to reload transactions (used after adding a new transaction)
+  // Function to reload transactions
   const reloadTransactions = useCallback(async () => {
     console.log("[HomePage] Reloading current month and neighbors...");
 
-    // Simply call loadAndCacheMonth with forceReload=true
-    // This will fetch fresh data and update state/ref in one go
-    // without clearing the state first (preventing disappearing bubbles)
     await loadAndCacheMonth(selectedDate, true);
 
-    // Also reload adjacent months if they're in cache (background)
     const prevDate = subMonths(selectedDate, 1);
     if (monthsCacheRef.current.has(getMonthKey(prevDate))) {
       loadAndCacheMonth(prevDate, true);
@@ -107,34 +101,14 @@ export function HomePage() {
     }
   }, [selectedDate, getMonthKey, loadAndCacheMonth, canGoNext]);
 
-  // Disable Telegram swipe-to-close behavior
-  useEffect(() => {
-    if (window.Telegram?.WebApp) {
-      // Disable vertical swipes that would close the mini app
-      window.Telegram.WebApp.disableVerticalSwipes();
-
-      // Expand to full height
-      window.Telegram.WebApp.expand();
-    }
-
-    return () => {
-      // Re-enable on unmount (cleanup)
-      if (window.Telegram?.WebApp) {
-        window.Telegram.WebApp.enableVerticalSwipes();
-      }
-    };
-  }, []);
-
   useEffect(() => {
     const loadAllMonthsData = async () => {
       setIsInitialLoading(true);
       loadCategories();
 
-      // Load current month first
       await loadAndCacheMonth(selectedDate);
       setIsInitialLoading(false);
 
-      // Eagerly preload adjacent months in the background
       const prevDate = subMonths(selectedDate, 1);
       loadAndCacheMonth(prevDate);
 
@@ -162,7 +136,6 @@ export function HomePage() {
   const prevMonthTransactions = monthsCache.get(prevMonthKey) || [];
   const nextMonthTransactions = monthsCache.get(nextMonthKey) || [];
 
-  // Calculate total expenses for the selected month
   const totalExpenses = useMemo(() => {
     const expenses = transactions.filter((t) => t.direction === "expense");
     const total = expenses.reduce((sum, t) => sum + t.amount, 0);
@@ -187,11 +160,9 @@ export function HomePage() {
     const screenWidth = screenWidthRef.current;
 
     if (diff > 0) {
-      // Swiping right (to previous month)
       const progress = Math.min(diff / screenWidth, 1);
       setSwipeProgress(progress);
     } else if (diff < 0 && canGoNext) {
-      // Swiping left (to next month) - only if allowed
       const progress = Math.max(diff / screenWidth, -1);
       setSwipeProgress(progress);
     }
@@ -205,15 +176,12 @@ export function HomePage() {
     const screenWidth = screenWidthRef.current;
     const diffPercentage = diff / screenWidth;
 
-    // Threshold: 20% of screen width
     const threshold = 0.2;
 
     if (diffPercentage > threshold) {
-      // Commit to previous month (swiped right)
       setIsTransitioning(true);
-      setSwipeProgress(1); // Animate to full swipe
+      setSwipeProgress(1);
 
-      // Wait for animation then change month
       setTimeout(() => {
         prevMonth();
         setSwipeProgress(0);
@@ -222,11 +190,9 @@ export function HomePage() {
         setTouchCurrentX(null);
       }, 300);
     } else if (diffPercentage < -threshold && canGoNext) {
-      // Commit to next month (swiped left)
       setIsTransitioning(true);
-      setSwipeProgress(-1); // Animate to full swipe left
+      setSwipeProgress(-1);
 
-      // Wait for animation then change month
       setTimeout(() => {
         nextMonth();
         setSwipeProgress(0);
@@ -235,7 +201,6 @@ export function HomePage() {
         setTouchCurrentX(null);
       }, 300);
     } else {
-      // Snap back to current month
       setIsTransitioning(true);
       setSwipeProgress(0);
       setTimeout(() => {
@@ -246,14 +211,12 @@ export function HomePage() {
     }
   };
 
-  // Animated month navigation for button clicks
   const handlePrevMonthClick = () => {
     if (isTransitioning) return;
 
     setIsTransitioning(true);
-    setSwipeProgress(1); // Animate to full swipe right
+    setSwipeProgress(1);
 
-    // Wait for animation then change month
     setTimeout(() => {
       prevMonth();
       setSwipeProgress(0);
@@ -265,9 +228,8 @@ export function HomePage() {
     if (isTransitioning || !canGoNext) return;
 
     setIsTransitioning(true);
-    setSwipeProgress(-1); // Animate to full swipe left
+    setSwipeProgress(-1);
 
-    // Wait for animation then change month
     setTimeout(() => {
       nextMonth();
       setSwipeProgress(0);
@@ -284,25 +246,23 @@ export function HomePage() {
   };
 
   return (
-    <>
+    <motion.div
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.95 }}
+      transition={{ duration: 0.3 }}
+    >
       <PageShell allowScroll={true}>
         <main
           ref={containerRef}
-          className="flex flex-col items-center gap-2 touch-none min-h-[100vh]"
-          style={
-            {
-              // background: `linear-gradient(to bottom, var(--background), rgba(0, 0, 0, 0.3)), url(${darkBgVariant1}) bottom / auto 100% no-repeat fixed`,
-              // backgroundBlendMode: "normal, multiply",
-              // backgroundPositionY: "200px",
-            }
-          }
+          className="flex flex-col items-center gap-2 touch-none"
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
         >
           <div className="w-full flex justify-center relative overflow-hidden">
             {isInitialLoading ? (
-              <div className="text-gray-500 mt-6 h-[400px] flex items-center justify-center">
+              <div className="text-gray-500 dark:text-gray-400 mt-6 h-[400px] flex items-center justify-center">
                 <Loader2 className="w-8 h-8 animate-spin" />
               </div>
             ) : (
@@ -315,7 +275,7 @@ export function HomePage() {
                     : "none",
                 }}
               >
-                {/* Previous month bubbles - positioned to the left */}
+                {/* Previous month bubbles */}
                 <div
                   className="absolute top-0 left-0 w-full"
                   style={{
@@ -340,7 +300,7 @@ export function HomePage() {
                   />
                 </div>
 
-                {/* Next month bubbles - positioned to the right */}
+                {/* Next month bubbles */}
                 {canGoNext && (
                   <div
                     className="absolute top-0 right-0 w-full"
@@ -367,10 +327,7 @@ export function HomePage() {
             onNextMonth={handleNextMonthClick}
           />
 
-          <div
-            className="flex items-center justify-center mt-8"
-            style={{ marginBottom: "140px" }}
-          >
+          <div className="flex items-center justify-center mt-8">
             <div className="glassmorphic-plus-wrap">
               <button
                 type="button"
@@ -385,7 +342,7 @@ export function HomePage() {
           </div>
 
           {transactions.length > 0 && (
-            <div className="absolute bottom-0 left-0 z-[-1] w-full">
+            <div className="fixed bottom-0 left-0 z-[-1] w-full">
               <BubblesCluster
                 transactions={transactions}
                 mode="blurred"
@@ -397,13 +354,12 @@ export function HomePage() {
         </main>
       </PageShell>
 
-      {/* Transaction Drawer */}
       <TransactionDrawer
         isOpen={isTransactionDrawerOpen}
         onClose={() => setIsTransactionDrawerOpen(false)}
         initialType={transactionType}
         onTransactionAdded={reloadTransactions}
       />
-    </>
+    </motion.div>
   );
 }

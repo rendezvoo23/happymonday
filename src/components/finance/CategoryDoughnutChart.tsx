@@ -187,7 +187,7 @@ export function CategoryDoughnutChart({
           </div>
         </div>
 
-        <div className="inset-0 flex flex-col items-center justify-center pointer-events-none px-4">
+        {/* <div className="inset-0 flex flex-col items-center justify-center pointer-events-none px-4">
           <p className="text-[16px] uppercase tracking-wider text-center">
             <span className="opacity-50 text-[12px]">
               {t("statistics.totalExpenses")}
@@ -195,7 +195,7 @@ export function CategoryDoughnutChart({
             <br />
             <b>{formatAmount(totalExpenses)}</b>
           </p>
-        </div>
+        </div> */}
 
         {/* Category Breakdown List */}
         <div className="mt-4 pt-4 border-t border-border-subtle space-y-3">
