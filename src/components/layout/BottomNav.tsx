@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import "@/pages/styles.css";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
@@ -9,7 +10,6 @@ import {
   HouseFillIcon,
   HouseIcon,
 } from "../icons";
-import { useTranslation } from "@/hooks/useTranslation";
 
 export function BottomNav() {
   const location = useLocation();
