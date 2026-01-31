@@ -69,9 +69,16 @@
   }
 
   body {
-    @apply bg-[var(--background)] text-gray-900 dark:text-gray-100 font-sans antialiased;
+    @apply text-gray-900 dark:text-gray-100 font-sans antialiased;
     -webkit-tap-highlight-color: transparent;
-    transition: background-color 0.2s ease, color 0.2s ease;
+    background: linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--primary-color) 0%, transparent) 0%,
+      var(--background) 50%,
+      color-mix(in srgb, var(--primary-color) 20%, transparent) 100%
+    );
+    background-color: var(--background);
+    background-attachment: local;
   }
 
   *:focus {

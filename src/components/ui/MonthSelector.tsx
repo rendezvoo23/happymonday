@@ -82,7 +82,7 @@ export function MonthSelector({
         onTouchMove={handleTouchEvent}
         onTouchEnd={handleTouchEvent}
         aria-label="Previous month"
-        variant="liquid"
+        variant="ghost"
         size="icon-lg"
       >
         <ChevronLeft className="w-5 h-5 text-gray-700 dark:text-gray-300" />
@@ -125,7 +125,7 @@ export function MonthSelector({
         onTouchEnd={handleTouchEvent}
         disabled={!canGoNext}
         aria-label="Next month"
-        variant="liquid"
+        variant="ghost"
         size="icon-lg"
       >
         <ChevronRight

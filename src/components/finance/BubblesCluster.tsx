@@ -29,7 +29,7 @@ export function BubblesCluster({
   mode = "cluster",
   height = 320,
   onBubbleClick,
-  animateBubbles = false,
+  animateBubbles = true,
 }: BubblesClusterProps) {
   const navigate = useNavigate();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -108,7 +108,7 @@ export function BubblesCluster({
     const packed = packCircles(
       data.map((d) => ({ id: d.id, value: d.value })),
       {
-        minRadius: mode === "cluster" ? 40 : 60,
+        minRadius: mode === "cluster" ? 20 : 60,
         maxRadius: mode === "cluster" ? 150 : 100,
         padding: mode === "cluster" ? 0 : 10,
       }
@@ -189,7 +189,7 @@ export function BubblesCluster({
   return (
     <div
       ref={containerRef}
-      className="relative w-full flex items-center justify-center"
+      className="relative w-full flex items-center justify-center p-4"
       style={{ height }}
     >
       {/* Gooey Filter - Only for cluster mode */}
@@ -209,11 +209,11 @@ export function BubblesCluster({
               <feColorMatrix
                 in="blur"
                 mode="matrix"
-                values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 20 -8"
+                values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 20 -6"
                 result="goo"
                 colorInterpolationFilters="sRGB"
               />
-              <feComposite in="SourceGraphic" in2="goo" operator="over" />
+              <feComposite in="SourceGraphic" in2="goo" operator="atop" />
             </filter>
           </defs>
         </svg>
@@ -279,7 +279,7 @@ export function BubblesCluster({
               style={{
                 width: bubble.r * 2,
                 height: bubble.r * 2,
-                background: `radial-gradient(circle, ${hexToRgba(bubble.category.color, 0.95)} 0%, ${hexToRgba(bubble.category.color, 0.85)} 40%, ${hexToRgba(bubble.category.color, 1)} 70%, ${hexToRgba(bubble.category.color, 1)} 90%, transparent 100%)`,
+                background: `radial-gradient(circle, ${hexToRgba(bubble.category.color, 0.95)} 0%, ${hexToRgba(bubble.category.color, 0.85)} 40%, ${hexToRgba(bubble.category.color, 1)} 70%, ${hexToRgba(bubble.category.color, 1)} 70%, transparent 100%)`,
                 opacity: 1,
                 zIndex: 10,
                 left: "50%",

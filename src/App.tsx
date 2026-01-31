@@ -220,7 +220,7 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--background)] text-gray-900 dark:text-gray-100 font-sans overflow-hidden transition-colors duration-200">
+    <div className="min-h-screen">
       <AnimatePresence mode="wait">
         <Routes location={location}>
           <Route path="/" element={<Navigate to="/home" replace />} />

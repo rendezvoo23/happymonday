@@ -289,13 +289,13 @@ export function HomePage() {
         <main
           ref={containerRef}
           className="flex flex-col items-center gap-2 touch-none min-h-[100vh]"
-          style={{
-            // background: `linear-gradient(to bottom, var(--background), rgba(0, 0, 0, 0.3)), url(${darkBgVariant1}) bottom / auto 100% no-repeat fixed`,
-            // backgroundBlendMode: "normal, multiply",
-            // backgroundPositionY: "200px",
-            background:
-              "linear-gradient(to bottom, color-mix(in srgb, var(--primary-color) 10%, transparent) 0%, var(--background) 50%, color-mix(in srgb, var(--primary-color) 5%, transparent) 100%)",
-          }}
+          style={
+            {
+              // background: `linear-gradient(to bottom, var(--background), rgba(0, 0, 0, 0.3)), url(${darkBgVariant1}) bottom / auto 100% no-repeat fixed`,
+              // backgroundBlendMode: "normal, multiply",
+              // backgroundPositionY: "200px",
+            }
+          }
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
@@ -307,7 +307,7 @@ export function HomePage() {
               </div>
             ) : (
               <div
-                className="w-full relative"
+                className="w-full relative py-6"
                 style={{
                   transform: `translateX(${swipeProgress * 100}%)`,
                   transition: isTransitioning

@@ -1,6 +1,7 @@
 import { AnalyticsCharts } from "@/components/finance/AnalyticsCharts";
 import { CategoryDoughnutChart } from "@/components/finance/CategoryDoughnutChart";
 import { TransactionList } from "@/components/finance/TransactionList";
+import { Header } from "@/components/layout/Header";
 import { PageShell } from "@/components/layout/PageShell";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
@@ -131,9 +132,9 @@ export function StatisticsPage() {
 
   return (
     <PageShell>
-      <header className="flex flex-col items-center pt-4 pb-8">
+      <Header>
         <MonthSelector totalExpenses={formatAmount(totalExpenses)} />
-      </header>
+      </Header>
 
       <main className="flex flex-col items-center gap-4 pb-32 px-4">
         <div id="doughnut" className="w-full scroll-mt-24">

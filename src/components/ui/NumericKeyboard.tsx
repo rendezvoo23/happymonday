@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { Delete } from "lucide-react";
+import { useRef } from "react";
 
 interface NumericKeyboardProps {
   onKeyPress: (key: string) => void;
@@ -20,6 +21,8 @@ export function NumericKeyboard({
     [".", "0", "⌫"],
   ];
 
+  const touchUsedRef = useRef(false);
+
   const handleKeyPress = (key: string) => {
     if (window.Telegram?.WebApp?.HapticFeedback) {
       window.Telegram.WebApp.HapticFeedback.impactOccurred("light");
@@ -32,22 +35,39 @@ export function NumericKeyboard({
     }
   };
 
+  const handleTouchEnd = (key: string) => {
+    touchUsedRef.current = true;
+    handleKeyPress(key);
+    // Reset after a short delay to allow onClick to be skipped
+    setTimeout(() => {
+      touchUsedRef.current = false;
+    }, 100);
+  };
+
+  const handleClick = (key: string) => {
+    // Skip if touch was used
+    if (touchUsedRef.current) return;
+    handleKeyPress(key);
+  };
+
   return (
     <div className={cn("grid grid-cols-3 gap-2", className)}>
       {keys.flat().map((key) => (
         <motion.button
           key={key}
           type="button"
-          onClick={() => handleKeyPress(key)}
+          onClick={() => handleClick(key)}
+          onTouchEnd={() => handleTouchEnd(key)}
           className={cn(
             "h-16 rounded-full font-semibold text-xl",
             "bg-gray-100 dark:bg-gray-800",
             "text-gray-900 dark:text-gray-100",
-            "border border-gray-200",
+            "border border-[var(--border-default)]",
             "active:scale-95 transition-all duration-100",
             "hover:bg-gray-200 dark:hover:bg-gray-700",
             "focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400",
-            key === "⌫" && "flex items-center justify-center"
+            key === "⌫" &&
+              "flex items-center justify-center bg-transparent border-none"
           )}
           whileTap={{ scale: 0.95 }}
         >

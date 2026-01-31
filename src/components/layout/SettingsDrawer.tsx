@@ -146,7 +146,7 @@ export function SettingsDrawer({ onClose }: SettingsDrawerProps) {
       {/* Content with slide animation */}
       <div
         className="flex-1 overflow-hidden relative"
-        style={{ height: "100vh" }}
+        style={{ height: "calc(100vh - 100px)" }}
       >
         <AnimatePresence initial={false} mode="wait" custom={direction}>
           <motion.div

@@ -24,7 +24,7 @@ export function SegmentedControl({
   return (
     <div
       className={cn(
-        "flex p-1 rounded-full relative gap-1 border border-gray-200",
+        "flex p-1 rounded-full relative gap-1 border border-[var(--border-default)]",
         className
       )}
     >

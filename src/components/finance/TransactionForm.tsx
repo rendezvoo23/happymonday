@@ -1,7 +1,6 @@
 import { format } from "date-fns";
 import { useEffect, useRef, useState } from "react";
 
-import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { NumericKeyboard } from "@/components/ui/NumericKeyboard";
 import { useDate } from "@/context/DateContext";
@@ -10,7 +9,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { type Subcategory, getSubcategories } from "@/lib/api";
 import { useCategoryStore } from "@/stores/categoryStore";
 import type { CategoryId, TransactionType } from "@/types";
-import { Loader2, X } from "lucide-react";
+import { CheckIcon, Loader2, X } from "lucide-react";
 import { SegmentedControl } from "../ui/SegmentedControl";
 import { LiquidButton } from "../ui/button/button";
 import { CategorySelector } from "./CategorySelector";
@@ -335,14 +334,26 @@ export function TransactionForm({
         >
           {t("common.cancel")}
         </Button> */}
-        <Button
+
+        <LiquidButton
+          type="submit"
+          variant="liquid"
+          size="icon-lg"
+          onClick={onCancel}
+          disabled={!amount}
+          className="absolute right-4 top-[14px]"
+          style={{ backgroundColor: "var(--accent-color)", color: "white" }}
+        >
+          <CheckIcon />
+        </LiquidButton>
+        {/* <Button
           type="submit"
           className="absolute right-4 top-[14px]"
           disabled={!amount}
           style={{ backgroundColor: "var(--accent-color)", color: "white" }}
         >
           {initialData ? t("common.saveChanges") : t("common.add")}
-        </Button>
+        </Button> */}
       </div>
     </form>
   );
