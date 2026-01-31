@@ -441,12 +441,18 @@ function ThemeScreen({
             key={themeOption.value}
             onClick={() => onSelect(themeOption.value)}
             position={
-              index === 0 ? "first" : index === themes.length - 1 ? "last" : "middle"
+              index === 0
+                ? "first"
+                : index === themes.length - 1
+                  ? "last"
+                  : "middle"
             }
             isSelected={theme === themeOption.value}
           >
             <div className="flex items-center gap-3 w-full">
-              <div className={`p-1.5 ${themeOption.iconColor} rounded-lg text-white flex items-center justify-center`}>
+              <div
+                className={`p-1.5 ${themeOption.iconColor} rounded-lg text-white flex items-center justify-center`}
+              >
                 <Icon className="w-6 h-6" />
               </div>
               <div className="flex flex-col items-start flex-1">

@@ -40,9 +40,10 @@ export function NumericKeyboard({
           type="button"
           onClick={() => handleKeyPress(key)}
           className={cn(
-            "h-14 rounded-2xl font-semibold text-xl",
+            "h-16 rounded-full font-semibold text-xl",
             "bg-gray-100 dark:bg-gray-800",
             "text-gray-900 dark:text-gray-100",
+            "border border-gray-200",
             "active:scale-95 transition-all duration-100",
             "hover:bg-gray-200 dark:hover:bg-gray-700",
             "focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400",

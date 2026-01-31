@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { MonthSelector } from "@/components/ui/MonthSelector";
 import { useDate } from "@/context/DateContext";
+import { useCurrency } from "@/hooks/useCurrency";
 import { getCategoryColor, useCategoryStore } from "@/stores/categoryStore";
 import { useTransactionStore } from "@/stores/transactionStore";
 import { useEffect, useMemo, useState } from "react";
@@ -18,6 +19,7 @@ export function StatisticsPage() {
     useTransactionStore();
   const { loadCategories } = useCategoryStore();
   const { selectedDate } = useDate();
+  const { formatAmount } = useCurrency();
 
   // Modals state
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -44,6 +46,13 @@ export function StatisticsPage() {
       }
     }
   }, [location.hash, isLoading]);
+
+  // Calculate total expenses for the selected month
+  const totalExpenses = useMemo(() => {
+    const expenses = transactions.filter((t) => t.direction === "expense");
+    const total = expenses.reduce((sum, t) => sum + t.amount, 0);
+    return total;
+  }, [transactions]);
 
   // Derived reactive spend by category data
   const spendByCategory = useMemo(() => {
@@ -123,7 +132,7 @@ export function StatisticsPage() {
   return (
     <PageShell>
       <header className="flex flex-col items-center pt-4 pb-8">
-        <MonthSelector />
+        <MonthSelector totalExpenses={formatAmount(totalExpenses)} />
       </header>
 
       <main className="flex flex-col items-center gap-4 pb-32 px-4">

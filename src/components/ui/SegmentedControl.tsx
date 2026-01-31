@@ -22,7 +22,12 @@ export function SegmentedControl({
   layoutId = "segmented-indicator",
 }: SegmentedControlProps) {
   return (
-    <div className={cn("flex p-1 rounded-full relative gap-1", className)}>
+    <div
+      className={cn(
+        "flex p-1 rounded-full relative gap-1 border border-gray-200",
+        className
+      )}
+    >
       {options.map((option) => {
         const isActive = value === option.value;
         return (
@@ -33,7 +38,7 @@ export function SegmentedControl({
             className={cn(
               "relative flex-1 py-1 px-2 text-sm font-medium transition-colors z-10 rounded-full",
               isActive
-                ? "text-white bg-[var(--accent-color)]"
+                ? "text-white bg-gray-500"
                 : "text-gray-500 hover:text-gray-700"
             )}
           >

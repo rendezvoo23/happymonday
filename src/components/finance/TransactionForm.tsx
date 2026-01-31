@@ -211,15 +211,6 @@ export function TransactionForm({
       <div className="space-y-4">
         {/* Amount Display */}
 
-        <div className="absolute right-4 top-[14px]">
-          <Input
-            id="date-input"
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-          />
-        </div>
-
         <div className="relative flex items-center justify-center min-h-[64px] rounded-2xl px-6 py-4 mt-10">
           <div className="flex items-center gap-2 text-2xl">
             {isSymbolPrefix && (
@@ -282,12 +273,12 @@ export function TransactionForm({
       )}
 
       {selectedType === "transactions.subcategory" && (
-        <div className="min-h-[200px]">
+        <div className="min-h-[100px]">
           {categoryId &&
             (isLoadingSubcategories || subcategories.length > 0) && (
               <div className="space-y-2 py-1">
                 {isLoadingSubcategories ? (
-                  <div className="text-center py-4 text-gray-400 dark:text-gray-500 text-sm min-h-[200px] flex items-center justify-center">
+                  <div className="text-center py-4 text-gray-400 dark:text-gray-500 text-sm min-h-[100px] flex items-center justify-center">
                     <Loader2 className="w-6 h-6 animate-spin" />
                   </div>
                 ) : (
@@ -303,20 +294,28 @@ export function TransactionForm({
         </div>
       )}
 
-      <div className="space-y-2">
-        <label
-          htmlFor="note-input"
-          className="text-sm font-medium text-gray-500 dark:text-gray-400 ml-1"
-        >
-          {t("transactions.noteOptional")}
-        </label>
-        <Input
-          id="note-input"
-          placeholder={t("transactions.notePlaceholder")}
-          value={note}
-          onChange={(e) => setNote(e.target.value)}
-        />
-      </div>
+      {selectedType === "transactions.subcategory" && (
+        <div className="space-y-2 flex">
+          <label
+            htmlFor="note-input"
+            className="text-sm font-medium text-gray-500 dark:text-gray-400 ml-1"
+          >
+            {t("transactions.noteOptional")}
+          </label>
+          <Input
+            id="note-input"
+            placeholder={t("transactions.notePlaceholder")}
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+          />
+          <Input
+            id="date-input"
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+          />
+        </div>
+      )}
 
       <div className="pt-4 pb-4 flex gap-3">
         <LiquidButton
@@ -328,17 +327,17 @@ export function TransactionForm({
         >
           <X className="w-5 h-5" />
         </LiquidButton>
-        <Button
+        {/* <Button
           type="button"
           variant="secondary"
           className="flex-1"
           onClick={onCancel}
         >
           {t("common.cancel")}
-        </Button>
+        </Button> */}
         <Button
           type="submit"
-          className="flex-[2]"
+          className="absolute right-4 top-[14px]"
           disabled={!amount}
           style={{ backgroundColor: "var(--accent-color)", color: "white" }}
         >

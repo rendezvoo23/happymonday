@@ -288,14 +288,13 @@ export function HomePage() {
       <PageShell allowScroll={true}>
         <main
           ref={containerRef}
-          className="flex flex-col items-center gap-2 pb-32 touch-none min-h-[calc(100vh-env(safe-area-inset-top))]"
+          className="flex flex-col items-center gap-2 touch-none min-h-[100vh]"
           style={{
             // background: `linear-gradient(to bottom, var(--background), rgba(0, 0, 0, 0.3)), url(${darkBgVariant1}) bottom / auto 100% no-repeat fixed`,
             // backgroundBlendMode: "normal, multiply",
             // backgroundPositionY: "200px",
             background:
-              "linear-gradient(to bottom, color-mix(in srgb, var(--primary-color) 10%, transparent) 0%, var(--background) 50%, var(--background) 100%)",
-            paddingTop: "calc(env(safe-area-inset-top) + 80px)",
+              "linear-gradient(to bottom, color-mix(in srgb, var(--primary-color) 10%, transparent) 0%, var(--background) 50%, color-mix(in srgb, var(--primary-color) 5%, transparent) 100%)",
           }}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
@@ -368,7 +367,10 @@ export function HomePage() {
             onNextMonth={handleNextMonthClick}
           />
 
-          <div className="flex-1 flex items-center justify-center">
+          <div
+            className="flex-1 flex items-center justify-center"
+            style={{ marginBottom: "100px" }}
+          >
             <div className="glassmorphic-plus-wrap">
               <button
                 type="button"
