@@ -657,7 +657,7 @@
 
 .liquid-glass-nav {
   --border-width: clamp(1px, .0625em, 4px);
-  --nav-item-width: 72px;
+  --nav-item-width: 80px;
   --nav-gap: 0px;
   pointer-events: auto;
   z-index: 3;
