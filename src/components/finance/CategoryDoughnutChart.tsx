@@ -54,7 +54,7 @@ export function CategoryDoughnutChart({
   spendByCategory,
   initialExpandedCategory,
 }: CategoryDoughnutChartProps) {
-  const { formatAmount } = useCurrency();
+  const { formatAmount, formatCompactAmount } = useCurrency();
   const [expandedId, setExpandedId] = useState<string | null>(
     initialExpandedCategory || null
   );
@@ -79,13 +79,13 @@ export function CategoryDoughnutChart({
       if (categoryExists) {
         setExpandedId(initialExpandedCategory);
 
-        // Scroll to the category after a delay to allow rendering
-        setTimeout(() => {
-          categoryRefs.current[initialExpandedCategory]?.scrollIntoView({
-            behavior: "smooth",
-            block: "center",
-          });
-        }, 500);
+        // // Scroll to the category after a delay to allow rendering
+        // setTimeout(() => {
+        //   categoryRefs.current[initialExpandedCategory]?.scrollIntoView({
+        //     behavior: "smooth",
+        //     block: "center",
+        //   });
+        // }, 500);
       }
     }
   }, [initialExpandedCategory, sortedCategories]);
@@ -93,15 +93,15 @@ export function CategoryDoughnutChart({
   const toggleExpand = (id: string | null) => {
     setExpandedId(expandedId === id ? null : id);
 
-    // Auto-scroll to selected category after a short delay for animation
-    if (id) {
-      setTimeout(() => {
-        categoryRefs.current[id]?.scrollIntoView({
-          behavior: "smooth",
-          block: "nearest",
-        });
-      }, 100);
-    }
+    // // Auto-scroll to selected category after a short delay for animation
+    // if (id) {
+    //   setTimeout(() => {
+    //     categoryRefs.current[id]?.scrollIntoView({
+    //       behavior: "smooth",
+    //       block: "nearest",
+    //     });
+    //   }, 100);
+    // }
   };
 
   const activeIndex = useMemo(() => {
@@ -181,13 +181,20 @@ export function CategoryDoughnutChart({
             </PieChart>
           </ResponsiveContainer>
           <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none px-4">
-            <p className="text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-400 font-medium">
-              Total
-            </p>
             <p className="text-xl font-bold text-gray-900 dark:text-gray-100 text-center leading-tight break-words max-w-full">
-              {formatAmount(totalExpenses)}
+              {formatCompactAmount(totalExpenses)}
             </p>
           </div>
+        </div>
+
+        <div className="inset-0 flex flex-col items-center justify-center pointer-events-none px-4">
+          <p className="text-[16px] uppercase tracking-wider text-center">
+            <span className="opacity-50 text-[12px]">
+              {t("statistics.totalExpenses")}
+            </span>
+            <br />
+            <b>{formatAmount(totalExpenses)}</b>
+          </p>
         </div>
 
         {/* Category Breakdown List */}
@@ -218,7 +225,7 @@ export function CategoryDoughnutChart({
                 >
                   <div className="w-5 h-5 flex items-center justify-center flex-shrink-0">
                     <div
-                      className="w-3 h-3 rounded-full"
+                      className="w-5 h-5 rounded-full"
                       style={{ backgroundColor: cat.color }}
                     />
                   </div>

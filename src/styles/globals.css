@@ -142,6 +142,16 @@
   .btn-press {
     @apply active:scale-95 transition-transform duration-200;
   }
+
+  /* iOS-style Settings Groups */
+  .settings-group {
+    @apply overflow-hidden rounded-xl;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  .dark .settings-group {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  }
 }
 
 /* Hide scrollbar for Chrome, Safari and Opera */
@@ -157,4 +167,29 @@
 
 header {
   margin-top: calc(env(safe-area-inset-top) + 32px);
+}
+
+.safe-area-bottom {
+  padding-bottom: max(
+    env(safe-area-inset-bottom),
+    var(--tg-safe-area-inset-bottom, 0px)
+  );
+}
+
+.safe-area-top {
+  padding-top: max(env(safe-area-inset-top), var(--tg-safe-area-inset-top, 0px));
+}
+
+.safe-area-left {
+  padding-left: max(
+    env(safe-area-inset-left),
+    var(--tg-safe-area-inset-left, 0px)
+  );
+}
+
+.safe-area-right {
+  padding-right: max(
+    env(safe-area-inset-right),
+    var(--tg-safe-area-inset-right, 0px)
+  );
 }

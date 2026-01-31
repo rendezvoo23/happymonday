@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import "@/pages/button.css";
+import "@/pages/styles.css";
 import { useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {

@@ -238,15 +238,18 @@ function MainScreen({
   return (
     <div className="flex flex-col gap-6">
       {/* Settings List */}
-      <div className="space-y-2">
+      <div className="settings-group">
         <SettingsRow
           icon={GlobeIcon}
+          iconColor="bg-blue-500"
           label={t("settings.language")}
           value={currentLanguage?.nativeName || "English"}
           onClick={() => navigateToScreen("language")}
+          position="first"
         />
         <SettingsRow
           icon={DollarSignIcon}
+          iconColor="bg-green-500"
           label={t("settings.currency")}
           value={
             currentCurrency
@@ -254,18 +257,23 @@ function MainScreen({
               : settings?.default_currency
           }
           onClick={() => navigateToScreen("currency")}
+          position="middle"
         />
         <SettingsRow
           icon={MoonIcon}
+          iconColor="bg-indigo-500"
           label={t("settings.theme")}
           value={getThemeLabel(theme)}
           onClick={() => navigateToScreen("theme")}
+          position="middle"
         />
         <SettingsRow
           icon={HeartIcon}
+          iconColor="bg-pink-500"
           label={t("settings.donate")}
           value={<span className="text-yellow-500">⭐</span>}
           onClick={() => navigateToScreen("donate")}
+          position="last"
         />
       </div>
     </div>
@@ -283,26 +291,29 @@ function LanguageScreen({
   onSelect: (code: string) => void;
 }) {
   return (
-    <div className="space-y-1">
-      {languages.map((language) => (
-        <button
-          type="button"
+    <div className="settings-group">
+      {languages.map((language, index) => (
+        <ModalListItem
           key={language.code}
           onClick={() => onSelect(language.code)}
-          className="w-full flex items-center justify-between p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+          position={
+            index === 0
+              ? "first"
+              : index === languages.length - 1
+                ? "last"
+                : "middle"
+          }
+          isSelected={locale === language.code}
         >
           <div className="flex flex-col items-start">
-            <span className="font-semibold text-gray-900 dark:text-gray-100">
+            <span className="font-normal text-[17px] text-gray-900 dark:text-gray-100">
               {language.nativeName}
             </span>
-            <span className="text-xs text-gray-500 dark:text-gray-400">
+            <span className="text-[13px] text-gray-500 dark:text-gray-400">
               {language.name}
             </span>
           </div>
-          {locale === language.code && (
-            <Check className="w-5 h-5 text-blue-500 dark:text-blue-400" />
-          )}
-        </button>
+        </ModalListItem>
       ))}
     </div>
   );
@@ -343,33 +354,38 @@ function CurrencyScreen({
       </div>
 
       {/* Currency List */}
-      <div className="space-y-1">
+      <div>
         {filteredCurrencies.length > 0 ? (
-          filteredCurrencies.map((currency) => (
-            <button
-              type="button"
-              key={currency.code}
-              onClick={() => onSelect(currency.code)}
-              className="w-full flex items-center justify-between p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-            >
-              <div className="flex flex-col items-start">
-                <span className="font-semibold text-gray-900 dark:text-gray-100">
-                  {currency.code}
-                </span>
-                <span className="text-xs text-gray-500 dark:text-gray-400">
-                  {currency.name}
-                </span>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="text-lg font-medium text-gray-400 dark:text-gray-500">
-                  {currency.symbol}
-                </span>
-                {selectedCurrency === currency.code && (
-                  <Check className="w-5 h-5 text-blue-500 dark:text-blue-400" />
-                )}
-              </div>
-            </button>
-          ))
+          <div className="settings-group">
+            {filteredCurrencies.map((currency, index) => (
+              <ModalListItem
+                key={currency.code}
+                onClick={() => onSelect(currency.code)}
+                position={
+                  index === 0
+                    ? "first"
+                    : index === filteredCurrencies.length - 1
+                      ? "last"
+                      : "middle"
+                }
+                isSelected={selectedCurrency === currency.code}
+              >
+                <div className="flex items-center justify-between w-full">
+                  <div className="flex flex-col items-start">
+                    <span className="font-normal text-[17px] text-gray-900 dark:text-gray-100">
+                      {currency.code}
+                    </span>
+                    <span className="text-[13px] text-gray-500 dark:text-gray-400">
+                      {currency.name}
+                    </span>
+                  </div>
+                  <span className="text-[17px] font-normal text-gray-400 dark:text-gray-500 mr-2">
+                    {currency.symbol}
+                  </span>
+                </div>
+              </ModalListItem>
+            ))}
+          </div>
         ) : (
           <div className="text-center py-8">
             <p className="text-gray-500 dark:text-gray-400 text-sm">
@@ -397,50 +413,52 @@ function ThemeScreen({
       value: "light" as const,
       label: t("theme.light"),
       icon: Sun,
+      iconColor: "bg-orange-500",
       description: t("theme.lightDescription"),
     },
     {
       value: "dark" as const,
       label: t("theme.dark"),
       icon: MoonIcon,
+      iconColor: "bg-indigo-500",
       description: t("theme.darkDescription"),
     },
     {
       value: "system" as const,
       label: t("theme.system"),
       icon: Monitor,
+      iconColor: "bg-gray-500",
       description: t("theme.systemDescription"),
     },
   ];
 
   return (
-    <div className="space-y-1">
-      {themes.map((themeOption) => {
+    <div className="settings-group">
+      {themes.map((themeOption, index) => {
         const Icon = themeOption.icon;
         return (
-          <button
-            type="button"
+          <ModalListItem
             key={themeOption.value}
             onClick={() => onSelect(themeOption.value)}
-            className="w-full flex items-center justify-between p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+            position={
+              index === 0 ? "first" : index === themes.length - 1 ? "last" : "middle"
+            }
+            isSelected={theme === themeOption.value}
           >
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-lg">
-                <Icon className="w-5 h-5 text-gray-700 dark:text-gray-300" />
+            <div className="flex items-center gap-3 w-full">
+              <div className={`p-1.5 ${themeOption.iconColor} rounded-lg text-white flex items-center justify-center`}>
+                <Icon className="w-6 h-6" />
               </div>
-              <div className="flex flex-col items-start">
-                <span className="font-semibold text-gray-900 dark:text-gray-100">
+              <div className="flex flex-col items-start flex-1">
+                <span className="font-normal text-[17px] text-gray-900 dark:text-gray-100">
                   {themeOption.label}
                 </span>
-                <span className="text-xs text-gray-500 dark:text-gray-400">
+                <span className="text-[13px] text-gray-500 dark:text-gray-400">
                   {themeOption.description}
                 </span>
               </div>
             </div>
-            {theme === themeOption.value && (
-              <Check className="w-5 h-5 text-blue-500 dark:text-blue-400" />
-            )}
-          </button>
+          </ModalListItem>
         );
       })}
     </div>
@@ -662,37 +680,108 @@ function DonateScreen({ onClose }: { onClose: () => void }) {
 
 function SettingsRow({
   icon: Icon,
+  iconColor,
   label,
   value,
   onClick,
+  position = "single",
 }: {
   icon: React.ComponentType<{ className?: string }>;
+  iconColor?: string;
   label: React.ReactNode;
   value?: React.ReactNode;
   onClick?: () => void;
+  position?: "first" | "middle" | "last" | "single";
 }) {
+  const getRoundedClass = () => {
+    switch (position) {
+      case "first":
+        return "rounded-t-xl rounded-b-none";
+      case "last":
+        return "rounded-b-xl rounded-t-none";
+      case "middle":
+        return "rounded-none";
+      case "single":
+        return "rounded-xl";
+      default:
+        return "rounded-xl";
+    }
+  };
+
+  const showDivider = position === "first" || position === "middle";
+
   return (
     <button
       type="button"
       onClick={onClick}
-      className="w-full flex items-center justify-between p-4 bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm rounded-2xl hover:bg-white/80 dark:hover:bg-gray-800/80 transition-colors"
+      className={`w-full flex items-center justify-between px-4 py-3 bg-white dark:bg-gray-800/90 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors relative ${getRoundedClass()}`}
     >
       <div className="flex items-center gap-3">
-        <div className="p-2 bg-white dark:bg-gray-700 rounded-full shadow-sm text-gray-600 dark:text-gray-300">
-          <Icon className="w-5 h-5" />
+        <div
+          className={`p-1.5 ${iconColor || "bg-gray-500"} rounded-lg text-white flex items-center justify-center`}
+        >
+          <Icon className="w-6 h-6" />
         </div>
-        <span className="font-medium text-gray-900 dark:text-gray-100">
+        <span className="font-normal text-[17px] text-gray-900 dark:text-gray-100">
           {label}
         </span>
       </div>
       <div className="flex items-center gap-2">
         {value && (
-          <span className="text-sm text-gray-500 dark:text-gray-400">
+          <span className="text-[17px] text-gray-500 dark:text-gray-400">
             {value}
           </span>
         )}
         <ChevronRight className="w-5 h-5 text-gray-400 dark:text-gray-500" />
       </div>
+      {showDivider && (
+        <div className="absolute bottom-0 left-14 right-0 h-px bg-gray-200 dark:bg-gray-700" />
+      )}
+    </button>
+  );
+}
+
+function ModalListItem({
+  children,
+  onClick,
+  position = "single",
+  isSelected = false,
+}: {
+  children: React.ReactNode;
+  onClick?: () => void;
+  position?: "first" | "middle" | "last" | "single";
+  isSelected?: boolean;
+}) {
+  const getRoundedClass = () => {
+    switch (position) {
+      case "first":
+        return "rounded-t-xl rounded-b-none";
+      case "last":
+        return "rounded-b-xl rounded-t-none";
+      case "middle":
+        return "rounded-none";
+      case "single":
+        return "rounded-xl";
+      default:
+        return "rounded-xl";
+    }
+  };
+
+  const showDivider = position === "first" || position === "middle";
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`w-full flex items-center justify-between px-4 py-3 bg-white dark:bg-gray-800/90 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors relative ${getRoundedClass()}`}
+    >
+      {children}
+      {isSelected && (
+        <Check className="w-5 h-5 text-blue-500 dark:text-blue-400 flex-shrink-0 ml-2" />
+      )}
+      {showDivider && (
+        <div className="absolute bottom-0 left-4 right-0 h-px bg-gray-200 dark:bg-gray-700" />
+      )}
     </button>
   );
 }

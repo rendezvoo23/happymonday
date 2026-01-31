@@ -126,7 +126,7 @@ export function StatisticsPage() {
         <MonthSelector />
       </header>
 
-      <main className="flex flex-col items-center gap-4 pb-32">
+      <main className="flex flex-col items-center gap-4 pb-32 px-4">
         <div id="doughnut" className="w-full scroll-mt-24">
           <CategoryDoughnutChart
             spendByCategory={spendByCategory}

@@ -10,7 +10,7 @@ import type { Enums, Tables } from "@/types/supabase";
 import { addMonths, subMonths } from "date-fns";
 import { Loader2, Plus } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import "./button.css";
+import "./styles.css";
 
 type TransactionDirection = Enums<"transaction_direction">;
 type TransactionWithCategory = Tables<"transactions"> & {
