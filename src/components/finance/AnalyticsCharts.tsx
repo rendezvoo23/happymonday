@@ -299,7 +299,7 @@ export function AnalyticsCharts({
                   {data.percentChange.toFixed(1)}%
                 </span>
                 <span className="text-xs text-gray-400">
-                  vs previous {range}
+                  {t("statistics.vsPrevious")} {range}
                 </span>
               </div>
             )}
@@ -309,19 +309,42 @@ export function AnalyticsCharts({
           {/* We can put it here or below. Stocks usually puts it at bottom. */}
         </div>
 
+        {/* Range Selector */}
+        <div className="flex justify-between items-center mt-2 mb-4 px-1">
+          {ranges.map((r) => (
+            <button
+              key={r}
+              type="button"
+              onClick={() => setRange(r)}
+              className={cn(
+                "text-[11px] font-semibold py-1 px-2.5 rounded-full transition-all duration-200",
+                range === r
+                  ? "bg-gray-900 text-white shadow-md scale-105"
+                  : "text-gray-400 hover:text-gray-600 hover:bg-gray-100"
+              )}
+            >
+              {r}
+            </button>
+          ))}
+        </div>
+
         {/* Legend */}
         {range !== "ALL" && (
           <div className="flex items-center justify-center gap-6 mb-3">
             <div className="flex items-center gap-2">
               <div className="w-3 h-0.5 bg-[#007AFF] rounded-full" />
-              <span className="text-xs text-gray-600">Current</span>
+              <span className="text-xs text-gray-600">
+                {t("statistics.current")}
+              </span>
             </div>
             <div className="flex items-center gap-2">
               <div
                 className="w-3 h-0.5 bg-gray-300 rounded-full"
                 style={{ borderStyle: "dashed" }}
               />
-              <span className="text-xs text-gray-400">Previous</span>
+              <span className="text-xs text-gray-400">
+                {t("statistics.previous")}
+              </span>
             </div>
           </div>
         )}
@@ -406,25 +429,6 @@ export function AnalyticsCharts({
               />
             </AreaChart>
           </ResponsiveContainer>
-        </div>
-
-        {/* Range Selector */}
-        <div className="flex justify-between items-center mt-6 px-1">
-          {ranges.map((r) => (
-            <button
-              key={r}
-              type="button"
-              onClick={() => setRange(r)}
-              className={cn(
-                "text-[11px] font-semibold py-1 px-2.5 rounded-full transition-all duration-200",
-                range === r
-                  ? "bg-gray-900 text-white shadow-md scale-105"
-                  : "text-gray-400 hover:text-gray-600 hover:bg-gray-100"
-              )}
-            >
-              {r}
-            </button>
-          ))}
         </div>
       </div>
     </div>

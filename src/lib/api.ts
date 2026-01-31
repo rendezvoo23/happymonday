@@ -149,6 +149,39 @@ export const listTransactions = async (
   }));
 };
 
+// 4.1. List Transactions With Full Category Data
+export const listTransactionsWithCategories = async (
+  fromISO: string,
+  toISO: string
+) => {
+  const { data, error } = await supabase
+    .from("transactions")
+    .select(
+      `
+      *,
+      categories (
+        id,
+        name,
+        color,
+        icon
+      ),
+      subcategories (
+        id,
+        name,
+        icon
+      )
+    `
+    )
+    .gte("occurred_at", fromISO)
+    .lt("occurred_at", toISO)
+    .is("deleted_at", null)
+    .order("occurred_at", { ascending: false });
+
+  if (error) throw error;
+
+  return data || [];
+};
+
 // 5. Month Summary
 export const getMonthSummary = async (fromISO: string, toISO: string) => {
   // Supabase/PostgreSQL aggregation

@@ -1,0 +1,93 @@
+import { TransactionForm } from '@/components/finance/TransactionForm';
+import { PageShell } from '@/components/layout/PageShell';
+import { useDate } from '@/context/DateContext';
+import { useTransactionStore } from '@/stores/transactionStore';
+import type { CategoryId, TransactionType } from '@/types';
+import { useNavigate } from '@tanstack/react-router';
+import { motion } from 'framer-motion';
+import { useEffect } from 'react';
+
+interface EditTransactionPageProps {
+  transactionId: string;
+}
+
+export function EditTransactionPage({ transactionId }: EditTransactionPageProps) {
+  const navigate = useNavigate();
+  const { transactions, updateTransaction, loadTransactions, isLoading } =
+    useTransactionStore();
+  const { selectedDate } = useDate();
+
+  // Load transactions if not already loaded
+  useEffect(() => {
+    if (transactions.length === 0) {
+      loadTransactions(selectedDate);
+    }
+  }, [transactions.length, loadTransactions, selectedDate]);
+
+  const transaction = transactions.find((t) => t.id === transactionId);
+
+  if (isLoading) {
+    return (
+      <PageShell>
+        <div className="flex flex-col items-center justify-center h-[60vh]">
+          <p className="text-gray-500 dark:text-gray-400">Loading...</p>
+        </div>
+      </PageShell>
+    );
+  }
+
+  if (!transaction) {
+    return (
+      <PageShell>
+        <div className="flex flex-col items-center justify-center h-[60vh]">
+          <p className="text-gray-500 dark:text-gray-400">Transaction not found</p>
+          <button
+            type="button"
+            onClick={() => navigate({ to: '/statistics' })}
+            className="mt-4 text-blue-600 dark:text-blue-400 font-medium"
+          >
+            Go Back
+          </button>
+        </div>
+      </PageShell>
+    );
+  }
+
+  // Map Supabase fields to form fields
+  const formData = {
+    type: transaction.direction as TransactionType,
+    amount: transaction.amount,
+    categoryId: transaction.category_id as CategoryId,
+    subcategoryId: transaction.subcategory_id || null,
+    note: transaction.note || '',
+    date: transaction.occurred_at,
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: -20 }}
+      transition={{ duration: 0.3 }}
+    >
+      <PageShell className="pb-6 pt-[72px]">
+        <TransactionForm
+          initialData={formData}
+          onCancel={() => navigate({ to: '/statistics' })}
+          onSubmit={async (data) => {
+            // Map form fields back to Supabase fields
+            await updateTransaction(transaction.id, {
+              direction: data.type,
+              amount: data.amount,
+              category_id: data.categoryId,
+              subcategory_id: data.subcategoryId || null,
+              note: data.note,
+              occurred_at: data.date,
+            });
+            navigate({ to: '/statistics' });
+          }}
+        />
+      </PageShell>
+    </motion.div>
+  );
+}

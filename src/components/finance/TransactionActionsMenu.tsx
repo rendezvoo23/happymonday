@@ -83,7 +83,9 @@ export function TransactionActionsMenu({
                     {categoryLabel}
                   </h3>
                   <p className="text-sm text-gray-500">
-                    {format(parseISO(transaction.occurred_at), "MMMM d, yyyy")}
+                    {transaction.occurred_at
+                      ? format(parseISO(transaction.occurred_at), "MMMM d, yyyy")
+                      : "N/A"}
                   </p>
                 </div>
                 <div

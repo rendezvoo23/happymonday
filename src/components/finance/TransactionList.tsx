@@ -1,8 +1,8 @@
 import { Button } from "@/components/ui/Button";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { Tables } from "@/types/supabase";
+import { useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
 import { TransactionItem } from "./TransactionItem";
 
 type Transaction = Tables<"transactions">;
@@ -42,10 +42,11 @@ export function TransactionList({
   }
 
   // Sort by date desc
-  const sorted = [...transactions].sort(
-    (a, b) =>
-      new Date(b.occurred_at).getTime() - new Date(a.occurred_at).getTime()
-  );
+  const sorted = [...transactions].sort((a, b) => {
+    const dateA = a.occurred_at ? new Date(a.occurred_at).getTime() : 0;
+    const dateB = b.occurred_at ? new Date(b.occurred_at).getTime() : 0;
+    return dateB - dateA;
+  });
 
   const displayed = disableLimit || !limit ? sorted : sorted.slice(0, limit);
 
@@ -62,17 +63,8 @@ export function TransactionList({
           },
         },
       }}
-      className="w-full pb-20"
+      className="w-full pb-0"
     >
-      <motion.h3
-        variants={{
-          hidden: { opacity: 0, y: 10 },
-          show: { opacity: 1, y: 0 },
-        }}
-        className="text-lg font-semibold mb-4 px-1 text-gray-500 dark:text-gray-400"
-      >
-        {t("transactions.recent")}
-      </motion.h3>
       <div className="space-y-3">
         {displayed.map((t) => (
           <motion.div
@@ -101,7 +93,7 @@ export function TransactionList({
             variant="secondary"
             fullWidth
             className="mt-6 rounded-2xl h-12 text-blue-600 dark:text-blue-400 font-medium bg-white dark:bg-gray-800 border-none shadow-sm"
-            onClick={() => navigate("/history")}
+            onClick={() => navigate({ to: "/history" })}
           >
             {t("transactions.viewAll")}
           </Button>

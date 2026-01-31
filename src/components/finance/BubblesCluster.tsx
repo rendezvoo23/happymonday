@@ -3,9 +3,9 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { getCategoryColor, useCategoryStore } from "@/stores/categoryStore";
 import type { Tables } from "@/types/supabase";
 import { packCircles } from "@/utils/circlePacking";
+import { useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { getIconComponent } from "../icons";
 
 type Transaction = Tables<"transactions">;
@@ -186,7 +186,7 @@ export function BubblesCluster({
     if (onBubbleClick && mode === "blurred") {
       onBubbleClick(categoryId);
     } else if (mode === "cluster") {
-      navigate(`/statistics?category=${categoryId}`);
+      navigate({ to: "/statistics", search: { category: categoryId } });
     }
   };
 
@@ -227,8 +227,6 @@ export function BubblesCluster({
         className="relative w-full h-full"
         style={{
           filter: mode === "cluster" ? "url(#goo)" : "blur(70px)",
-          // WebKit sometimes needs this to force hardware acceleration for filters
-          transform: "translate3d(0,0,0)",
         }}
       >
         {bubbles.map((bubble) => {

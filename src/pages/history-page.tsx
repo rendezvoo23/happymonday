@@ -2,15 +2,16 @@ import { TransactionList } from "@/components/finance/TransactionList";
 import { PageShell } from "@/components/layout/PageShell";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
+import { useDeleteTransaction } from "@/hooks/use-transactions-query";
 import { useTransactionStore } from "@/stores/transactionStore";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { ChevronLeft } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
 
 export function HistoryPage() {
   const navigate = useNavigate();
-  const { historyTransactions, loadHistory, deleteTransaction } =
-    useTransactionStore();
+  const { historyTransactions, loadHistory } = useTransactionStore();
+  const deleteTransactionMutation = useDeleteTransaction();
 
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
@@ -37,7 +38,7 @@ export function HistoryPage() {
   };
 
   const handleEdit = (transaction: { id: string }) => {
-    navigate(`/edit/${transaction.id}`);
+    navigate({ to: "/edit/$id", params: { id: transaction.id } });
   };
 
   const handleDeleteRequest = (id: string) => {
@@ -47,7 +48,7 @@ export function HistoryPage() {
 
   const confirmDelete = async () => {
     if (deleteTargetId) {
-      await deleteTransaction(deleteTargetId);
+      await deleteTransactionMutation.mutateAsync(deleteTargetId);
       setIsDeleteModalOpen(false);
       setDeleteTargetId(null);
       // Reload filtering
@@ -64,12 +65,12 @@ export function HistoryPage() {
         >
           <ChevronLeft className="w-6 h-6" />
         </Link>
-        <h1 className="text-xl font-semibold text-gray-900">
+        <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
           All Transactions
         </h1>
       </header>
 
-      <main className="pb-20">
+      <main>
         <TransactionList
           transactions={historyTransactions}
           onEdit={handleEdit}
@@ -101,7 +102,7 @@ export function HistoryPage() {
         title="Delete Transaction"
       >
         <div className="space-y-4">
-          <p className="text-gray-600">
+          <p className="text-gray-600 dark:text-gray-400">
             Are you sure you want to delete this transaction? This action cannot
             be undone.
           </p>
@@ -113,8 +114,13 @@ export function HistoryPage() {
             >
               Cancel
             </Button>
-            <Button variant="danger" fullWidth onClick={confirmDelete}>
-              Delete
+            <Button
+              variant="danger"
+              fullWidth
+              onClick={confirmDelete}
+              disabled={deleteTransactionMutation.isPending}
+            >
+              {deleteTransactionMutation.isPending ? "Deleting..." : "Delete"}
             </Button>
           </div>
         </div>
