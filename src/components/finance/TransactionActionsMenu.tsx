@@ -84,7 +84,10 @@ export function TransactionActionsMenu({
                   </h3>
                   <p className="text-sm text-gray-500">
                     {transaction.occurred_at
-                      ? format(parseISO(transaction.occurred_at), "MMMM d, yyyy")
+                      ? format(
+                          parseISO(transaction.occurred_at),
+                          "MMMM d, yyyy"
+                        )
                       : "N/A"}
                   </p>
                 </div>

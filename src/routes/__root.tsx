@@ -8,16 +8,16 @@ import { useUserStore } from "@/stores/userStore";
 import type { QueryClient } from "@tanstack/react-query";
 import { Outlet, createRootRouteWithContext } from "@tanstack/react-router";
 import { Loader2 } from "lucide-react";
-import { useEffect, useState, lazy, Suspense } from "react";
+import { Suspense, lazy, useEffect, useState } from "react";
 
 // Lazy load devtools
 const ReactQueryDevtools = lazy(() =>
-  import("@tanstack/react-query-devtools").then(m => ({
+  import("@tanstack/react-query-devtools").then((m) => ({
     default: m.ReactQueryDevtools,
   }))
 );
 const TanStackRouterDevtools = lazy(() =>
-  import("@tanstack/router-devtools").then(m => ({
+  import("@tanstack/router-devtools").then((m) => ({
     default: m.TanStackRouterDevtools,
   }))
 );

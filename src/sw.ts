@@ -1,7 +1,7 @@
-import { clientsClaim, skipWaiting } from 'workbox-core';
-import { cleanupOutdatedCaches, precacheAndRoute } from 'workbox-precaching';
-import { registerRoute } from 'workbox-routing';
-import { NetworkFirst } from 'workbox-strategies';
+import { clientsClaim, skipWaiting } from "workbox-core";
+import { cleanupOutdatedCaches, precacheAndRoute } from "workbox-precaching";
+import { registerRoute } from "workbox-routing";
+import { NetworkFirst } from "workbox-strategies";
 
 declare let self: ServiceWorkerGlobalScope & { __WB_MANIFEST: any };
 
@@ -14,8 +14,8 @@ precacheAndRoute(self.__WB_MANIFEST);
 
 // Cache Supabase API calls with NetworkFirst strategy
 registerRoute(
-  ({ url }) => url.origin.includes('supabase.co'),
+  ({ url }) => url.origin.includes("supabase.co"),
   new NetworkFirst({
-    cacheName: 'supabase-api-cache',
+    cacheName: "supabase-api-cache",
   })
 );

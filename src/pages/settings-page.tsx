@@ -1,13 +1,13 @@
-import { PageShell } from '@/components/layout/PageShell';
-import { SettingsDrawer } from '@/components/layout/SettingsDrawer';
-import { useNavigate } from '@tanstack/react-router';
-import { motion } from 'framer-motion';
+import { PageShell } from "@/components/layout/PageShell";
+import { SettingsDrawer } from "@/components/layout/SettingsDrawer";
+import { useNavigate } from "@tanstack/react-router";
+import { motion } from "framer-motion";
 
 export function SettingsPage() {
   const navigate = useNavigate();
 
   const handleClose = () => {
-    navigate({ to: '/home' });
+    navigate({ to: "/home" });
   };
 
   return (
