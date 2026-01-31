@@ -23,6 +23,7 @@ interface BubblesClusterProps {
   height?: number;
   onBubbleClick?: (categoryId: string) => void;
   animateBubbles?: boolean;
+  useGooeyFilter?: boolean;
 }
 
 export function BubblesCluster({
@@ -31,6 +32,7 @@ export function BubblesCluster({
   height = 320,
   onBubbleClick,
   animateBubbles = true,
+  useGooeyFilter = false,
 }: BubblesClusterProps) {
   const navigate = useNavigate();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -195,7 +197,7 @@ export function BubblesCluster({
       style={{ height }}
     >
       {/* Gooey Filter - Only for cluster mode */}
-      {mode === "cluster" && (
+      {mode === "cluster" && useGooeyFilter && (
         <svg
           style={{ position: "absolute", width: 0, height: 0 }}
           aria-hidden="true"
@@ -252,7 +254,7 @@ export function BubblesCluster({
                       scale: 1,
                       opacity: 1,
                       x: bubble.x,
-                      y: [bubble.y - 2, bubble.y + 2, bubble.y - 2],
+                      y: [bubble.y - 4, bubble.y + 4, bubble.y - 4],
                     }
                   : {
                       scale: 1,
