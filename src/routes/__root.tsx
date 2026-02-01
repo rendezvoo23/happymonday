@@ -222,7 +222,7 @@ function RootComponent() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--background)] text-gray-900 dark:text-gray-100 transition-colors duration-200">
+    <div className="bg-[var(--background)] text-gray-900 dark:text-gray-100 transition-colors duration-200">
       <Outlet />
       <DrawerManager />
       {import.meta.env.DEV && (

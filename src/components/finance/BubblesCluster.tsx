@@ -112,9 +112,9 @@ export function BubblesCluster({
     const packed = packCircles(
       data.map((d) => ({ id: d.id, value: d.value })),
       {
-        minRadius: mode === "cluster" ? 20 : 60,
-        maxRadius: mode === "cluster" ? 150 : 100,
-        padding: mode === "cluster" ? 5 : 10,
+        minRadius: mode === "cluster" ? 24 : 60,
+        maxRadius: mode === "cluster" ? 120 : 100,
+        padding: mode === "cluster" ? 1 : 10,
       }
     );
 
@@ -252,7 +252,7 @@ export function BubblesCluster({
                       scale: 1,
                       opacity: 1,
                       x: bubble.x,
-                      y: [bubble.y - 4, bubble.y + 4, bubble.y - 4],
+                      y: [bubble.y - 3, bubble.y + 3, bubble.y - 3],
                     }
                   : {
                       scale: 1,

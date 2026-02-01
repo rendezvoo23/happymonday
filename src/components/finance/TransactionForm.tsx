@@ -9,7 +9,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { type Subcategory, getSubcategories } from "@/lib/api";
 import { useCategoryStore } from "@/stores/categoryStore";
 import type { CategoryId, TransactionType } from "@/types";
-import { CheckIcon, Loader2, X } from "lucide-react";
+import { Calendar, CheckIcon, Loader2, X } from "lucide-react";
 import { SegmentedControl } from "../ui/SegmentedControl";
 import { LiquidButton } from "../ui/button/button";
 import { CategorySelector } from "./CategorySelector";
@@ -69,8 +69,9 @@ export function TransactionForm({
   const initialSubcategoryIdRef = useRef<string | null>(
     initialData?.subcategoryId || null
   );
+  const dateInputRef = useRef<HTMLInputElement>(null);
 
-  const { symbol, isSymbolPrefix } = useCurrency();
+  const { formatAmount } = useCurrency();
   const {
     isLoading: categoriesLoading,
     loadCategories,
@@ -211,16 +212,16 @@ export function TransactionForm({
         {/* Amount Display */}
 
         <div className="relative flex items-center justify-center min-h-[64px] rounded-2xl px-6 py-4 mt-10">
-          <div className="flex items-center gap-2 text-2xl">
-            {isSymbolPrefix && (
-              <span className="text-gray-400 dark:text-gray-500">{symbol}</span>
-            )}
+          <div className="flex items-center gap-2 text-3xl">
             <span className={amount ? "" : "text-gray-400 dark:text-gray-600"}>
-              {amount || "0"}
+              {amount
+                ? formatAmount(Number.parseFloat(amount ?? "0"), {
+                    hideFractions: false,
+                  })
+                : formatAmount(0, {
+                    hideFractions: false,
+                  })}
             </span>
-            {!isSymbolPrefix && (
-              <span className="text-gray-400 dark:text-gray-500">{symbol}</span>
-            )}
           </div>
         </div>
 
@@ -231,24 +232,48 @@ export function TransactionForm({
         />
       </div>
 
-      <div className="flex justify-center">
-        <SegmentedControl
-          layoutId="segmented-control-category-subcategory"
-          options={["transactions.category", "transactions.subcategory"].map(
-            (cat) => ({
-              value: cat,
-              label: t(cat),
-            })
-          )}
-          value={selectedType}
-          onChange={(value) =>
-            setSelectedType(
-              value as unknown as
-                | "transactions.category"
-                | "transactions.subcategory"
-            )
-          }
-        />
+      <div className="flex gap-4 w-full justify-center items-center">
+        <div>
+          <SegmentedControl
+            layoutId="segmented-control-category-subcategory"
+            options={["transactions.category", "transactions.subcategory"].map(
+              (cat) => ({
+                value: cat,
+                label: t(cat),
+              })
+            )}
+            value={selectedType}
+            onChange={(value) =>
+              setSelectedType(
+                value as unknown as
+                  | "transactions.category"
+                  | "transactions.subcategory"
+              )
+            }
+          />
+        </div>
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => dateInputRef.current?.showPicker()}
+            className="w-full px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-between gap-2 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-left"
+          >
+            <div className="flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+              <span className="font-medium text-gray-900 dark:text-gray-100">
+                {format(new Date(date), "MMM d, yyyy")}
+              </span>
+            </div>
+          </button>
+          <input
+            ref={dateInputRef}
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            className="absolute opacity-0 pointer-events-none"
+            tabIndex={-1}
+          />
+        </div>
       </div>
 
       {selectedType === "transactions.category" && (
@@ -306,12 +331,6 @@ export function TransactionForm({
             placeholder={t("transactions.notePlaceholder")}
             value={note}
             onChange={(e) => setNote(e.target.value)}
-          />
-          <Input
-            id="date-input"
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
           />
         </div>
       )}

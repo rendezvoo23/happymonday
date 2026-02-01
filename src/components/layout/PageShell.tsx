@@ -15,13 +15,13 @@ export function PageShell({
 }: PageShellProps) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -8 }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
       transition={{ duration: 0.4, ease: [0.32, 0.72, 0, 1] }}
       className={cn(
         "max-w-md mx-auto relative z-10",
-        allowScroll ? "h-screen" : "h-screen overflow-hidden",
+        allowScroll ? "h-full" : "h-full overflow-hidden",
         "safe-area-top safe-area-bottom safe-area-left safe-area-right",
         className
       )}

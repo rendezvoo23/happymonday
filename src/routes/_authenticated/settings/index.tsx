@@ -1,7 +1,10 @@
-import { createFileRoute, lazyRouteComponent } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_authenticated/settings/")({
-  component: lazyRouteComponent(() =>
-    import("@/pages/settings-page").then((m) => ({ default: m.SettingsPage }))
-  ),
+  beforeLoad: () => {
+    throw redirect({
+      to: "/settings/main",
+      replace: true,
+    });
+  },
 });

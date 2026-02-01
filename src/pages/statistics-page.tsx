@@ -25,7 +25,7 @@ interface StatisticsPageProps {
 export function StatisticsPage(_props: StatisticsPageProps = {}) {
   const navigate = useNavigate();
   const searchParams = useSearch({ strict: false });
-  const { selectedDate } = useDate();
+  const { selectedDate, setDate } = useDate();
   const { formatAmount } = useCurrency();
   const deleteTransactionMutation = useDeleteTransaction();
 
@@ -37,6 +37,12 @@ export function StatisticsPage(_props: StatisticsPageProps = {}) {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
   const [chartMode, setChartMode] = useState<"week" | "month">("week");
+
+  // Handle period click (week click in month mode)
+  const handlePeriodClick = (date: Date, mode: "week" | "month") => {
+    setDate(date);
+    setChartMode(mode);
+  };
 
   // Get category from URL params
   const categoryParam = (searchParams as any)?.category;
@@ -174,6 +180,7 @@ export function StatisticsPage(_props: StatisticsPageProps = {}) {
                 transactions={transactions}
                 selectedDate={selectedDate}
                 mode={chartMode}
+                onPeriodClick={handlePeriodClick}
               />
             </div>
           )}

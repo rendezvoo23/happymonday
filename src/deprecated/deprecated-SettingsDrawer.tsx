@@ -119,8 +119,6 @@ export function SettingsDrawer({ onClose }: SettingsDrawerProps) {
 
   return (
     <PageShell>
-      <div className="flex-shrink-0 mx-auto w-12 h-1.5 rounded-full  mt-4 mb-6" />
-
       {/* Header */}
       <div className="flex-shrink-0 px-6 pb-4 relative">
         {currentScreen !== "main" && (

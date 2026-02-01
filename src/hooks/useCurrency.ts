@@ -50,12 +50,16 @@ export function useCurrency() {
       return new Intl.NumberFormat(activeLocale, {
         style: "currency",
         currency: currency.code,
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2,
       });
     } catch (e) {
       console.error("Failed to create Intl.NumberFormat", e);
       return new Intl.NumberFormat("en-US", {
         style: "currency",
         currency: "USD",
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2,
       });
     }
   }, [activeLocale, currency.code]);
@@ -79,6 +83,8 @@ export function useCurrency() {
         style: "currency",
         currency: currency.code,
         signDisplay: "always",
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2,
       });
     } catch (e) {
       return formatter;
@@ -101,14 +107,19 @@ export function useCurrency() {
 
   const isSymbolPrefix = useMemo(() => {
     try {
-      const parts = formatter.formatToParts(1000);
+      // Use the anchor locale to determine correct symbol placement
+      const anchorFormatter = new Intl.NumberFormat(activeLocale, {
+        style: "currency",
+        currency: currency.code,
+      });
+      const parts = anchorFormatter.formatToParts(1000);
       const currencyIndex = parts.findIndex((p) => p.type === "currency");
       const integerIndex = parts.findIndex((p) => p.type === "integer");
       return currencyIndex < integerIndex;
     } catch (e) {
       return true;
     }
-  }, [formatter]);
+  }, [activeLocale, currency.code]);
 
   const formatAmount = (
     amount: number,
@@ -116,18 +127,35 @@ export function useCurrency() {
   ) => {
     const { showSign, hideFractions } = options || {};
 
-    // Note: For now we use the activeLocale (anchor locale) which has "correct" separators for that currency.
-    // If the user wants RU separators for USD (e.g. $100,00), we would need transformToParts logic.
-    // But usually using the currency's native separators is preferred for financial accuracy.
+    // Check if number has decimals
+    const hasDecimals = !Number.isInteger(amount);
 
+    // If showing fractions and number has decimals, use 2 decimal places
     let fmt: Intl.NumberFormat;
-    if (showSign) {
-      fmt = hideFractions ? wholeNumberSignFormatter : signFormatter;
+    if (hideFractions) {
+      fmt = showSign ? wholeNumberSignFormatter : wholeNumberFormatter;
+    } else if (hasDecimals) {
+      // Create formatter with exactly 2 decimal places for numbers with decimals
+      try {
+        fmt = new Intl.NumberFormat(activeLocale, {
+          style: "currency",
+          currency: currency.code,
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+          signDisplay: showSign ? "always" : "auto",
+        });
+      } catch (e) {
+        fmt = showSign ? signFormatter : formatter;
+      }
     } else {
-      fmt = hideFractions ? wholeNumberFormatter : formatter;
+      fmt = showSign ? signFormatter : formatter;
     }
 
-    return fmt.format(amount);
+    // Format the amount and replace comma decimal separator with dot
+    const formatted = fmt.format(amount);
+    // Replace decimal comma with dot (e.g., "100,50 ₽" -> "100.50 ₽")
+    // This regex ensures we only replace the decimal comma, not thousand separators
+    return formatted.replace(/(\d),(\d)/g, "$1.$2");
   };
 
   const formatCompactAmount = (amount: number) => {

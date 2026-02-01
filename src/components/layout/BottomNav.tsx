@@ -42,7 +42,7 @@ export function BottomNav() {
         if (window.Telegram?.WebApp?.HapticFeedback) {
           window.Telegram.WebApp.HapticFeedback.impactOccurred("light");
         }
-        navigate({ to: "/settings" });
+        navigate({ to: "/settings/main" });
       };
 
       // Show the settings button and register click handler
@@ -77,7 +77,7 @@ export function BottomNav() {
       isActive: isStatsActive,
     },
     {
-      to: "/settings",
+      to: "/settings/main",
       icon: GearBigIcon,
       iconFill: GearBigIcon,
       label: t("nav.settings"),

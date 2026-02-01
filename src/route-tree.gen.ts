@@ -8,254 +8,364 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { Route as rootRouteImport } from "./routes/__root";
-import { Route as AuthenticatedRouteImport } from "./routes/_authenticated";
-import { Route as AuthenticatedEditIdRouteImport } from "./routes/_authenticated/edit/$id";
-import { Route as AuthenticatedHistoryRouteImport } from "./routes/_authenticated/history";
-import { Route as AuthenticatedHomeRouteImport } from "./routes/_authenticated/home";
-import { Route as AuthenticatedSettingsRouteImport } from "./routes/_authenticated/settings";
-import { Route as AuthenticatedSettingsIndexRouteImport } from "./routes/_authenticated/settings/index";
-import { Route as AuthenticatedStatisticsRouteImport } from "./routes/_authenticated/statistics";
-import { Route as AuthenticatedStatisticsMonthRouteImport } from "./routes/_authenticated/statistics/$month";
-import { Route as AuthenticatedStatisticsIndexRouteImport } from "./routes/_authenticated/statistics/index";
-import { Route as IndexRouteImport } from "./routes/index";
+import { Route as rootRouteImport } from './routes/__root'
+import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
+import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedStatisticsRouteImport } from './routes/_authenticated/statistics'
+import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/home'
+import { Route as AuthenticatedHistoryRouteImport } from './routes/_authenticated/history'
+import { Route as AuthenticatedStatisticsIndexRouteImport } from './routes/_authenticated/statistics/index'
+import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated/settings/index'
+import { Route as AuthenticatedStatisticsMonthRouteImport } from './routes/_authenticated/statistics/$month'
+import { Route as AuthenticatedSettingsThemeRouteImport } from './routes/_authenticated/settings/theme'
+import { Route as AuthenticatedSettingsMainRouteImport } from './routes/_authenticated/settings/main'
+import { Route as AuthenticatedSettingsLanguageRouteImport } from './routes/_authenticated/settings/language'
+import { Route as AuthenticatedSettingsDonateRouteImport } from './routes/_authenticated/settings/donate'
+import { Route as AuthenticatedSettingsCurrencyRouteImport } from './routes/_authenticated/settings/currency'
+import { Route as AuthenticatedEditIdRouteImport } from './routes/_authenticated/edit/$id'
 
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
-  id: "/_authenticated",
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const IndexRoute = IndexRouteImport.update({
-  id: "/",
-  path: "/",
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const AuthenticatedStatisticsRoute = AuthenticatedStatisticsRouteImport.update({
-  id: "/statistics",
-  path: "/statistics",
+  id: '/statistics',
+  path: '/statistics',
   getParentRoute: () => AuthenticatedRoute,
-} as any);
+} as any)
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
-  id: "/settings",
-  path: "/settings",
+  id: '/settings',
+  path: '/settings',
   getParentRoute: () => AuthenticatedRoute,
-} as any);
+} as any)
 const AuthenticatedHomeRoute = AuthenticatedHomeRouteImport.update({
-  id: "/home",
-  path: "/home",
+  id: '/home',
+  path: '/home',
   getParentRoute: () => AuthenticatedRoute,
-} as any);
+} as any)
 const AuthenticatedHistoryRoute = AuthenticatedHistoryRouteImport.update({
-  id: "/history",
-  path: "/history",
+  id: '/history',
+  path: '/history',
   getParentRoute: () => AuthenticatedRoute,
-} as any);
+} as any)
 const AuthenticatedStatisticsIndexRoute =
   AuthenticatedStatisticsIndexRouteImport.update({
-    id: "/",
-    path: "/",
+    id: '/',
+    path: '/',
     getParentRoute: () => AuthenticatedStatisticsRoute,
-  } as any);
+  } as any)
 const AuthenticatedSettingsIndexRoute =
   AuthenticatedSettingsIndexRouteImport.update({
-    id: "/",
-    path: "/",
+    id: '/',
+    path: '/',
     getParentRoute: () => AuthenticatedSettingsRoute,
-  } as any);
+  } as any)
 const AuthenticatedStatisticsMonthRoute =
   AuthenticatedStatisticsMonthRouteImport.update({
-    id: "/$month",
-    path: "/$month",
+    id: '/$month',
+    path: '/$month',
     getParentRoute: () => AuthenticatedStatisticsRoute,
-  } as any);
+  } as any)
+const AuthenticatedSettingsThemeRoute =
+  AuthenticatedSettingsThemeRouteImport.update({
+    id: '/theme',
+    path: '/theme',
+    getParentRoute: () => AuthenticatedSettingsRoute,
+  } as any)
+const AuthenticatedSettingsMainRoute =
+  AuthenticatedSettingsMainRouteImport.update({
+    id: '/main',
+    path: '/main',
+    getParentRoute: () => AuthenticatedSettingsRoute,
+  } as any)
+const AuthenticatedSettingsLanguageRoute =
+  AuthenticatedSettingsLanguageRouteImport.update({
+    id: '/language',
+    path: '/language',
+    getParentRoute: () => AuthenticatedSettingsRoute,
+  } as any)
+const AuthenticatedSettingsDonateRoute =
+  AuthenticatedSettingsDonateRouteImport.update({
+    id: '/donate',
+    path: '/donate',
+    getParentRoute: () => AuthenticatedSettingsRoute,
+  } as any)
+const AuthenticatedSettingsCurrencyRoute =
+  AuthenticatedSettingsCurrencyRouteImport.update({
+    id: '/currency',
+    path: '/currency',
+    getParentRoute: () => AuthenticatedSettingsRoute,
+  } as any)
 const AuthenticatedEditIdRoute = AuthenticatedEditIdRouteImport.update({
-  id: "/edit/$id",
-  path: "/edit/$id",
+  id: '/edit/$id',
+  path: '/edit/$id',
   getParentRoute: () => AuthenticatedRoute,
-} as any);
+} as any)
 
 export interface FileRoutesByFullPath {
-  "/": typeof IndexRoute;
-  "/history": typeof AuthenticatedHistoryRoute;
-  "/home": typeof AuthenticatedHomeRoute;
-  "/settings": typeof AuthenticatedSettingsRouteWithChildren;
-  "/statistics": typeof AuthenticatedStatisticsRouteWithChildren;
-  "/edit/$id": typeof AuthenticatedEditIdRoute;
-  "/statistics/$month": typeof AuthenticatedStatisticsMonthRoute;
-  "/settings/": typeof AuthenticatedSettingsIndexRoute;
-  "/statistics/": typeof AuthenticatedStatisticsIndexRoute;
+  '/': typeof IndexRoute
+  '/history': typeof AuthenticatedHistoryRoute
+  '/home': typeof AuthenticatedHomeRoute
+  '/settings': typeof AuthenticatedSettingsRouteWithChildren
+  '/statistics': typeof AuthenticatedStatisticsRouteWithChildren
+  '/edit/$id': typeof AuthenticatedEditIdRoute
+  '/settings/currency': typeof AuthenticatedSettingsCurrencyRoute
+  '/settings/donate': typeof AuthenticatedSettingsDonateRoute
+  '/settings/language': typeof AuthenticatedSettingsLanguageRoute
+  '/settings/main': typeof AuthenticatedSettingsMainRoute
+  '/settings/theme': typeof AuthenticatedSettingsThemeRoute
+  '/statistics/$month': typeof AuthenticatedStatisticsMonthRoute
+  '/settings/': typeof AuthenticatedSettingsIndexRoute
+  '/statistics/': typeof AuthenticatedStatisticsIndexRoute
 }
 export interface FileRoutesByTo {
-  "/": typeof IndexRoute;
-  "/history": typeof AuthenticatedHistoryRoute;
-  "/home": typeof AuthenticatedHomeRoute;
-  "/edit/$id": typeof AuthenticatedEditIdRoute;
-  "/statistics/$month": typeof AuthenticatedStatisticsMonthRoute;
-  "/settings": typeof AuthenticatedSettingsIndexRoute;
-  "/statistics": typeof AuthenticatedStatisticsIndexRoute;
+  '/': typeof IndexRoute
+  '/history': typeof AuthenticatedHistoryRoute
+  '/home': typeof AuthenticatedHomeRoute
+  '/edit/$id': typeof AuthenticatedEditIdRoute
+  '/settings/currency': typeof AuthenticatedSettingsCurrencyRoute
+  '/settings/donate': typeof AuthenticatedSettingsDonateRoute
+  '/settings/language': typeof AuthenticatedSettingsLanguageRoute
+  '/settings/main': typeof AuthenticatedSettingsMainRoute
+  '/settings/theme': typeof AuthenticatedSettingsThemeRoute
+  '/statistics/$month': typeof AuthenticatedStatisticsMonthRoute
+  '/settings': typeof AuthenticatedSettingsIndexRoute
+  '/statistics': typeof AuthenticatedStatisticsIndexRoute
 }
 export interface FileRoutesById {
-  __root__: typeof rootRouteImport;
-  "/": typeof IndexRoute;
-  "/_authenticated": typeof AuthenticatedRouteWithChildren;
-  "/_authenticated/history": typeof AuthenticatedHistoryRoute;
-  "/_authenticated/home": typeof AuthenticatedHomeRoute;
-  "/_authenticated/settings": typeof AuthenticatedSettingsRouteWithChildren;
-  "/_authenticated/statistics": typeof AuthenticatedStatisticsRouteWithChildren;
-  "/_authenticated/edit/$id": typeof AuthenticatedEditIdRoute;
-  "/_authenticated/statistics/$month": typeof AuthenticatedStatisticsMonthRoute;
-  "/_authenticated/settings/": typeof AuthenticatedSettingsIndexRoute;
-  "/_authenticated/statistics/": typeof AuthenticatedStatisticsIndexRoute;
+  __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteWithChildren
+  '/_authenticated/history': typeof AuthenticatedHistoryRoute
+  '/_authenticated/home': typeof AuthenticatedHomeRoute
+  '/_authenticated/settings': typeof AuthenticatedSettingsRouteWithChildren
+  '/_authenticated/statistics': typeof AuthenticatedStatisticsRouteWithChildren
+  '/_authenticated/edit/$id': typeof AuthenticatedEditIdRoute
+  '/_authenticated/settings/currency': typeof AuthenticatedSettingsCurrencyRoute
+  '/_authenticated/settings/donate': typeof AuthenticatedSettingsDonateRoute
+  '/_authenticated/settings/language': typeof AuthenticatedSettingsLanguageRoute
+  '/_authenticated/settings/main': typeof AuthenticatedSettingsMainRoute
+  '/_authenticated/settings/theme': typeof AuthenticatedSettingsThemeRoute
+  '/_authenticated/statistics/$month': typeof AuthenticatedStatisticsMonthRoute
+  '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
+  '/_authenticated/statistics/': typeof AuthenticatedStatisticsIndexRoute
 }
 export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath;
+  fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    | "/"
-    | "/history"
-    | "/home"
-    | "/settings"
-    | "/statistics"
-    | "/edit/$id"
-    | "/statistics/$month"
-    | "/settings/"
-    | "/statistics/";
-  fileRoutesByTo: FileRoutesByTo;
+    | '/'
+    | '/history'
+    | '/home'
+    | '/settings'
+    | '/statistics'
+    | '/edit/$id'
+    | '/settings/currency'
+    | '/settings/donate'
+    | '/settings/language'
+    | '/settings/main'
+    | '/settings/theme'
+    | '/statistics/$month'
+    | '/settings/'
+    | '/statistics/'
+  fileRoutesByTo: FileRoutesByTo
   to:
-    | "/"
-    | "/history"
-    | "/home"
-    | "/edit/$id"
-    | "/statistics/$month"
-    | "/settings"
-    | "/statistics";
+    | '/'
+    | '/history'
+    | '/home'
+    | '/edit/$id'
+    | '/settings/currency'
+    | '/settings/donate'
+    | '/settings/language'
+    | '/settings/main'
+    | '/settings/theme'
+    | '/statistics/$month'
+    | '/settings'
+    | '/statistics'
   id:
-    | "__root__"
-    | "/"
-    | "/_authenticated"
-    | "/_authenticated/history"
-    | "/_authenticated/home"
-    | "/_authenticated/settings"
-    | "/_authenticated/statistics"
-    | "/_authenticated/edit/$id"
-    | "/_authenticated/statistics/$month"
-    | "/_authenticated/settings/"
-    | "/_authenticated/statistics/";
-  fileRoutesById: FileRoutesById;
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/_authenticated/history'
+    | '/_authenticated/home'
+    | '/_authenticated/settings'
+    | '/_authenticated/statistics'
+    | '/_authenticated/edit/$id'
+    | '/_authenticated/settings/currency'
+    | '/_authenticated/settings/donate'
+    | '/_authenticated/settings/language'
+    | '/_authenticated/settings/main'
+    | '/_authenticated/settings/theme'
+    | '/_authenticated/statistics/$month'
+    | '/_authenticated/settings/'
+    | '/_authenticated/statistics/'
+  fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute;
-  AuthenticatedRoute: typeof AuthenticatedRouteWithChildren;
+  IndexRoute: typeof IndexRoute
+  AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
 }
 
-declare module "@tanstack/react-router" {
+declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    "/_authenticated": {
-      id: "/_authenticated";
-      path: "";
-      fullPath: "/";
-      preLoaderRoute: typeof AuthenticatedRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/": {
-      id: "/";
-      path: "/";
-      fullPath: "/";
-      preLoaderRoute: typeof IndexRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/_authenticated/statistics": {
-      id: "/_authenticated/statistics";
-      path: "/statistics";
-      fullPath: "/statistics";
-      preLoaderRoute: typeof AuthenticatedStatisticsRouteImport;
-      parentRoute: typeof AuthenticatedRoute;
-    };
-    "/_authenticated/settings": {
-      id: "/_authenticated/settings";
-      path: "/settings";
-      fullPath: "/settings";
-      preLoaderRoute: typeof AuthenticatedSettingsRouteImport;
-      parentRoute: typeof AuthenticatedRoute;
-    };
-    "/_authenticated/home": {
-      id: "/_authenticated/home";
-      path: "/home";
-      fullPath: "/home";
-      preLoaderRoute: typeof AuthenticatedHomeRouteImport;
-      parentRoute: typeof AuthenticatedRoute;
-    };
-    "/_authenticated/history": {
-      id: "/_authenticated/history";
-      path: "/history";
-      fullPath: "/history";
-      preLoaderRoute: typeof AuthenticatedHistoryRouteImport;
-      parentRoute: typeof AuthenticatedRoute;
-    };
-    "/_authenticated/statistics/": {
-      id: "/_authenticated/statistics/";
-      path: "/";
-      fullPath: "/statistics/";
-      preLoaderRoute: typeof AuthenticatedStatisticsIndexRouteImport;
-      parentRoute: typeof AuthenticatedStatisticsRoute;
-    };
-    "/_authenticated/settings/": {
-      id: "/_authenticated/settings/";
-      path: "/";
-      fullPath: "/settings/";
-      preLoaderRoute: typeof AuthenticatedSettingsIndexRouteImport;
-      parentRoute: typeof AuthenticatedSettingsRoute;
-    };
-    "/_authenticated/statistics/$month": {
-      id: "/_authenticated/statistics/$month";
-      path: "/$month";
-      fullPath: "/statistics/$month";
-      preLoaderRoute: typeof AuthenticatedStatisticsMonthRouteImport;
-      parentRoute: typeof AuthenticatedStatisticsRoute;
-    };
-    "/_authenticated/edit/$id": {
-      id: "/_authenticated/edit/$id";
-      path: "/edit/$id";
-      fullPath: "/edit/$id";
-      preLoaderRoute: typeof AuthenticatedEditIdRouteImport;
-      parentRoute: typeof AuthenticatedRoute;
-    };
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/statistics': {
+      id: '/_authenticated/statistics'
+      path: '/statistics'
+      fullPath: '/statistics'
+      preLoaderRoute: typeof AuthenticatedStatisticsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/settings': {
+      id: '/_authenticated/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AuthenticatedSettingsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/home': {
+      id: '/_authenticated/home'
+      path: '/home'
+      fullPath: '/home'
+      preLoaderRoute: typeof AuthenticatedHomeRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/history': {
+      id: '/_authenticated/history'
+      path: '/history'
+      fullPath: '/history'
+      preLoaderRoute: typeof AuthenticatedHistoryRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/statistics/': {
+      id: '/_authenticated/statistics/'
+      path: '/'
+      fullPath: '/statistics/'
+      preLoaderRoute: typeof AuthenticatedStatisticsIndexRouteImport
+      parentRoute: typeof AuthenticatedStatisticsRoute
+    }
+    '/_authenticated/settings/': {
+      id: '/_authenticated/settings/'
+      path: '/'
+      fullPath: '/settings/'
+      preLoaderRoute: typeof AuthenticatedSettingsIndexRouteImport
+      parentRoute: typeof AuthenticatedSettingsRoute
+    }
+    '/_authenticated/statistics/$month': {
+      id: '/_authenticated/statistics/$month'
+      path: '/$month'
+      fullPath: '/statistics/$month'
+      preLoaderRoute: typeof AuthenticatedStatisticsMonthRouteImport
+      parentRoute: typeof AuthenticatedStatisticsRoute
+    }
+    '/_authenticated/settings/theme': {
+      id: '/_authenticated/settings/theme'
+      path: '/theme'
+      fullPath: '/settings/theme'
+      preLoaderRoute: typeof AuthenticatedSettingsThemeRouteImport
+      parentRoute: typeof AuthenticatedSettingsRoute
+    }
+    '/_authenticated/settings/main': {
+      id: '/_authenticated/settings/main'
+      path: '/main'
+      fullPath: '/settings/main'
+      preLoaderRoute: typeof AuthenticatedSettingsMainRouteImport
+      parentRoute: typeof AuthenticatedSettingsRoute
+    }
+    '/_authenticated/settings/language': {
+      id: '/_authenticated/settings/language'
+      path: '/language'
+      fullPath: '/settings/language'
+      preLoaderRoute: typeof AuthenticatedSettingsLanguageRouteImport
+      parentRoute: typeof AuthenticatedSettingsRoute
+    }
+    '/_authenticated/settings/donate': {
+      id: '/_authenticated/settings/donate'
+      path: '/donate'
+      fullPath: '/settings/donate'
+      preLoaderRoute: typeof AuthenticatedSettingsDonateRouteImport
+      parentRoute: typeof AuthenticatedSettingsRoute
+    }
+    '/_authenticated/settings/currency': {
+      id: '/_authenticated/settings/currency'
+      path: '/currency'
+      fullPath: '/settings/currency'
+      preLoaderRoute: typeof AuthenticatedSettingsCurrencyRouteImport
+      parentRoute: typeof AuthenticatedSettingsRoute
+    }
+    '/_authenticated/edit/$id': {
+      id: '/_authenticated/edit/$id'
+      path: '/edit/$id'
+      fullPath: '/edit/$id'
+      preLoaderRoute: typeof AuthenticatedEditIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
   }
 }
 
 interface AuthenticatedSettingsRouteChildren {
-  AuthenticatedSettingsIndexRoute: typeof AuthenticatedSettingsIndexRoute;
+  AuthenticatedSettingsCurrencyRoute: typeof AuthenticatedSettingsCurrencyRoute
+  AuthenticatedSettingsDonateRoute: typeof AuthenticatedSettingsDonateRoute
+  AuthenticatedSettingsLanguageRoute: typeof AuthenticatedSettingsLanguageRoute
+  AuthenticatedSettingsMainRoute: typeof AuthenticatedSettingsMainRoute
+  AuthenticatedSettingsThemeRoute: typeof AuthenticatedSettingsThemeRoute
+  AuthenticatedSettingsIndexRoute: typeof AuthenticatedSettingsIndexRoute
 }
 
 const AuthenticatedSettingsRouteChildren: AuthenticatedSettingsRouteChildren = {
+  AuthenticatedSettingsCurrencyRoute: AuthenticatedSettingsCurrencyRoute,
+  AuthenticatedSettingsDonateRoute: AuthenticatedSettingsDonateRoute,
+  AuthenticatedSettingsLanguageRoute: AuthenticatedSettingsLanguageRoute,
+  AuthenticatedSettingsMainRoute: AuthenticatedSettingsMainRoute,
+  AuthenticatedSettingsThemeRoute: AuthenticatedSettingsThemeRoute,
   AuthenticatedSettingsIndexRoute: AuthenticatedSettingsIndexRoute,
-};
+}
 
 const AuthenticatedSettingsRouteWithChildren =
   AuthenticatedSettingsRoute._addFileChildren(
-    AuthenticatedSettingsRouteChildren
-  );
+    AuthenticatedSettingsRouteChildren,
+  )
 
 interface AuthenticatedStatisticsRouteChildren {
-  AuthenticatedStatisticsMonthRoute: typeof AuthenticatedStatisticsMonthRoute;
-  AuthenticatedStatisticsIndexRoute: typeof AuthenticatedStatisticsIndexRoute;
+  AuthenticatedStatisticsMonthRoute: typeof AuthenticatedStatisticsMonthRoute
+  AuthenticatedStatisticsIndexRoute: typeof AuthenticatedStatisticsIndexRoute
 }
 
 const AuthenticatedStatisticsRouteChildren: AuthenticatedStatisticsRouteChildren =
   {
     AuthenticatedStatisticsMonthRoute: AuthenticatedStatisticsMonthRoute,
     AuthenticatedStatisticsIndexRoute: AuthenticatedStatisticsIndexRoute,
-  };
+  }
 
 const AuthenticatedStatisticsRouteWithChildren =
   AuthenticatedStatisticsRoute._addFileChildren(
-    AuthenticatedStatisticsRouteChildren
-  );
+    AuthenticatedStatisticsRouteChildren,
+  )
 
 interface AuthenticatedRouteChildren {
-  AuthenticatedHistoryRoute: typeof AuthenticatedHistoryRoute;
-  AuthenticatedHomeRoute: typeof AuthenticatedHomeRoute;
-  AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRouteWithChildren;
-  AuthenticatedStatisticsRoute: typeof AuthenticatedStatisticsRouteWithChildren;
-  AuthenticatedEditIdRoute: typeof AuthenticatedEditIdRoute;
+  AuthenticatedHistoryRoute: typeof AuthenticatedHistoryRoute
+  AuthenticatedHomeRoute: typeof AuthenticatedHomeRoute
+  AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRouteWithChildren
+  AuthenticatedStatisticsRoute: typeof AuthenticatedStatisticsRouteWithChildren
+  AuthenticatedEditIdRoute: typeof AuthenticatedEditIdRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
@@ -264,16 +374,16 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedSettingsRoute: AuthenticatedSettingsRouteWithChildren,
   AuthenticatedStatisticsRoute: AuthenticatedStatisticsRouteWithChildren,
   AuthenticatedEditIdRoute: AuthenticatedEditIdRoute,
-};
+}
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
-  AuthenticatedRouteChildren
-);
+  AuthenticatedRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
-};
+}
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>();
+  ._addFileTypes<FileRouteTypes>()
