@@ -25,6 +25,14 @@ interface TelegramSettingsButton {
   offClick: (callback: () => void) => void;
 }
 
+interface TelegramBackButton {
+  isVisible: boolean;
+  show: () => void;
+  hide: () => void;
+  onClick: (callback: () => void) => void;
+  offClick: (callback: () => void) => void;
+}
+
 interface TelegramWebApp {
   initData: string;
   initDataUnsafe: Record<string, unknown> & { user: TelegramUser };
@@ -36,6 +44,7 @@ interface TelegramWebApp {
     selectionChanged: () => void;
   };
   SettingsButton: TelegramSettingsButton;
+  BackButton: TelegramBackButton;
   ready: () => void;
   expand: () => void;
   disableVerticalSwipes: () => void;

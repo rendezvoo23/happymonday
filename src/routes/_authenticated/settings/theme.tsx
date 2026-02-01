@@ -3,6 +3,7 @@ import { Header } from "@/components/layout/Header";
 import { LiquidButton } from "@/components/ui/button/button";
 import { useLocale } from "@/context/LocaleContext";
 import { useTheme } from "@/context/ThemeContext";
+import { useTelegramBackButton } from "@/hooks/useTelegramBackButton";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Check, ChevronLeft, Monitor, Sun } from "lucide-react";
 import type * as React from "react";
@@ -15,6 +16,8 @@ function ThemeSettingsPage() {
   const { theme, setTheme } = useTheme();
   const { t } = useLocale();
   const navigate = useNavigate();
+
+  useTelegramBackButton();
 
   const handleThemeSelect = (selectedTheme: "light" | "dark" | "system") => {
     setTheme(selectedTheme);
@@ -136,7 +139,7 @@ function ModalListItem({
     <button
       type="button"
       onClick={onClick}
-      className={`w-full flex items-center justify-between px-4 py-3 bg-white dark:bg-gray-800/90 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors relative ${getRoundedClass()}`}
+      className={`w-full flex items-center justify-between px-4 py-3 bg-white dark:bg-[var(--bacground-level-1)] hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors relative ${getRoundedClass()}`}
     >
       {children}
       {isSelected && (

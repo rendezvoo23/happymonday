@@ -1,6 +1,7 @@
 import { Header } from "@/components/layout/Header";
 import { LiquidButton } from "@/components/ui/button/button";
 import { useLocale } from "@/context/LocaleContext";
+import { useTelegramBackButton } from "@/hooks/useTelegramBackButton";
 import { useUserStore } from "@/stores/userStore";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "framer-motion";
@@ -19,6 +20,8 @@ function CurrencySettingsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
+
+  useTelegramBackButton();
 
   const filteredCurrencies = currencies.filter((currency) => {
     const query = searchQuery.toLowerCase();
@@ -212,7 +215,7 @@ function ModalListItem({
     <button
       type="button"
       onClick={onClick}
-      className={`w-full flex items-center justify-between px-4 py-3 bg-white dark:bg-gray-800/90 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors relative ${getRoundedClass()}`}
+      className={`w-full flex items-center justify-between px-4 py-3 bg-white dark:bg-[var(--bacground-level-1)] hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors relative ${getRoundedClass()}`}
     >
       {children}
       {isSelected && (

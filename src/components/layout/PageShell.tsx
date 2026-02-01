@@ -22,7 +22,7 @@ export function PageShell({
       className={cn(
         "max-w-md mx-auto relative z-10",
         allowScroll ? "h-full" : "h-full overflow-hidden",
-        "safe-area-top safe-area-bottom safe-area-left safe-area-right",
+        "safe-area-bottom safe-area-left safe-area-right",
         className
       )}
     >

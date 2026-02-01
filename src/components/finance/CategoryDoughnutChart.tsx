@@ -183,9 +183,9 @@ export function CategoryDoughnutChart({
             </PieChart>
           </ResponsiveContainer>
           <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none px-4">
-            <p className="text-xl font-bold text-gray-900 dark:text-gray-100 text-center leading-tight break-words max-w-full">
+            <div className="text-xl font-bold text-gray-900 dark:text-gray-100 text-center leading-tight break-words max-w-full">
               {formatCompactAmount(totalExpenses)}
-            </p>
+            </div>
           </div>
         </div>
 

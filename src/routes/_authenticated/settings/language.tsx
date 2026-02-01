@@ -1,8 +1,8 @@
 import { Header } from "@/components/layout/Header";
-import { LiquidButton } from "@/components/ui/button/button";
 import { useLocale } from "@/context/LocaleContext";
+import { useTelegramBackButton } from "@/hooks/useTelegramBackButton";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Check, ChevronLeft } from "lucide-react";
+import { Check } from "lucide-react";
 import type * as React from "react";
 
 export const Route = createFileRoute("/_authenticated/settings/language")({
@@ -13,6 +13,8 @@ function LanguageSettingsPage() {
   const { locale, setLocale, t, languages } = useLocale();
   const navigate = useNavigate();
 
+  useTelegramBackButton();
+
   const handleLanguageSelect = (languageCode: string) => {
     setLocale(languageCode as typeof locale);
     navigate({ to: "/settings/main" });
@@ -21,16 +23,7 @@ function LanguageSettingsPage() {
   return (
     <>
       <Header>
-        <div className="flex items-center justify-center w-full relative px-6">
-          <LiquidButton
-            type="button"
-            variant="liquid"
-            size="icon-lg"
-            onClick={() => navigate({ to: "/settings/main" })}
-            className="absolute left-4"
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </LiquidButton>
+        <div className="flex items-center justify-center w-full relative px-6 py-1">
           <div className="text-xl font-semibold text-gray-900 dark:text-gray-100">
             {t("settings.selectLanguage")}
           </div>
@@ -99,7 +92,7 @@ function ModalListItem({
     <button
       type="button"
       onClick={onClick}
-      className={`w-full flex items-center justify-between px-4 py-3 bg-white dark:bg-gray-800/90 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors relative ${getRoundedClass()}`}
+      className={`w-full flex items-center justify-between px-4 py-3 bg-white dark:bg-[var(--bacground-level-1)] hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors relative ${getRoundedClass()}`}
     >
       {children}
       {isSelected && (

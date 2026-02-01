@@ -55,12 +55,34 @@ function RootComponent() {
 
       if (env.isDev) {
         let settingsButtonCallback: (() => void) | null = null;
+        let backButtonCallback: (() => void) | null = null;
         const eventCallbacks: Record<string, (() => void) | null> = {};
 
         window.Telegram = {
           WebApp: {
             initData: env.devInitData,
             initDataUnsafe: parseInitData(env.devInitData),
+            BackButton: {
+              isVisible: false,
+              onClick: (callback: () => void) => {
+                console.log("Telegram BackButton onClick (mocked)");
+                backButtonCallback = callback;
+              },
+              offClick: (callback: () => void) => {
+                console.log("Telegram BackButton offClick (mocked)");
+                if (backButtonCallback === callback) {
+                  backButtonCallback = null;
+                }
+              },
+              show() {
+                console.log("Telegram BackButton show (mocked)");
+                this.isVisible = true;
+              },
+              hide() {
+                console.log("Telegram BackButton hide (mocked)");
+                this.isVisible = false;
+              },
+            },
             SettingsButton: {
               isVisible: false,
               show() {
