@@ -1,8 +1,8 @@
+import { useCategoryLabel } from "@/hooks/useCategoryLabel";
 import { cn } from "@/lib/utils";
 import type { Category, CategoryId } from "@/types";
 import { motion } from "framer-motion";
 import { Check } from "lucide-react";
-import { useCategoryLabel } from "@/hooks/useCategoryLabel";
 
 interface CategorySelectorProps {
   categories: Category[];

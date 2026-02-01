@@ -1,6 +1,6 @@
+import { useCategoryLabel } from "@/hooks/useCategoryLabel";
 import { useCurrency } from "@/hooks/useCurrency";
 import { useTranslation } from "@/hooks/useTranslation";
-import { useCategoryLabel } from "@/hooks/useCategoryLabel";
 import { getCategoryColor, useCategoryStore } from "@/stores/categoryStore";
 import type { Tables } from "@/types/supabase";
 import { packCircles } from "@/utils/circlePacking";
@@ -91,7 +91,7 @@ export function BubblesCluster({
           acc[catId] = { total: 0, subcategories: {} };
         }
         acc[catId].total += t.amount;
-        
+
         // Track subcategory spending
         if (t.subcategory_id) {
           if (!acc[catId].subcategories[t.subcategory_id]) {
@@ -122,11 +122,12 @@ export function BubblesCluster({
         // Try to get category from the transaction's joined data or store
         const txWithCat = transactions.find((t) => t.category_id === catId);
         const category = txWithCat?.categories || getCategoryById(catId);
-        
+
         // Find the top spending subcategory
-        const topSubcategory = Object.entries(data.subcategories)
-          .sort((a, b) => b[1].amount - a[1].amount)[0];
-        
+        const topSubcategory = Object.entries(data.subcategories).sort(
+          (a, b) => b[1].amount - a[1].amount
+        )[0];
+
         return {
           id: catId,
           value: data.total,

@@ -1,7 +1,7 @@
 import { getIconComponent } from "@/components/icons";
+import { useCategoryLabel } from "@/hooks/useCategoryLabel";
 import { useCurrency } from "@/hooks/useCurrency";
 import { useTranslation } from "@/hooks/useTranslation";
-import { useCategoryLabel } from "@/hooks/useCategoryLabel";
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown, ChevronRight } from "lucide-react";
