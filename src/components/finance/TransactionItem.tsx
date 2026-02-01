@@ -1,6 +1,7 @@
 import { MoreIcon, getIconComponent } from "@/components/icons";
 import { useCurrency } from "@/hooks/useCurrency";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useCategoryLabel } from "@/hooks/useCategoryLabel";
 import { cn } from "@/lib/utils";
 import { getCategoryColor } from "@/stores/categoryStore";
 import type { Tables } from "@/types/supabase";
@@ -63,7 +64,8 @@ export function TransactionItem({
   const category = transaction.categories;
   const subcategory = transaction.subcategories;
   const isExpense = transaction.direction === "expense";
-  const categoryLabel = subcategory?.name || category?.name || "Unknown";
+  const { getCategoryLabel } = useCategoryLabel();
+  const categoryLabel = subcategory?.name || getCategoryLabel(category?.name);
   const categoryColor = getCategoryColor(category?.color, category?.name);
 
   // Use subcategory icon if subcategoryId exists and subcategory has an icon, otherwise fall back to category icon
@@ -82,10 +84,7 @@ export function TransactionItem({
   return (
     <>
       <div
-        className={cn(
-          "border-[0.5px] border-[var(--border-subtle)]",
-          "group flex items-center justify-between p-4 bg-white/60 dark:bg-gray-800/60 backdrop-blur-md rounded-[1.5rem] mb-3 shadow-soft transition-all hover:bg-white/80 dark:hover:bg-gray-800/80 ring-1 ring-black/5 dark:ring-white/5"
-        )}
+        className={cn("flex items-center justify-between p-4 transition-all")}
       >
         <div className="flex items-center gap-4 min-w-0">
           <div

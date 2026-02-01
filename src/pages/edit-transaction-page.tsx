@@ -1,11 +1,10 @@
 import { TransactionForm } from "@/components/finance/TransactionForm";
 import { PageShell } from "@/components/layout/PageShell";
-import { useDate } from "@/context/DateContext";
 import { useTransactionStore } from "@/stores/transactionStore";
 import type { CategoryId, TransactionType } from "@/types";
 import { useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 interface EditTransactionPageProps {
   transactionId: string;
@@ -15,18 +14,18 @@ export function EditTransactionPage({
   transactionId,
 }: EditTransactionPageProps) {
   const navigate = useNavigate();
-  const { transactions, updateTransaction, loadTransactions, isLoading } =
+  const { updateTransaction, loadTransactionById, isLoading } =
     useTransactionStore();
-  const { selectedDate } = useDate();
+  const [transaction, setTransaction] = useState<Awaited<
+    ReturnType<typeof loadTransactionById>
+  > | null>(null);
 
-  // Load transactions if not already loaded
+  // Load the specific transaction by ID
   useEffect(() => {
-    if (transactions.length === 0) {
-      loadTransactions(selectedDate);
-    }
-  }, [transactions.length, loadTransactions, selectedDate]);
-
-  const transaction = transactions.find((t) => t.id === transactionId);
+    loadTransactionById(transactionId).then((data) => {
+      setTransaction(data);
+    });
+  }, [transactionId, loadTransactionById]);
 
   if (isLoading) {
     return (

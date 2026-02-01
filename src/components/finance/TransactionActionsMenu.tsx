@@ -1,5 +1,6 @@
 import { PencilIcon, TrashIcon } from "@/components/icons";
 import { useCurrency } from "@/hooks/useCurrency";
+import { useCategoryLabel } from "@/hooks/useCategoryLabel";
 import { cn } from "@/lib/utils";
 import type { Tables } from "@/types/supabase";
 import { format, parseISO } from "date-fns";
@@ -32,14 +33,12 @@ export function TransactionActionsMenu({
   onDelete,
 }: TransactionActionsMenuProps) {
   const { formatAmount } = useCurrency();
+  const { getCategoryLabel } = useCategoryLabel();
 
   if (typeof document === "undefined") return null;
 
   const isExpense = transaction.direction === "expense";
-  const categoryLabel =
-    transaction.subcategories?.name ||
-    transaction.categories?.name ||
-    "Unknown";
+  const categoryLabel = transaction.subcategories?.name || getCategoryLabel(transaction.categories?.name);
 
   return createPortal(
     <AnimatePresence>

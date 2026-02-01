@@ -65,7 +65,7 @@ export function TransactionList({
       }}
       className="w-full pb-0"
     >
-      <div className="space-y-3">
+      <div className="card-level-1">
         {displayed.map((t) => (
           <motion.div
             key={t.id}

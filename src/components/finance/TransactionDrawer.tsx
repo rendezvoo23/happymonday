@@ -71,7 +71,7 @@ export function TransactionDrawer({
     >
       <Drawer.Portal>
         <Drawer.Overlay className="fixed inset-0 bg-black/40 z-[100]" />
-        <Drawer.Content className="bg-white dark:bg-gray-900 flex flex-col fixed bottom-0 left-0 right-0 max-h-[calc(100vh-100px)] rounded-t-[24px] z-[101] shadow-2xl focus:outline-none">
+        <Drawer.Content className="bg-white dark:bg-gray-900 flex flex-col fixed bottom-0 left-0 right-0 max-h-[calc(100vh-80px)] rounded-t-[24px] z-[101] shadow-2xl focus:outline-none">
           {/* Handle - Only this area should drag the drawer */}
 
           {/* Content - Prevent dragging on form area */}

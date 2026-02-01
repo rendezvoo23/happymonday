@@ -1,5 +1,6 @@
 import { useCurrency } from "@/hooks/useCurrency";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useCategoryLabel } from "@/hooks/useCategoryLabel";
 import { getCategoryColor } from "@/stores/categoryStore";
 import type { Tables } from "@/types/supabase";
 import {
@@ -38,6 +39,7 @@ export function CategoryAverageChart({
 }: CategoryAverageChartProps) {
   const { formatCompactAmount, formatAmount } = useCurrency();
   const { t } = useTranslation();
+  const { getCategoryLabel } = useCategoryLabel();
 
   // Filter only expenses
   const expenses = useMemo(() => {
@@ -91,7 +93,7 @@ export function CategoryAverageChart({
       });
     }
 
-    // Month mode: show weeks of the month (limit to 4 weeks)
+    // Month mode: show all weeks of the month
     const monthStart = startOfMonth(selectedDate);
     const monthEnd = endOfMonth(selectedDate);
     const weeks: Array<{ start: Date; end: Date }> = [];
@@ -107,7 +109,7 @@ export function CategoryAverageChart({
       current = addDays(weekEnd, 1);
     }
 
-    return weeks.slice(0, 4).map((week, index) => {
+    return weeks.map((week, index) => {
       const weekExpenses = expenses.filter((t) => {
         if (!t.occurred_at) return false;
         const date = new Date(t.occurred_at);
@@ -220,7 +222,9 @@ export function CategoryAverageChart({
       {/* Header */}
       <div className="mb-6">
         <h3 className="text-sm text-gray-500 dark:text-gray-400 mb-2">
-          {mode === "week" ? "Daily Average" : "Weekly Average"}
+          {mode === "week"
+            ? t("statistics.dailyAverage")
+            : t("statistics.weeklyAverage")}
         </h3>
         <div className="flex items-end gap-3">
           <span className="text-4xl font-bold text-gray-900 dark:text-gray-100">
@@ -232,16 +236,20 @@ export function CategoryAverageChart({
                 <>
                   <TrendingUp className="w-4 h-4 text-red-500" />
                   <span className="text-red-500">
-                    {Math.abs(percentageChange).toFixed(0)}% from last{" "}
-                    {mode === "week" ? "week" : "month"}
+                    {Math.abs(percentageChange).toFixed(0)}%{" "}
+                    {mode === "week"
+                      ? t("statistics.fromLastWeek")
+                      : t("statistics.fromLastMonth")}
                   </span>
                 </>
               ) : (
                 <>
                   <TrendingDown className="w-4 h-4 text-green-500" />
                   <span className="text-green-500">
-                    {Math.abs(percentageChange).toFixed(0)}% from last{" "}
-                    {mode === "week" ? "week" : "month"}
+                    {Math.abs(percentageChange).toFixed(0)}%{" "}
+                    {mode === "week"
+                      ? t("statistics.fromLastWeek")
+                      : t("statistics.fromLastMonth")}
                   </span>
                 </>
               )}
@@ -260,7 +268,7 @@ export function CategoryAverageChart({
           }}
         >
           <span className="absolute -right-6 -top-[10px] text-xs text-green-500 font-medium">
-            avg
+            {t("statistics.average")}
           </span>
         </div>
 
@@ -356,7 +364,13 @@ export function CategoryAverageChart({
               className="text-xs font-medium mb-1"
               style={{ color: cat.color }}
             >
-              {cat.name}
+              <div className="flex items-center gap-1">
+                <div
+                  className="w-2 h-2 rounded-full"
+                  style={{ background: cat.color }}
+                />
+                {getCategoryLabel(cat.name)}
+              </div>
             </p>
             <p className="text-sm font-bold text-gray-900 dark:text-gray-100">
               {formatCompactAmount(cat.amount)}
@@ -369,7 +383,9 @@ export function CategoryAverageChart({
       <div className="pt-4 border-t border-border-subtle">
         <div className="flex justify-between items-center">
           <span className="text-sm text-gray-600 dark:text-gray-400">
-            Total {mode === "week" ? "This Week" : "This Month"}
+            {mode === "week"
+              ? t("statistics.totalThisWeek")
+              : t("statistics.totalThisMonth")}
           </span>
           <span className="text-lg font-bold text-gray-900 dark:text-gray-100">
             {formatAmount(total)}

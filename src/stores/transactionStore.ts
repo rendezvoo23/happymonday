@@ -25,6 +25,7 @@ interface TransactionState {
 
   // Actions
   loadTransactions: (date: Date) => Promise<TransactionWithCategory[]>;
+  loadTransactionById: (id: string) => Promise<TransactionWithCategory | null>;
   loadHistory: (
     page: number,
     pageSize: number
@@ -88,6 +89,45 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
         isLoading: false,
       });
       return [];
+    }
+  },
+
+  loadTransactionById: async (id: string) => {
+    set({ isLoading: true, error: null });
+    try {
+      const { data, error } = await supabase
+        .from("transactions")
+        .select(
+          `
+                    *,
+                    categories (
+                        id,
+                        name,
+                        color,
+                        icon
+                    ),
+                    subcategories (
+                        id,
+                        name,
+                        icon
+                    )
+                `
+        )
+        .eq("id", id)
+        .is("deleted_at", null)
+        .single();
+
+      if (error) throw error;
+      set({ isLoading: false });
+      return data;
+    } catch (err: unknown) {
+      console.error("Failed to load transaction", err);
+      set({
+        error:
+          err instanceof Error ? err.message : "Failed to load transaction",
+        isLoading: false,
+      });
+      return null;
     }
   },
 

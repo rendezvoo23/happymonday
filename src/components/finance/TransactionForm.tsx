@@ -9,7 +9,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { type Subcategory, getSubcategories } from "@/lib/api";
 import { useCategoryStore } from "@/stores/categoryStore";
 import type { CategoryId, TransactionType } from "@/types";
-import { Calendar, CheckIcon, Loader2, X } from "lucide-react";
+import { CheckIcon, Loader2, X } from "lucide-react";
 import { SegmentedControl } from "../ui/SegmentedControl";
 import { LiquidButton } from "../ui/button/button";
 import { CategorySelector } from "./CategorySelector";
@@ -207,7 +207,7 @@ export function TransactionForm({
   const selectedCategory = categories.find((c) => c.id === categoryId);
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6 px-2">
       <div className="space-y-4">
         {/* Amount Display */}
 
@@ -252,34 +252,29 @@ export function TransactionForm({
             }
           />
         </div>
-        <div className="relative">
-          <button
-            type="button"
-            onClick={() => dateInputRef.current?.showPicker()}
-            className="w-full px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-between gap-2 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-left"
-          >
-            <div className="flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-              <span className="font-medium text-gray-900 dark:text-gray-100">
-                {format(new Date(date), "MMM d, yyyy")}
-              </span>
-            </div>
-          </button>
+
+        <div>
           <input
             ref={dateInputRef}
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            className="absolute opacity-0 pointer-events-none"
+            className="bg-transparent p-[2px] border border-[var(--border-default)] rounded-full"
+            style={{ fontSize: "16px", color: "#999" }}
             tabIndex={-1}
           />
         </div>
       </div>
 
       {selectedType === "transactions.category" && (
-        <div className="space-y-1">
+        <div
+          style={{
+            height: "200px",
+            overflow: "hidden",
+          }}
+        >
           {categoriesLoading ? (
-            <div className="text-center py-0 text-gray-400 dark:text-gray-500 flex items-center justify-center h-[200px]">
+            <div className="text-center py-0 text-gray-400 dark:text-gray-500 flex items-center justify-center">
               <Loader2 className="w-6 h-6 animate-spin" />
             </div>
           ) : categories.length === 0 ? (
@@ -297,12 +292,16 @@ export function TransactionForm({
       )}
 
       {selectedType === "transactions.subcategory" && (
-        <div className="min-h-[100px]">
+        <div
+          style={{
+            height: "200px",
+          }}
+        >
           {categoryId &&
             (isLoadingSubcategories || subcategories.length > 0) && (
               <div className="space-y-2 py-1">
                 {isLoadingSubcategories ? (
-                  <div className="text-center py-4 text-gray-400 dark:text-gray-500 text-sm min-h-[100px] flex items-center justify-center">
+                  <div className="text-center py-4 text-gray-400 dark:text-gray-500 text-sm flex items-center justify-center">
                     <Loader2 className="w-6 h-6 animate-spin" />
                   </div>
                 ) : (
@@ -319,7 +318,7 @@ export function TransactionForm({
       )}
 
       {selectedType === "transactions.subcategory" && (
-        <div className="space-y-2 flex">
+        <div className="space-y-2 flex absolute bottom-8 left-4 right-4">
           <label
             htmlFor="note-input"
             className="text-sm font-medium text-gray-500 dark:text-gray-400 ml-1"

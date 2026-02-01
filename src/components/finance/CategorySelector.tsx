@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import type { Category, CategoryId } from "@/types";
 import { motion } from "framer-motion";
 import { Check } from "lucide-react";
+import { useCategoryLabel } from "@/hooks/useCategoryLabel";
 
 interface CategorySelectorProps {
   categories: Category[];
@@ -14,8 +15,10 @@ export function CategorySelector({
   selectedId,
   onSelect,
 }: CategorySelectorProps) {
+  const { getCategoryLabel } = useCategoryLabel();
+
   return (
-    <div className="grid grid-cols-4 gap-4">
+    <div className="grid grid-cols-4 gap-4 mt-[8px]">
       {categories.map((category) => {
         const isSelected = selectedId === category.id;
 
@@ -62,7 +65,7 @@ export function CategorySelector({
                   : "text-gray-500"
               )}
             >
-              {category.label}
+              {getCategoryLabel(category.label)}
             </span>
           </button>
         );

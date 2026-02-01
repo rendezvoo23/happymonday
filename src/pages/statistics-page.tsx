@@ -13,6 +13,7 @@ import {
   useMonthTransactionsWithCategories,
 } from "@/hooks/use-transactions-query";
 import { useCurrency } from "@/hooks/useCurrency";
+import { useTranslation } from "@/hooks/useTranslation";
 import { getCategoryColor } from "@/stores/categoryStore";
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import { motion } from "framer-motion";
@@ -27,6 +28,7 @@ export function StatisticsPage(_props: StatisticsPageProps = {}) {
   const searchParams = useSearch({ strict: false });
   const { selectedDate, setDate } = useDate();
   const { formatAmount } = useCurrency();
+  const { t } = useTranslation();
   const deleteTransactionMutation = useDeleteTransaction();
 
   // Fetch data with TanStack Query (includes full category and subcategory data)
@@ -151,29 +153,31 @@ export function StatisticsPage(_props: StatisticsPageProps = {}) {
           {transactions.length > 0 && (
             <div id="average-chart" className="w-full scroll-mt-24 space-y-3">
               {/* Mode Toggle */}
-              <div className="flex gap-2 justify-center">
-                <button
-                  type="button"
-                  onClick={() => setChartMode("week")}
-                  className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                    chartMode === "week"
-                      ? "bg-blue-500 text-white"
-                      : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
-                  }`}
-                >
-                  Week
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setChartMode("month")}
-                  className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                    chartMode === "month"
-                      ? "bg-blue-500 text-white"
-                      : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
-                  }`}
-                >
-                  Month
-                </button>
+              <div className="flex gap-2 justify-center items-center w-full">
+                <div className="flex items-center justify-center gap-0 bg-gray-200 dark:bg-gray-700 rounded-full">
+                  <button
+                    type="button"
+                    onClick={() => setChartMode("week")}
+                    className={`px-4 py-1 rounded-full text-sm font-medium transition-colors ${
+                      chartMode === "week"
+                        ? "bg-blue-500 text-white"
+                        : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
+                    }`}
+                  >
+                    {t("statistics.week")}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setChartMode("month")}
+                    className={`px-4 py-1 rounded-full text-sm font-medium transition-colors ${
+                      chartMode === "month"
+                        ? "bg-blue-500 text-white"
+                        : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
+                    }`}
+                  >
+                    {t("statistics.month")}
+                  </button>
+                </div>
               </div>
 
               <CategoryAverageChart
@@ -193,14 +197,14 @@ export function StatisticsPage(_props: StatisticsPageProps = {}) {
           </div>
 
           {/* Charts */}
-          {transactions.length > 0 && (
+          {transactions.length > 0 && false && (
             <div id="charts" className="w-full scroll-mt-24">
               <AnalyticsCharts transactions={transactions} />
             </div>
           )}
 
           {/* Recent Transactions List */}
-          <div className="w-full mt-4 space-y-4">
+          <div className="w-full space-y-4">
             <TransactionList
               transactions={transactions}
               onEdit={handleEdit}
@@ -214,12 +218,11 @@ export function StatisticsPage(_props: StatisticsPageProps = {}) {
         <Modal
           isOpen={isDeleteModalOpen}
           onClose={() => setIsDeleteModalOpen(false)}
-          title="Delete Transaction"
+          title={t("statistics.deleteTransaction")}
         >
           <div className="space-y-4">
             <p className="text-gray-600 dark:text-gray-400">
-              Are you sure you want to delete this transaction? This action
-              cannot be undone.
+              {t("statistics.deleteConfirmation")}
             </p>
             <div className="flex gap-3">
               <Button
@@ -227,7 +230,7 @@ export function StatisticsPage(_props: StatisticsPageProps = {}) {
                 fullWidth
                 onClick={() => setIsDeleteModalOpen(false)}
               >
-                Cancel
+                {t("statistics.cancel")}
               </Button>
               <Button
                 variant="danger"
@@ -235,7 +238,9 @@ export function StatisticsPage(_props: StatisticsPageProps = {}) {
                 onClick={confirmDelete}
                 disabled={deleteTransactionMutation.isPending}
               >
-                {deleteTransactionMutation.isPending ? "Deleting..." : "Delete"}
+                {deleteTransactionMutation.isPending
+                  ? t("statistics.deleting")
+                  : t("statistics.delete")}
               </Button>
             </div>
           </div>

@@ -1,6 +1,7 @@
 import { getIconComponent } from "@/components/icons";
 import { useCurrency } from "@/hooks/useCurrency";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useCategoryLabel } from "@/hooks/useCategoryLabel";
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown, ChevronRight } from "lucide-react";
@@ -59,6 +60,7 @@ export function CategoryDoughnutChart({
     initialExpandedCategory || null
   );
   const { t } = useTranslation();
+  const { getCategoryLabel } = useCategoryLabel();
 
   // Create refs for category elements to support auto-scrolling
   const categoryRefs = useRef<Record<string, HTMLDivElement | null>>({});
@@ -116,11 +118,11 @@ export function CategoryDoughnutChart({
   // Chart data
   const chartData = useMemo(() => {
     return sortedCategories.map((cat) => ({
-      name: cat.label,
+      name: getCategoryLabel(cat.label),
       value: cat.amount,
       color: cat.color,
     }));
-  }, [sortedCategories]);
+  }, [sortedCategories, getCategoryLabel]);
 
   const onPieClick = (_: unknown, index: number) => {
     const cat = sortedCategories[index];
@@ -231,7 +233,7 @@ export function CategoryDoughnutChart({
                   </div>
 
                   <span className="flex-1 font-medium text-gray-800 dark:text-gray-200 truncate text-left">
-                    {cat.label}
+                    {getCategoryLabel(cat.label)}
                   </span>
 
                   <div className="text-right flex items-center gap-2">

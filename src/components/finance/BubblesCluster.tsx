@@ -1,5 +1,6 @@
 import { useCurrency } from "@/hooks/useCurrency";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useCategoryLabel } from "@/hooks/useCategoryLabel";
 import { getCategoryColor, useCategoryStore } from "@/stores/categoryStore";
 import type { Tables } from "@/types/supabase";
 import { packCircles } from "@/utils/circlePacking";
@@ -15,6 +16,7 @@ interface TransactionWithCategory extends Transaction {
     Tables<"categories">,
     "id" | "name" | "color" | "icon"
   > | null;
+  subcategories: Pick<Tables<"subcategories">, "id" | "name" | "icon"> | null;
 }
 
 interface BubblesClusterProps {
@@ -40,6 +42,7 @@ export function BubblesCluster({
   const { getCategoryById } = useCategoryStore();
   const { formatCompactAmount } = useCurrency();
   const { t } = useTranslation();
+  const { getCategoryLabel } = useCategoryLabel();
 
   // Helper to convert hex color to rgba with transparency
   // const hexToRgba = (hex: string, alpha: number) => {
@@ -80,30 +83,69 @@ export function BubblesCluster({
     const expenses = transactions.filter((t) => t.direction === "expense");
     const total = expenses.reduce((acc, t) => acc + t.amount, 0);
 
+    // Aggregate by category and track subcategories
     const aggregated = expenses.reduce(
       (acc, t) => {
         const catId = t.category_id || "uncategorized";
-        acc[catId] = (acc[catId] || 0) + t.amount;
+        if (!acc[catId]) {
+          acc[catId] = { total: 0, subcategories: {} };
+        }
+        acc[catId].total += t.amount;
+        
+        // Track subcategory spending
+        if (t.subcategory_id) {
+          if (!acc[catId].subcategories[t.subcategory_id]) {
+            acc[catId].subcategories[t.subcategory_id] = {
+              amount: 0,
+              icon: t.subcategories?.icon || null,
+              name: t.subcategories?.name || null,
+            };
+          }
+          acc[catId].subcategories[t.subcategory_id].amount += t.amount;
+        }
         return acc;
       },
-      {} as Record<string, number>
+      {} as Record<
+        string,
+        {
+          total: number;
+          subcategories: Record<
+            string,
+            { amount: number; icon: string | null; name: string | null }
+          >;
+        }
+      >
     );
 
     const data = Object.entries(aggregated)
-      .map(([catId, amount]) => {
+      .map(([catId, data]) => {
         // Try to get category from the transaction's joined data or store
         const txWithCat = transactions.find((t) => t.category_id === catId);
         const category = txWithCat?.categories || getCategoryById(catId);
+        
+        // Find the top spending subcategory
+        const topSubcategory = Object.entries(data.subcategories)
+          .sort((a, b) => b[1].amount - a[1].amount)[0];
+        
         return {
           id: catId,
-          value: amount,
+          value: data.total,
           category: category
             ? {
+                id: catId,
                 color: getCategoryColor(category.color, category.name),
                 label: category.name || "Unknown",
+                icon: category.icon,
               }
-            : { color: "#8E8E93", label: "Unknown" },
-          percentage: total > 0 ? amount / total : 0,
+            : { id: catId, color: "#8E8E93", label: "Unknown", icon: null },
+          topSubcategory: topSubcategory
+            ? {
+                icon: topSubcategory[1].icon,
+                name: topSubcategory[1].name,
+                amount: topSubcategory[1].amount,
+              }
+            : null,
+          percentage: total > 0 ? data.total / total : 0,
         };
       })
       .sort((a, b) => b.value - a.value);
@@ -304,10 +346,15 @@ export function BubblesCluster({
                     opacity: 0.85,
                   }}
                 >
-                  {mapIconToLabel(
-                    bubble.category.label,
-                    bubble.r > 50 ? "large" : "medium"
-                  )}
+                  {bubble.topSubcategory?.icon
+                    ? getIconComponent(bubble.topSubcategory.icon, {
+                        width: bubble.r > 50 ? 40 : 20,
+                        height: bubble.r > 50 ? 40 : 20,
+                      })
+                    : mapIconToLabel(
+                        getCategoryLabel(bubble.category.label),
+                        bubble.r > 50 ? "large" : "medium"
+                      )}
                 </span>
               )}
               {mode !== "blurred" && (

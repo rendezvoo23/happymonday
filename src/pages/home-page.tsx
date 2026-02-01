@@ -19,6 +19,7 @@ type TransactionWithCategory = Tables<"transactions"> & {
     Tables<"categories">,
     "id" | "name" | "color" | "icon"
   > | null;
+  subcategories: Pick<Tables<"subcategories">, "id" | "name" | "icon"> | null;
 };
 
 export function HomePage() {
