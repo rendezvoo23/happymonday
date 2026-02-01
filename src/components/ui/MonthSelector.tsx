@@ -100,7 +100,7 @@ export function MonthSelector({
       >
         {totalExpenses && (
           <>
-            <p className="text-xs opacity-30 uppercase tracking-wider">
+            <p className="text-[11px] opacity-30 uppercase tracking-wider mb-1">
               {t("statistics.totalExpenses")}
             </p>
             <p className="text-xl font-bold text-gray-900 dark:text-gray-100">

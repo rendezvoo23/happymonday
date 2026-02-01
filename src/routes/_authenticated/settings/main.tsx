@@ -72,7 +72,7 @@ function MainSettingsPage() {
         </div>
       </Header>
       <div className="px-6 pb-8 space-y-4">
-        <div className="bg-white dark:bg-gray-800/90 rounded-[24px] p-6">
+        <div className="bg-white dark:bg-[var(--bacground-level-1)] rounded-[24px] p-6">
           {/* Phone Previews */}
           <div className="flex justify-center gap-8 mb-4">
             <ThemePreview
@@ -259,7 +259,7 @@ function SettingsRow({
     <button
       type="button"
       onClick={onClick}
-      className={`w-full flex items-center justify-between px-4 py-3 bg-white dark:bg-gray-800/90 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors relative ${getRoundedClass()}`}
+      className={`w-full flex items-center justify-between px-4 py-3 bg-white dark:bg-[var(--bacground-level-1)] hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors relative ${getRoundedClass()}`}
     >
       <div className="flex items-center gap-3">
         <div

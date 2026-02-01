@@ -11,6 +11,35 @@ interface SubcategorySelectorProps {
   categoryColor?: string;
 }
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.05,
+      delayChildren: 0.1,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: {
+    opacity: 0,
+    y: 0,
+    scale: 0.8,
+  },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: {
+      type: "spring",
+      stiffness: 300,
+      damping: 24,
+    },
+  },
+};
+
 export function SubcategorySelector({
   subcategories,
   selectedId,
@@ -25,13 +54,19 @@ export function SubcategorySelector({
 
   return (
     <div className="space-y-2">
-      <div className="grid grid-cols-4 gap-3 py-2">
+      <motion.div
+        className="grid grid-cols-4 gap-3 py-2"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
         {subcategories.map((subcategory) => {
           const isSelected = selectedId === subcategory.id;
           return (
-            <button
+            <motion.button
               type="button"
               key={subcategory.id}
+              variants={itemVariants}
               onClick={() => {
                 if (window.Telegram?.WebApp?.HapticFeedback) {
                   window.Telegram.WebApp.HapticFeedback.selectionChanged();
@@ -43,7 +78,7 @@ export function SubcategorySelector({
               <div className="relative">
                 <motion.div
                   className={cn(
-                    "w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300",
+                    "w-14 h-14 rounded-full flex items-center justify-center transition-all duration-300",
                     isSelected
                       ? "shadow-sm scale-110"
                       : "scale-100 opacity-85 hover:opacity-100"
@@ -76,10 +111,10 @@ export function SubcategorySelector({
               >
                 {subcategory.name}
               </span>
-            </button>
+            </motion.button>
           );
         })}
-      </div>
+      </motion.div>
     </div>
   );
 }

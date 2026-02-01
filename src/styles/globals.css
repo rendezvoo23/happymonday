@@ -35,7 +35,8 @@
 
   .dark {
     /* Dark theme - GitHub inspired */
-    --background: #0d1117;
+    --background: #000000;
+    --bacground-level-1: #1c1c1e;
     --surface: rgba(22, 27, 34, 0.75);
     --surface-glass: rgba(22, 27, 34, 0.85);
 
@@ -47,7 +48,7 @@
 
     /* Card backgrounds by elevation - lighter as they elevate */
     --card-bg-level-0: rgba(22, 27, 34, 0.6);
-    --card-bg-level-1: rgba(22, 27, 34, 0.75);
+    --card-bg-level-1: #1c1c1e;
     --card-bg-level-2: rgba(33, 38, 45, 0.85);
     --card-bg-level-3: rgba(48, 54, 61, 0.9);
 
@@ -146,16 +147,6 @@
 
   .btn-press {
     @apply active:scale-95 transition-transform duration-200;
-  }
-
-  /* iOS-style Settings Groups */
-  .settings-group {
-    @apply overflow-hidden rounded-[24px];
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  }
-
-  .dark .settings-group {
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
   }
 }
 

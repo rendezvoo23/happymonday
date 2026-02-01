@@ -51,18 +51,21 @@ export function NumericKeyboard({
   };
 
   return (
-    <div className={cn("grid grid-cols-3 gap-4 max-w-[300px]", className)}>
+    <div
+      className={cn("grid grid-cols-3 gap-2 w-full max-w-[500px]", className)}
+    >
       {keys.flat().map((key) => (
         <motion.button
           key={key}
           type="button"
           onClick={() => handleClick(key)}
           onTouchEnd={() => handleTouchEnd(key)}
+          style={{ borderBottom: "none", borderRight: "none" }}
           className={cn(
-            "w-[80px] h-[80px] rounded-full font-light text-4xl",
+            "h-[60px] rounded-full font-light text-3xl",
             "bg-gray-100 dark:bg-gray-800",
             "text-gray-900 dark:text-gray-100",
-            "border border-[var(--border-default)]",
+            "border border-[#ffffff1a]",
             "active:scale-95 transition-all duration-100",
             "hover:bg-gray-200 dark:hover:bg-gray-700",
             "focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400",

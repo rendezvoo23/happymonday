@@ -329,7 +329,7 @@ export function HomePage() {
             onNextMonth={handleNextMonthClick}
           />
 
-          <div className="flex items-center justify-center mt-8">
+          <div className="flex items-center justify-center mt-12">
             <div className="glassmorphic-plus-wrap">
               <button
                 type="button"

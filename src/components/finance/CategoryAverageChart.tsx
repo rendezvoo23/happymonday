@@ -364,12 +364,12 @@ export function CategoryAverageChart({
               className="text-xs font-medium mb-1"
               style={{ color: cat.color }}
             >
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1 whitespace-nowrap overflow-hidden">
                 <div
-                  className="w-2 h-2 rounded-full whitespace-nowrap"
+                  className="w-2 h-2 rounded-full flex-shrink-0"
                   style={{ background: cat.color }}
                 />
-                {getCategoryLabel(cat.name)}
+                <span className="truncate">{getCategoryLabel(cat.name)}</span>
               </div>
             </p>
             <p className="text-sm font-bold text-gray-900 dark:text-gray-100">

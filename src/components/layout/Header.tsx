@@ -13,7 +13,7 @@ export function Header({ children }: HeaderProps) {
         position: "sticky",
         top: "0",
         paddingTop:
-          "calc(max(env(safe-area-inset-top), var(--tg-safe-area-inset-top, 0px)) + 16px)",
+          "calc(max(env(safe-area-inset-top), var(--tg-safe-area-inset-top, 0px)) + 4px)",
       }}
     >
       {/* Background blur layer */}
