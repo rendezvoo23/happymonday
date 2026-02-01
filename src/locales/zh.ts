@@ -52,9 +52,11 @@ export default {
     light: "浅色",
     dark: "深色",
     system: "系统",
+    automatic: "自动",
     lightDescription: "始终使用浅色模式",
     darkDescription: "始终使用深色模式",
     systemDescription: "跟随设备设置",
+    automaticDescription: "跟随系统",
   },
 
   // Transactions

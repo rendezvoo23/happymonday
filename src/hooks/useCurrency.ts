@@ -123,12 +123,16 @@ export function useCurrency() {
 
   const formatAmount = (
     amount: number,
-    options?: { showSign?: boolean; hideFractions?: boolean }
+    options?: {
+      showSign?: boolean;
+      hideFractions?: boolean;
+      forceDecimal?: boolean;
+    }
   ) => {
-    const { showSign, hideFractions } = options || {};
+    const { showSign, hideFractions, forceDecimal } = options || {};
 
     // Check if number has decimals
-    const hasDecimals = !Number.isInteger(amount);
+    const hasDecimals = forceDecimal || !Number.isInteger(amount);
 
     // If showing fractions and number has decimals, use 2 decimal places
     let fmt: Intl.NumberFormat;

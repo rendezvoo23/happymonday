@@ -52,9 +52,11 @@ export default {
     light: "فاتح",
     dark: "داكن",
     system: "النظام",
+    automatic: "تلقائي",
     lightDescription: "استخدام الوضع الفاتح دائماً",
     darkDescription: "استخدام الوضع الداكن دائماً",
     systemDescription: "مطابقة إعدادات الجهاز",
+    automaticDescription: "متابعة النظام",
   },
 
   // Transactions

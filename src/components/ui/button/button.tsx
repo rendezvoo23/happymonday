@@ -129,7 +129,7 @@ const LiquidButton = forwardRef<HTMLButtonElement, buttonProps>(
               : { scale: 1.02 }
             : undefined
         }
-        whileTap={skipEffects ? undefined : { scale: 0.97 }}
+        whileTap={skipEffects ? undefined : { scale: 1.2 }}
         className={cn(
           buttonVariants({ variant, size }),
           disabled && "button--disabled",

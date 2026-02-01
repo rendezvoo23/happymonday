@@ -263,12 +263,12 @@ export function HomePage() {
         >
           <div className="w-full flex justify-center relative overflow-hidden">
             {isInitialLoading ? (
-              <div className="text-gray-500 dark:text-gray-400 mt-6 h-[400px] flex items-center justify-center">
+              <div className="text-gray-500 dark:text-gray-400 h-[380px] flex items-center justify-center">
                 <Loader2 className="w-8 h-8 animate-spin" />
               </div>
             ) : (
               <div
-                className="w-full relative py-6"
+                className="w-full relative"
                 style={{
                   transform: `translateX(${swipeProgress * 100}%)`,
                   transition: isTransitioning
@@ -297,6 +297,7 @@ export function HomePage() {
                   <BubblesCluster
                     transactions={transactions}
                     mode="cluster"
+                    animateBubbles={!isTransactionDrawerOpen}
                     height={380}
                   />
                 </div>

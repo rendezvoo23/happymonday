@@ -52,9 +52,11 @@ export default {
     light: "ライト",
     dark: "ダーク",
     system: "システム",
+    automatic: "自動",
     lightDescription: "常にライトモードを使用",
     darkDescription: "常にダークモードを使用",
     systemDescription: "デバイス設定に従う",
+    automaticDescription: "システムに従う",
   },
 
   // Transactions

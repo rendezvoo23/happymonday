@@ -13,7 +13,7 @@ export function Header({ children }: HeaderProps) {
         position: "sticky",
         top: "0",
         paddingTop:
-          "max(env(safe-area-inset-top), var(--tg-safe-area-inset-top, 0px))",
+          "calc(max(env(safe-area-inset-top), var(--tg-safe-area-inset-top, 0px)) + 16px)",
       }}
     >
       {/* Background blur layer */}
@@ -34,7 +34,7 @@ export function Header({ children }: HeaderProps) {
           zIndex: -1,
         }}
       />
-      {/* Content layer - clear and sharp */}
+
       {children}
     </header>
   );

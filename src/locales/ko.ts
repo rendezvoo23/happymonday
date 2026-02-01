@@ -52,9 +52,11 @@ export default {
     light: "라이트",
     dark: "다크",
     system: "시스템",
+    automatic: "자동",
     lightDescription: "항상 라이트 모드 사용",
     darkDescription: "항상 다크 모드 사용",
     systemDescription: "기기 설정 따르기",
+    automaticDescription: "시스템 따르기",
   },
 
   // Transactions

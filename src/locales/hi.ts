@@ -52,9 +52,11 @@ export default {
     light: "लाइट",
     dark: "डार्क",
     system: "सिस्टम",
+    automatic: "स्वचालित",
     lightDescription: "हमेशा लाइट मोड का उपयोग करें",
     darkDescription: "हमेशा डार्क मोड का उपयोग करें",
     systemDescription: "डिवाइस सेटिंग्स से मेल खाएं",
+    automaticDescription: "सिस्टम का अनुसरण करें",
   },
 
   // Transactions

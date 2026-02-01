@@ -225,7 +225,7 @@ export function CategoryDoughnutChart({
                   }}
                   className="flex items-center gap-3 w-full py-2.5 outline-none"
                 >
-                  <div className="w-5 h-5 flex items-center justify-center flex-shrink-0">
+                  <div className="w-5 h-5 flex items-center justify-center flex-shrink-0  ml-2">
                     <div
                       className="w-5 h-5 rounded-full"
                       style={{ backgroundColor: cat.color }}
@@ -266,7 +266,7 @@ export function CategoryDoughnutChart({
                         transition={{ duration: 0.2 }}
                         className="overflow-hidden"
                       >
-                        <div className="py-2 space-y-2">
+                        <div className="py-2 space-y-4 bg-[var(--card-bg-level-2)] rounded-[16px]">
                           {cat.subcategories
                             .sort((a, b) => b.amount - a.amount)
                             .map((sub) => {
@@ -274,7 +274,7 @@ export function CategoryDoughnutChart({
                               return (
                                 <div
                                   key={sub.id}
-                                  className="flex items-center gap-3 text-sm"
+                                  className="flex items-center gap-3 text-sm ml-2"
                                 >
                                   <div
                                     className="w-5 h-5 rounded-full flex items-center justify-center text-white flex-shrink-0"
@@ -294,7 +294,7 @@ export function CategoryDoughnutChart({
                                   <span className="flex-1 text-gray-600 dark:text-gray-400 truncate">
                                     {sub.label}
                                   </span>
-                                  <span className="font-medium text-gray-900 dark:text-gray-100 pr-6">
+                                  <span className="font-medium text-gray-900 dark:text-gray-100 pr-6 opacity-80">
                                     {formatAmount(sub.amount)}
                                   </span>
                                 </div>

@@ -84,15 +84,16 @@ export function TransactionList({
       </div>
       {!disableLimit && limit && sorted.length > limit && (
         <motion.div
+          className="w-full text-center"
           variants={{
             hidden: { opacity: 0, y: 20 },
             show: { opacity: 1, y: 0 },
           }}
         >
           <Button
-            variant="secondary"
-            fullWidth
-            className="mt-6 rounded-2xl h-12 text-blue-600 dark:text-blue-400 font-medium bg-white dark:bg-gray-800 border-none shadow-sm"
+            variant="ghost"
+            className="mt-5"
+            style={{ color: "var(--accent-color)" }}
             onClick={() => navigate({ to: "/history" })}
           >
             {t("transactions.viewAll")}

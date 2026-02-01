@@ -52,9 +52,11 @@ export default {
     light: "Hell",
     dark: "Dunkel",
     system: "System",
+    automatic: "Automatisch",
     lightDescription: "Immer hellen Modus verwenden",
     darkDescription: "Immer dunklen Modus verwenden",
     systemDescription: "Geräteeinstellungen entsprechen",
+    automaticDescription: "System folgen",
   },
 
   // Transactions

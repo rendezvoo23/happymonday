@@ -52,9 +52,11 @@ export default {
     light: "Светлая",
     dark: "Тёмная",
     system: "Системная",
+    automatic: "Автоматически",
     lightDescription: "Всегда использовать светлую тему",
     darkDescription: "Всегда использовать тёмную тему",
     systemDescription: "Следовать настройкам устройства",
+    automaticDescription: "Следовать системе",
   },
 
   // Transactions

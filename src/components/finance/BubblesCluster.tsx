@@ -31,7 +31,7 @@ interface BubblesClusterProps {
 export function BubblesCluster({
   transactions,
   mode = "cluster",
-  height = 320,
+  height = 380,
   onBubbleClick,
   animateBubbles = true,
   useGooeyFilter = false,
@@ -43,6 +43,14 @@ export function BubblesCluster({
   const { formatCompactAmount } = useCurrency();
   const { t } = useTranslation();
   const { getCategoryLabel } = useCategoryLabel();
+
+  const totalExpensesAmount = useMemo(
+    () =>
+      transactions
+        .filter((t) => t.direction === "expense")
+        .reduce((acc, t) => acc + t.amount, 0),
+    [transactions]
+  );
 
   // Helper to convert hex color to rgba with transparency
   // const hexToRgba = (hex: string, alpha: number) => {
@@ -266,11 +274,19 @@ export function BubblesCluster({
         </svg>
       )}
 
-      <div
+      <motion.div
+        key={`${mode}-${totalExpensesAmount}`}
         className="relative w-full h-full"
-        style={{
-          filter: mode === "cluster" ? "url(#goo)" : "blur(70px)",
-        }}
+        // style={{
+        //   filter: mode === "cluster" ? "url(#goo)" : "blur(70px)",
+        // }}
+        initial={
+          mode === "blurred" ? { filter: "blur(60px)", opacity: 0 } : false
+        }
+        animate={
+          mode === "blurred" ? { filter: "blur(80px)", opacity: 1 } : false
+        }
+        transition={{ duration: 1 }}
       >
         {bubbles.map((bubble) => {
           // Disable complex CSS filters inside the SVG filter for better compatibility
@@ -372,7 +388,7 @@ export function BubblesCluster({
             </motion.div>
           );
         })}
-      </div>
+      </motion.div>
     </div>
   );
 }

@@ -366,7 +366,7 @@ export function CategoryAverageChart({
             >
               <div className="flex items-center gap-1">
                 <div
-                  className="w-2 h-2 rounded-full"
+                  className="w-2 h-2 rounded-full whitespace-nowrap"
                   style={{ background: cat.color }}
                 />
                 {getCategoryLabel(cat.name)}

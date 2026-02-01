@@ -52,9 +52,11 @@ export default {
     light: "Claro",
     dark: "Escuro",
     system: "Sistema",
+    automatic: "Automático",
     lightDescription: "Sempre usar modo claro",
     darkDescription: "Sempre usar modo escuro",
     systemDescription: "Seguir configurações do dispositivo",
+    automaticDescription: "Seguir sistema",
   },
 
   // Transactions

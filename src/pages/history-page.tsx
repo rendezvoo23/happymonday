@@ -1,8 +1,10 @@
 import { TransactionList } from "@/components/finance/TransactionList";
+import { Header } from "@/components/layout/Header";
 import { PageShell } from "@/components/layout/PageShell";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { useDeleteTransaction } from "@/hooks/use-transactions-query";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useTransactionStore } from "@/stores/transactionStore";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { ChevronLeft } from "lucide-react";
@@ -12,7 +14,7 @@ export function HistoryPage() {
   const navigate = useNavigate();
   const { historyTransactions, loadHistory } = useTransactionStore();
   const deleteTransactionMutation = useDeleteTransaction();
-
+  const { t } = useTranslation();
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -58,19 +60,21 @@ export function HistoryPage() {
 
   return (
     <PageShell>
-      <header className="flex items-center gap-4 py-4 mb-4">
-        <Link
-          to="/statistics"
-          className="p-2 -ml-2 text-gray-600 hover:text-gray-900 transition-colors"
-        >
-          <ChevronLeft className="w-6 h-6" />
-        </Link>
-        <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-          All Transactions
-        </h1>
-      </header>
+      <Header>
+        <div className="flex items-center justify-center w-full relative px-6 gap-4 relative">
+          <Link
+            to="/statistics"
+            className="p-2 -ml-2 transition-colors absolute left-0"
+          >
+            <ChevronLeft className="w-6 h-6" />
+          </Link>
+          <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+            {t("nav.history")}
+          </h1>
+        </div>
+      </Header>
 
-      <main>
+      <main className="px-6 pb-32">
         <TransactionList
           transactions={historyTransactions}
           onEdit={handleEdit}

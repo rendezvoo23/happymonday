@@ -211,12 +211,13 @@ export function TransactionForm({
       <div className="space-y-4">
         {/* Amount Display */}
 
-        <div className="relative flex items-center justify-center min-h-[64px] rounded-2xl px-6 py-4 mt-10">
+        <div className="relative flex items-center justify-center min-h-[64px] rounded-2xl px-6 py-4 mt-1">
           <div className="flex items-center gap-2 text-3xl">
             <span className={amount ? "" : "text-gray-400 dark:text-gray-600"}>
               {amount
                 ? formatAmount(Number.parseFloat(amount ?? "0"), {
                     hideFractions: false,
+                    forceDecimal: amount.includes("."),
                   })
                 : formatAmount(0, {
                     hideFractions: false,
@@ -226,13 +227,15 @@ export function TransactionForm({
         </div>
 
         {/* Virtual Keyboard */}
-        <NumericKeyboard
-          onKeyPress={handleKeyPress}
-          onBackspace={handleBackspace}
-        />
+        <div className="flex justify-center items-center">
+          <NumericKeyboard
+            onKeyPress={handleKeyPress}
+            onBackspace={handleBackspace}
+          />
+        </div>
       </div>
 
-      <div className="flex gap-4 w-full justify-center items-center">
+      <div className="flex gap-4 w-full justify-center items-center mt-8">
         <div>
           <SegmentedControl
             layoutId="segmented-control-category-subcategory"
@@ -250,18 +253,6 @@ export function TransactionForm({
                   | "transactions.subcategory"
               )
             }
-          />
-        </div>
-
-        <div>
-          <input
-            ref={dateInputRef}
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            className="bg-transparent p-[2px] border border-[var(--border-default)] rounded-full"
-            style={{ fontSize: "16px", color: "#999" }}
-            tabIndex={-1}
           />
         </div>
       </div>
@@ -331,6 +322,15 @@ export function TransactionForm({
             value={note}
             onChange={(e) => setNote(e.target.value)}
           />
+          <input
+            ref={dateInputRef}
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            className="bg-transparent h-[36px] px-3 border border-[var(--border-default)] rounded-full"
+            style={{ fontSize: "14px", color: "#999" }}
+            tabIndex={-1}
+          />
         </div>
       )}
 
@@ -342,7 +342,7 @@ export function TransactionForm({
         style={{
           position: "absolute",
           left: "14px",
-          top: "0px",
+          top: "-8px",
         }}
       >
         <X className="w-5 h-5" />
@@ -359,7 +359,7 @@ export function TransactionForm({
           color: "white",
           position: "absolute",
           right: "14px",
-          top: "0px",
+          top: "-8px",
         }}
       >
         <CheckIcon />
