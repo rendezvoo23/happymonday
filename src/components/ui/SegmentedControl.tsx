@@ -24,7 +24,7 @@ export function SegmentedControl({
   return (
     <div
       className={cn(
-        "flex p-1 rounded-full relative gap-1 border border-[var(--border-default)]",
+        "flex p-0 rounded-full relative gap-1 bg-[var(--background)]",
         className
       )}
     >
@@ -38,7 +38,7 @@ export function SegmentedControl({
             className={cn(
               "relative flex-1 py-1 px-2 text-sm font-medium transition-colors z-10 rounded-full",
               isActive
-                ? "text-white bg-gray-500"
+                ? "text-white bg-[var(--accent-color)]"
                 : "text-gray-500 hover:text-gray-700"
             )}
           >

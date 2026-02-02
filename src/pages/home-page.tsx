@@ -261,7 +261,7 @@ export function HomePage() {
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
         >
-          <div className="w-full flex justify-center relative overflow-hidden">
+          <div className="w-full flex justify-center relative overflow-hidden safe-area-top">
             {isInitialLoading ? (
               <div className="text-gray-500 dark:text-gray-400 h-[380px] flex items-center justify-center">
                 <Loader2 className="w-8 h-8 animate-spin" />

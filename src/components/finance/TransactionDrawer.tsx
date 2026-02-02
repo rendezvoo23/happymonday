@@ -1,6 +1,7 @@
 import { TransactionForm } from "@/components/finance/TransactionForm";
 import { useToast } from "@/context/ToastContext";
 import { useCurrency } from "@/hooks/useCurrency";
+import { cn } from "@/lib/utils";
 import { useCategoryStore } from "@/stores/categoryStore";
 import { useTransactionStore } from "@/stores/transactionStore";
 import type { Enums } from "@/types/supabase";
@@ -71,7 +72,12 @@ export function TransactionDrawer({
     >
       <Drawer.Portal>
         <Drawer.Overlay className="fixed inset-0 bg-black/40 z-[100]" />
-        <Drawer.Content className="bg-white dark:bg-gray-900 flex flex-col fixed bottom-0 left-0 right-0 max-h-[calc(100vh-100px)] rounded-t-[24px] z-[101] shadow-2xl focus:outline-none">
+        <Drawer.Content
+          className={cn(
+            "bg-[#f5f5f7bb] dark:bg-[#161b2277] flex flex-col fixed bottom-0 left-0 right-0 max-h-[calc(100vh-100px)] rounded-t-[24px] z-[101] focus:outline-none",
+            "backdrop-blur-lg"
+          )}
+        >
           {/* Handle - Only this area should drag the drawer */}
 
           {/* Content - Prevent dragging on form area */}

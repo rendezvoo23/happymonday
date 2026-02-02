@@ -63,14 +63,15 @@ export function NumericKeyboard({
           style={{ borderBottom: "none", borderRight: "none" }}
           className={cn(
             "h-[60px] rounded-full font-light text-3xl",
-            "bg-gray-100 dark:bg-gray-800",
+            "bg-[#f5f5f7cc] dark:bg-[#161b22cc]",
             "text-gray-900 dark:text-gray-100",
             "border border-[#ffffff1a]",
+            "shadow-md",
             "active:scale-95 transition-all duration-100",
             "hover:bg-gray-200 dark:hover:bg-gray-700",
             "focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400",
             key === "⌫" &&
-              "flex items-center justify-center bg-transparent border-none dark:bg-transparent"
+              "flex items-center justify-center bg-transparent border-none dark:bg-transparent shadow-none"
           )}
           whileTap={{ scale: 1.1 }}
         >

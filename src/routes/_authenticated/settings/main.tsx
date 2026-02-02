@@ -1,3 +1,4 @@
+import moonIconSrc from "@/assets/moon.png";
 import { DollarSignIcon, GlobeIcon } from "@/components/icons";
 import { Header } from "@/components/layout/Header";
 import { useLocale } from "@/context/LocaleContext";
@@ -164,30 +165,21 @@ function ThemePreview({
       <div className="relative w-24 h-24 rounded-full overflow-hidden">
         {/* Phone Screen with gradient background */}
         <div
+          style={{
+            backgroundImage:
+              theme !== "light" ? `url(${moonIconSrc})` : undefined,
+            backgroundSize: "120px 120px",
+            backgroundPosition: "center",
+            backgroundBlendMode: "multiply",
+            backgroundColor:
+              theme === "light" ? "white" : "rgba(20, 20, 200, 0.3)",
+          }}
           className={`w-full h-full flex flex-col items-center justify-center ${
             theme === "light"
-              ? "bg-gradient-to-br from-blue-200 via-cyan-200 to-teal-200"
+              ? "bg-gradient-to-br from-yellow-100 via-yellow-400 to-yellow-900"
               : "bg-gradient-to-br from-blue-900 via-blue-800 to-cyan-900"
           }`}
-        >
-          {/* Mock UI Elements */}
-          <div className="absolute bottom-32 left-8 right-8 space-y-3">
-            <div
-              className={`h-16 rounded-2xl ${
-                theme === "light"
-                  ? "bg-white/40 backdrop-blur-sm"
-                  : "bg-white/10 backdrop-blur-sm"
-              }`}
-            />
-            <div
-              className={`h-16 rounded-2xl ${
-                theme === "light"
-                  ? "bg-white/40 backdrop-blur-sm"
-                  : "bg-white/10 backdrop-blur-sm"
-              }`}
-            />
-          </div>
-        </div>
+        />
       </div>
 
       {/* Theme Label */}
