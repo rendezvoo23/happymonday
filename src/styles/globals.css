@@ -36,7 +36,11 @@
   .dark {
     /* Dark theme - GitHub inspired */
     --background: #000000;
-    --bacground-level-1: #1c1c1e;
+    --background-level-1: #1c1c1e;
+    --background-level-2: #222223;
+    --border-level-1: #333333;
+    --border-level-2: #444444;
+
     --surface: rgba(22, 27, 34, 0.75);
     --surface-glass: rgba(22, 27, 34, 0.85);
 

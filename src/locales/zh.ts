@@ -47,6 +47,21 @@ export default {
     loadingSettings: "加载设置中...",
   },
 
+  // Donate
+  donate: {
+    title: "支持我们",
+    description: "用 Telegram Stars 支持我们的开发",
+    enterAmount: "输入金额",
+    send: "发送",
+    processing: "...",
+    coffee: "☕ 咖啡",
+    pizza: "🍕 披萨",
+    thankYou: "💝 谢谢",
+    loveIt: "❤️ 很喜欢",
+    superFan: "🌟 超级粉丝",
+    generous: "💎 慷慨",
+  },
+
   // Theme
   theme: {
     light: "浅色",

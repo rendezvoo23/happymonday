@@ -47,6 +47,21 @@ export default {
     loadingSettings: "Cargando configuración...",
   },
 
+  // Donate
+  donate: {
+    title: "Apóyanos",
+    description: "Apoya nuestro desarrollo con Telegram Stars",
+    enterAmount: "Introduce la cantidad",
+    send: "Enviar",
+    processing: "...",
+    coffee: "☕ Café",
+    pizza: "🍕 Pizza",
+    thankYou: "💝 Gracias",
+    loveIt: "❤️ Me encanta",
+    superFan: "🌟 Super fan",
+    generous: "💎 Generoso",
+  },
+
   // Theme
   theme: {
     light: "Claro",

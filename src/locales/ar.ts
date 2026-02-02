@@ -47,6 +47,21 @@ export default {
     loadingSettings: "جاري تحميل الإعدادات...",
   },
 
+  // Donate
+  donate: {
+    title: "ادعمنا",
+    description: "ادعم تطويرنا بـ Telegram Stars",
+    enterAmount: "أدخل المبلغ",
+    send: "إرسال",
+    processing: "...",
+    coffee: "☕ قهوة",
+    pizza: "🍕 بيتزا",
+    thankYou: "💝 شكراً",
+    loveIt: "❤️ أحبه",
+    superFan: "🌟 معجب كبير",
+    generous: "💎 كريم",
+  },
+
   // Theme
   theme: {
     light: "فاتح",

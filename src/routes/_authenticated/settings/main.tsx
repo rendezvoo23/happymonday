@@ -3,6 +3,7 @@ import { DollarSignIcon, GlobeIcon } from "@/components/icons";
 import { Header } from "@/components/layout/Header";
 import { useLocale } from "@/context/LocaleContext";
 import { useTheme } from "@/context/ThemeContext";
+import { cn } from "@/lib/utils";
 import { useUserStore } from "@/stores/userStore";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ChevronRight, HeartIcon } from "lucide-react";
@@ -73,7 +74,7 @@ function MainSettingsPage() {
         </div>
       </Header>
       <div className="px-6 pb-8 space-y-4">
-        <div className="bg-white dark:bg-[var(--bacground-level-1)] rounded-[24px] p-6">
+        <div className="bg-white dark:bg-[var(--background-level-1)] rounded-[24px] p-6">
           {/* Phone Previews */}
           <div className="flex justify-center gap-8 mb-4">
             <ThemePreview
@@ -107,7 +108,6 @@ function MainSettingsPage() {
             />
           </div>
         </div>
-
         {/* Settings Group */}
         <div className="settings-group">
           <SettingsRow
@@ -128,16 +128,24 @@ function MainSettingsPage() {
                 : settings?.default_currency
             }
             onClick={() => navigate({ to: "/settings/currency" })}
-            position="middle"
-          />
-          <SettingsRow
-            icon={HeartIcon}
-            iconColor="bg-pink-500"
-            label={t("settings.donate")}
-            value={<span className="text-yellow-500">⭐</span>}
-            onClick={() => navigate({ to: "/settings/donate" })}
             position="last"
           />
+        </div>
+
+        <div className="text-gray-500 dark:text-gray-400 space-y-2">
+          <div className="settings-group">
+            <SettingsRow
+              icon={HeartIcon}
+              iconColor="bg-pink-500"
+              label={t("settings.donate")}
+              value={<span className="text-yellow-500">⭐</span>}
+              onClick={() => navigate({ to: "/settings/donate" })}
+              position="single"
+            />
+          </div>
+          <p className="text-sm ml-4 text-balance opacity-50 pb-20">
+            {t("donate.description")}
+          </p>
         </div>
       </div>
     </>
@@ -251,7 +259,11 @@ function SettingsRow({
     <button
       type="button"
       onClick={onClick}
-      className={`w-full flex items-center justify-between px-4 py-3 bg-white dark:bg-[var(--bacground-level-1)] hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors relative ${getRoundedClass()}`}
+      className={cn(
+        "w-full flex items-center justify-between px-4 py-3 bg-white dark:bg-[var(--background-level-1)]",
+        "hover:bg-gray-50 dark:hover:bg-[var(--background-level-2)]",
+        `transition-colors relative ${getRoundedClass()}`
+      )}
     >
       <div className="flex items-center gap-3">
         <div
@@ -275,7 +287,7 @@ function SettingsRow({
         />
       </div>
       {showDivider && (
-        <div className="absolute bottom-0 left-14 right-0 h-px bg-gray-200 dark:bg-gray-700" />
+        <div className="absolute bottom-0 left-14 right-0 h-px bg-gray-200 dark:bg-[var(--border-level-1)]" />
       )}
     </button>
   );

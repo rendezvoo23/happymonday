@@ -139,7 +139,7 @@ function ModalListItem({
     <button
       type="button"
       onClick={onClick}
-      className={`w-full flex items-center justify-between px-4 py-3 bg-white dark:bg-[var(--bacground-level-1)] hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors relative ${getRoundedClass()}`}
+      className={`w-full flex items-center justify-between px-4 py-3 bg-white dark:bg-[var(--background-level-1)] hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors relative ${getRoundedClass()}`}
     >
       {children}
       {isSelected && (

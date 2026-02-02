@@ -1,12 +1,12 @@
 import { Header } from "@/components/layout/Header";
+import { ModalListItem } from "@/components/lists/modal-list-item";
 import { LiquidButton } from "@/components/ui/button/button";
 import { useLocale } from "@/context/LocaleContext";
 import { useTelegramBackButton } from "@/hooks/useTelegramBackButton";
 import { useUserStore } from "@/stores/userStore";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "framer-motion";
-import { Check, ChevronLeft, Search, X } from "lucide-react";
-import type * as React from "react";
+import { Search, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 export const Route = createFileRoute("/_authenticated/settings/currency")({
@@ -72,70 +72,51 @@ function CurrencySettingsPage() {
   return (
     <>
       <Header>
-        <div className="flex items-center justify-between w-full relative px-6">
+        <div className="flex items-center flex-col justify-between w-full relative px-6">
           <AnimatePresence mode="wait">
-            {!isSearching ? (
-              <motion.div
-                key="header-normal"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.15 }}
-                className="flex items-center justify-center w-full relative"
+            <motion.div
+              key="header-normal"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
+              className="flex items-center justify-center w-full relative"
+            >
+              <div className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                {t("settings.selectCurrency")}
+              </div>
+            </motion.div>
+
+            <motion.div
+              key="header-search"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
+              onAnimationComplete={handleSearchAnimationComplete}
+              className="flex items-center gap-2 w-full mt-3"
+            >
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
+                <input
+                  ref={searchInputRef}
+                  type="text"
+                  value={searchQuery}
+                  onFocus={handleSearchClick}
+                  onBlur={handleCloseSearch}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2.5 rounded-full border-2 border-gray-200 dark:border-gray-700 bg-transparent text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-blue-400 dark:focus:border-blue-500 focus:outline-none transition-colors"
+                />
+              </div>
+              <LiquidButton
+                type="button"
+                variant="liquid"
+                size="icon-lg"
+                onClick={handleCloseSearch}
               >
-                <LiquidButton
-                  type="button"
-                  variant="liquid"
-                  size="icon-lg"
-                  onClick={() => navigate({ to: "/settings/main" })}
-                  className="absolute left-0"
-                >
-                  <ChevronLeft className="w-5 h-5" />
-                </LiquidButton>
-                <div className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-                  {t("settings.selectCurrency")}
-                </div>
-                <LiquidButton
-                  type="button"
-                  variant="liquid"
-                  size="icon-lg"
-                  onClick={handleSearchClick}
-                  className="absolute right-0"
-                >
-                  <Search className="w-5 h-5" />
-                </LiquidButton>
-              </motion.div>
-            ) : (
-              <motion.div
-                key="header-search"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.15 }}
-                onAnimationComplete={handleSearchAnimationComplete}
-                className="flex items-center gap-2 w-full"
-              >
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
-                  <input
-                    ref={searchInputRef}
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search currencies..."
-                    className="w-full pl-10 pr-4 py-2.5 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-blue-400 dark:focus:border-blue-500 focus:outline-none transition-colors"
-                  />
-                </div>
-                <LiquidButton
-                  type="button"
-                  variant="liquid"
-                  size="icon-lg"
-                  onClick={handleCloseSearch}
-                >
-                  <X className="w-5 h-5" />
-                </LiquidButton>
-              </motion.div>
-            )}
+                <X className="w-5 h-5" />
+              </LiquidButton>
+            </motion.div>
           </AnimatePresence>
         </div>
       </Header>
@@ -160,7 +141,7 @@ function CurrencySettingsPage() {
                     <span className="font-normal text-[17px] text-gray-900 dark:text-gray-100">
                       {currency.code}
                     </span>
-                    <span className="text-[13px] text-gray-500 dark:text-gray-400">
+                    <span className="text-[14px] text-gray-500 dark:text-gray-400">
                       {currency.name}
                     </span>
                   </div>
@@ -180,50 +161,5 @@ function CurrencySettingsPage() {
         )}
       </div>
     </>
-  );
-}
-
-function ModalListItem({
-  children,
-  onClick,
-  position = "single",
-  isSelected = false,
-}: {
-  children: React.ReactNode;
-  onClick?: () => void;
-  position?: "first" | "middle" | "last" | "single";
-  isSelected?: boolean;
-}) {
-  const getRoundedClass = () => {
-    switch (position) {
-      case "first":
-        return "rounded-t-xl rounded-b-none";
-      case "last":
-        return "rounded-b-xl rounded-t-none";
-      case "middle":
-        return "rounded-none";
-      case "single":
-        return "rounded-xl";
-      default:
-        return "rounded-xl";
-    }
-  };
-
-  const showDivider = position === "first" || position === "middle";
-
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`w-full flex items-center justify-between px-4 py-3 bg-white dark:bg-[var(--bacground-level-1)] hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors relative ${getRoundedClass()}`}
-    >
-      {children}
-      {isSelected && (
-        <Check className="w-5 h-5 text-blue-500 dark:text-blue-400 flex-shrink-0 ml-2" />
-      )}
-      {showDivider && (
-        <div className="absolute bottom-0 left-4 right-0 h-px bg-gray-200 dark:bg-gray-700" />
-      )}
-    </button>
   );
 }

@@ -47,6 +47,21 @@ export default {
     loadingSettings: "설정 로딩 중...",
   },
 
+  // Donate
+  donate: {
+    title: "후원하기",
+    description: "Telegram Stars로 개발을 후원해 주세요",
+    enterAmount: "금액 입력",
+    send: "보내기",
+    processing: "...",
+    coffee: "☕ 커피",
+    pizza: "🍕 피자",
+    thankYou: "💝 감사합니다",
+    loveIt: "❤️ 좋아요",
+    superFan: "🌟 슈퍼 팬",
+    generous: "💎 관대함",
+  },
+
   // Theme
   theme: {
     light: "라이트",

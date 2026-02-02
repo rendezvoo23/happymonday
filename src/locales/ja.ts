@@ -47,6 +47,21 @@ export default {
     loadingSettings: "設定を読み込み中...",
   },
 
+  // Donate
+  donate: {
+    title: "サポート",
+    description: "Telegram Starsで開発をサポート",
+    enterAmount: "金額を入力",
+    send: "送信",
+    processing: "...",
+    coffee: "☕ コーヒー",
+    pizza: "🍕 ピザ",
+    thankYou: "💝 ありがとう",
+    loveIt: "❤️ 気に入り",
+    superFan: "🌟 スーパーファン",
+    generous: "💎 寛大",
+  },
+
   // Theme
   theme: {
     light: "ライト",

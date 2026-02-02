@@ -1,9 +1,10 @@
 import { Header } from "@/components/layout/Header";
-import { LiquidButton } from "@/components/ui/button/button";
+import { useLocale } from "@/context/LocaleContext";
+import { useTelegramBackButton } from "@/hooks/useTelegramBackButton";
 import { supabase } from "@/lib/supabaseClient";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-import { ChevronLeft, Star } from "lucide-react";
+import { Star } from "lucide-react";
 import { useState } from "react";
 
 const BASE_DONATE_URL = "https://t.me/WhySpentBot?start=donate";
@@ -13,19 +14,21 @@ export const Route = createFileRoute("/_authenticated/settings/donate")({
 });
 
 function DonateSettingsPage() {
+  const { t } = useLocale();
   const navigate = useNavigate();
   const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
   const [customAmount, setCustomAmount] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
+  useTelegramBackButton();
 
   // Predefined donation amounts in Telegram Stars
   const donateAmounts = [
-    { stars: 50, label: "☕ Coffee" },
-    { stars: 100, label: "🍕 Pizza" },
-    { stars: 250, label: "💝 Thank you" },
-    { stars: 500, label: "❤️ Love it" },
-    { stars: 1000, label: "🌟 Super fan" },
-    { stars: 2500, label: "💎 Generous" },
+    { stars: 50, labelKey: "donate.coffee" },
+    { stars: 100, labelKey: "donate.pizza" },
+    { stars: 250, labelKey: "donate.thankYou" },
+    { stars: 500, labelKey: "donate.loveIt" },
+    { stars: 1000, labelKey: "donate.superFan" },
+    { stars: 2500, labelKey: "donate.generous" },
   ];
 
   const handleDonate = async (amount: number) => {
@@ -128,17 +131,8 @@ function DonateSettingsPage() {
     <>
       <Header>
         <div className="flex items-center justify-center w-full relative px-6">
-          <LiquidButton
-            type="button"
-            variant="liquid"
-            size="icon-lg"
-            onClick={() => navigate({ to: "/settings/main" })}
-            className="absolute left-4"
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </LiquidButton>
           <div className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-            Support Us
+            {t("donate.title")}
           </div>
         </div>
       </Header>
@@ -147,7 +141,7 @@ function DonateSettingsPage() {
         <div className="text-center space-y-2">
           <div className="text-4xl">⭐</div>
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            Support our development with Telegram Stars
+            {t("donate.description")}
           </p>
         </div>
 
@@ -168,11 +162,11 @@ function DonateSettingsPage() {
               disabled={isProcessing}
               whileTap={{ scale: 0.95 }}
               className={`
-                p-4 rounded-2xl border-2 transition-all
+                p-4 rounded-3xl transition-all
                 ${
                   selectedAmount === item.stars
                     ? "border-yellow-400 bg-yellow-50 dark:bg-yellow-900/20"
-                    : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
+                    : "dark:border-gray-700 bg-white dark:bg-[var(--background-level-2)] dark:hover:bg-[var(--background-level-1)]"
                 }
                 ${
                   isProcessing
@@ -186,8 +180,8 @@ function DonateSettingsPage() {
                 <span className="font-bold text-lg text-gray-900 dark:text-gray-100">
                   {item.stars}
                 </span>
-                <span className="text-xs text-gray-500 dark:text-gray-400">
-                  {item.label}
+                <span className="text-sm text-gray-500 dark:text-gray-400">
+                  {t(item.labelKey)}
                 </span>
               </div>
             </motion.button>
@@ -196,12 +190,6 @@ function DonateSettingsPage() {
 
         {/* Custom amount */}
         <div className="space-y-2">
-          <label
-            htmlFor="custom-donate-amount"
-            className="text-sm font-medium text-gray-700 dark:text-gray-300"
-          >
-            Custom Amount
-          </label>
           <div className="flex gap-2">
             <div className="relative flex-1">
               <Star className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-yellow-500" />
@@ -213,10 +201,10 @@ function DonateSettingsPage() {
                   setCustomAmount(e.target.value);
                   setSelectedAmount(null);
                 }}
-                placeholder="Enter amount"
+                placeholder={t("donate.enterAmount")}
                 min="1"
                 disabled={isProcessing}
-                className="w-full pl-10 pr-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:border-yellow-400 focus:outline-none disabled:opacity-50"
+                className="w-full pl-10 pr-4 py-3 rounded-full border-2 border-gray-200 dark:border-gray-700 bg-transparent text-gray-900 dark:text-gray-100 focus:border-yellow-400 focus:outline-none disabled:opacity-50"
               />
             </div>
             <button
@@ -227,16 +215,11 @@ function DonateSettingsPage() {
                 !customAmount ||
                 Number.parseInt(customAmount) <= 0
               }
-              className="px-6 py-3 rounded-xl bg-yellow-500 text-white font-medium hover:bg-yellow-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="px-6 py-3 rounded-full bg-yellow-500 text-white font-medium hover:bg-yellow-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              {isProcessing ? "..." : "Send"}
+              {isProcessing ? t("donate.processing") : t("donate.send")}
             </button>
           </div>
-        </div>
-
-        {/* Info */}
-        <div className="text-center text-xs text-gray-500 dark:text-gray-400">
-          <p>Payments are processed securely through Telegram Stars</p>
         </div>
       </div>
     </>

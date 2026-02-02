@@ -1,9 +1,8 @@
 import { Header } from "@/components/layout/Header";
+import { ModalListItem } from "@/components/lists/modal-list-item";
 import { useLocale } from "@/context/LocaleContext";
 import { useTelegramBackButton } from "@/hooks/useTelegramBackButton";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Check } from "lucide-react";
-import type * as React from "react";
 
 export const Route = createFileRoute("/_authenticated/settings/language")({
   component: LanguageSettingsPage,
@@ -29,7 +28,7 @@ function LanguageSettingsPage() {
           </div>
         </div>
       </Header>
-      <div className="px-6 pb-8">
+      <div className="px-6 pb-24">
         <div className="settings-group">
           {languages.map((language, index) => (
             <ModalListItem
@@ -48,7 +47,7 @@ function LanguageSettingsPage() {
                 <span className="font-normal text-[17px] text-gray-900 dark:text-gray-100">
                   {language.nativeName}
                 </span>
-                <span className="text-[13px] text-gray-500 dark:text-gray-400">
+                <span className="text-[14px] text-gray-500 dark:text-gray-400">
                   {language.name}
                 </span>
               </div>
@@ -57,50 +56,5 @@ function LanguageSettingsPage() {
         </div>
       </div>
     </>
-  );
-}
-
-function ModalListItem({
-  children,
-  onClick,
-  position = "single",
-  isSelected = false,
-}: {
-  children: React.ReactNode;
-  onClick?: () => void;
-  position?: "first" | "middle" | "last" | "single";
-  isSelected?: boolean;
-}) {
-  const getRoundedClass = () => {
-    switch (position) {
-      case "first":
-        return "rounded-t-xl rounded-b-none";
-      case "last":
-        return "rounded-b-xl rounded-t-none";
-      case "middle":
-        return "rounded-none";
-      case "single":
-        return "rounded-xl";
-      default:
-        return "rounded-xl";
-    }
-  };
-
-  const showDivider = position === "first" || position === "middle";
-
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`w-full flex items-center justify-between px-4 py-3 bg-white dark:bg-[var(--bacground-level-1)] hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors relative ${getRoundedClass()}`}
-    >
-      {children}
-      {isSelected && (
-        <Check className="w-5 h-5 text-blue-500 dark:text-blue-400 flex-shrink-0 ml-2" />
-      )}
-      {showDivider && (
-        <div className="absolute bottom-0 left-4 right-0 h-px bg-gray-200 dark:bg-gray-700" />
-      )}
-    </button>
   );
 }
