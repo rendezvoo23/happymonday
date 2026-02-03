@@ -15,7 +15,10 @@ interface UseScrollDirectionOptions {
 export function useScrollDirection(
   options: UseScrollDirectionOptions = {}
 ): ScrollDirection {
-  const { threshold = 8, scrollTarget = typeof window !== "undefined" ? window : null } = options;
+  const {
+    threshold = 8,
+    scrollTarget = typeof window !== "undefined" ? window : null,
+  } = options;
   const [direction, setDirection] = useState<ScrollDirection>(null);
   const lastY = useRef(0);
   const ticking = useRef(false);
