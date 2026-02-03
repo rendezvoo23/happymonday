@@ -95,7 +95,7 @@ export function TransactionList({
             variant="ghost"
             className="mt-5"
             style={{ color: "var(--accent-color)" }}
-            onClick={() => navigate({ to: "/history" })}
+            onClick={() => navigate({ to: "/statistics/history" })}
           >
             {t("transactions.viewAll")}
           </Button>

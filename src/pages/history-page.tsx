@@ -6,8 +6,7 @@ import { Modal } from "@/components/ui/Modal";
 import { useDeleteTransaction } from "@/hooks/use-transactions-query";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useTransactionStore } from "@/stores/transactionStore";
-import { Link, useNavigate } from "@tanstack/react-router";
-import { ChevronLeft } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 
 export function HistoryPage() {
@@ -62,19 +61,13 @@ export function HistoryPage() {
     <PageShell>
       <Header>
         <div className="flex items-center justify-center w-full relative px-6 gap-4 relative">
-          <Link
-            to="/statistics"
-            className="p-2 -ml-2 transition-colors absolute left-0"
-          >
-            <ChevronLeft className="w-6 h-6" />
-          </Link>
           <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
             {t("nav.history")}
           </h1>
         </div>
       </Header>
 
-      <main className="px-6 pb-32">
+      <main className="px-3 pb-32">
         <TransactionList
           transactions={historyTransactions}
           onEdit={handleEdit}

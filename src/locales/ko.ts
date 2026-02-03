@@ -77,8 +77,8 @@ export default {
   // Transactions
   transactions: {
     add: "거래 추가",
-    edit: "거래 편집",
-    delete: "거래 삭제",
+    edit: "편집",
+    delete: "삭제",
     expense: "지출",
     income: "수입",
     amount: "금액",

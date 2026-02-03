@@ -1,5 +1,7 @@
 import { TransactionForm } from "@/components/finance/TransactionForm";
+import { Header } from "@/components/layout/Header";
 import { PageShell } from "@/components/layout/PageShell";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useTransactionStore } from "@/stores/transactionStore";
 import type { CategoryId, TransactionType } from "@/types";
 import { useNavigate } from "@tanstack/react-router";
@@ -19,6 +21,7 @@ export function EditTransactionPage({
   const [transaction, setTransaction] = useState<Awaited<
     ReturnType<typeof loadTransactionById>
   > | null>(null);
+  const { t } = useTranslation();
 
   // Load the specific transaction by ID
   useEffect(() => {
@@ -73,23 +76,30 @@ export function EditTransactionPage({
       exit={{ opacity: 0, x: -20 }}
       transition={{ duration: 0.3 }}
     >
-      <PageShell className="pb-6 pt-[72px]">
-        <TransactionForm
-          initialData={formData}
-          onCancel={() => navigate({ to: "/statistics" })}
-          onSubmit={async (data) => {
-            // Map form fields back to Supabase fields
-            await updateTransaction(transaction.id, {
-              direction: data.type,
-              amount: data.amount,
-              category_id: data.categoryId,
-              subcategory_id: data.subcategoryId || null,
-              note: data.note,
-              occurred_at: data.date,
-            });
-            navigate({ to: "/statistics" });
-          }}
-        />
+      <PageShell className="pb-6">
+        <Header>
+          <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+            {t("transactions.edit")}
+          </h1>
+        </Header>
+        <main className="px-3">
+          <TransactionForm
+            initialData={formData}
+            onCancel={() => navigate({ to: "/statistics" })}
+            onSubmit={async (data) => {
+              // Map form fields back to Supabase fields
+              await updateTransaction(transaction.id, {
+                direction: data.type,
+                amount: data.amount,
+                category_id: data.categoryId,
+                subcategory_id: data.subcategoryId || null,
+                note: data.note,
+                occurred_at: data.date,
+              });
+              navigate({ to: "/statistics" });
+            }}
+          />
+        </main>
       </PageShell>
     </motion.div>
   );

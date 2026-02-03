@@ -1,5 +1,6 @@
 import { BubblesCluster } from "@/components/finance/BubblesCluster";
 import { TransactionDrawer } from "@/components/finance/TransactionDrawer";
+import { Header } from "@/components/layout/Header";
 import { PageShell } from "@/components/layout/PageShell";
 import { MonthSelector } from "@/components/ui/MonthSelector";
 import { useDate } from "@/context/DateContext";
@@ -254,6 +255,13 @@ export function HomePage() {
       transition={{ duration: 0.3 }}
     >
       <PageShell allowScroll={true}>
+        <Header>
+          <MonthSelector
+            totalExpenses={formatAmount(totalExpenses)}
+            onPrevMonth={handlePrevMonthClick}
+            onNextMonth={handleNextMonthClick}
+          />
+        </Header>
         <main
           ref={containerRef}
           className="flex flex-col items-center gap-2 touch-none"
@@ -323,13 +331,7 @@ export function HomePage() {
             )}
           </div>
 
-          <MonthSelector
-            totalExpenses={formatAmount(totalExpenses)}
-            onPrevMonth={handlePrevMonthClick}
-            onNextMonth={handleNextMonthClick}
-          />
-
-          <div className="flex items-center justify-center mt-12">
+          <div className="flex items-center justify-center mt-12 mb-32">
             <div className="glassmorphic-plus-wrap">
               <button
                 type="button"

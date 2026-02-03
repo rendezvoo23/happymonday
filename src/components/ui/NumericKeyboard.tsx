@@ -55,7 +55,7 @@ export function NumericKeyboard({
 
   return (
     <div
-      className={cn("grid grid-cols-3 gap-2 w-full max-w-[500px]", className)}
+      className={cn("grid grid-cols-3 gap-1 w-full max-w-[500px]", className)}
     >
       {keys.flat().map((key) => (
         <motion.button
@@ -65,9 +65,9 @@ export function NumericKeyboard({
           onTouchEnd={() => handleTouchEnd(key)}
           style={{ borderBottom: "none", borderRight: "none" }}
           className={cn(
-            "h-[65px] rounded-full font-light text-3xl",
+            "h-[56px] rounded-md font-light text-3xl",
             "bg-[#f5f5f71d] dark:bg-[#161b221d]",
-            "text-gray-900 dark:text-gray-100",
+            "opacity-85",
             "border border-[#ffffff] dark:border-[#ffffff1f]",
             "shadow-sm dark:shadow-none",
             "active:scale-95 transition-all duration-100",
@@ -77,7 +77,7 @@ export function NumericKeyboard({
           )}
           whileTap={{ scale: 1.1 }}
         >
-          {key === "⌫" ? <Delete className="w-6 h-6" /> : key}
+          {key === "⌫" ? <Delete className="w-6 h-6" strokeWidth={1.5} /> : key}
         </motion.button>
       ))}
     </div>

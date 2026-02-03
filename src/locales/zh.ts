@@ -77,8 +77,8 @@ export default {
   // Transactions
   transactions: {
     add: "添加交易",
-    edit: "编辑交易",
-    delete: "删除交易",
+    edit: "编辑",
+    delete: "删除",
     expense: "支出",
     income: "收入",
     amount: "金额",

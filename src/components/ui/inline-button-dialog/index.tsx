@@ -121,12 +121,18 @@ export const InlineButtonDialog = memo(
                 width: buttonSize,
                 height: buttonSize,
                 borderRadius: buttonSize / 2,
+                transition: {
+                  type: "spring",
+                  damping: 25,
+                  stiffness: 500,
+                  duration: 0.6,
+                },
               },
               expanded: {
                 width: width,
                 height: height,
                 x: -width + buttonSize + 0,
-                y: 0,
+                y: -8,
                 borderRadius: 24,
                 scale: 1,
                 transition: {

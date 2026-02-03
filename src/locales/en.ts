@@ -77,8 +77,8 @@ export default {
   // Transactions
   transactions: {
     add: "Add Transaction",
-    edit: "Edit Transaction",
-    delete: "Delete Transaction",
+    edit: "Edit",
+    delete: "Delete",
     expense: "Expense",
     income: "Income",
     amount: "Amount",

@@ -77,8 +77,8 @@ export default {
   // Transactions
   transactions: {
     add: "Добавить транзакцию",
-    edit: "Изменить транзакцию",
-    delete: "Удалить транзакцию",
+    edit: "Изменить",
+    delete: "Удалить",
     expense: "Расход",
     income: "Доход",
     amount: "Сумма",

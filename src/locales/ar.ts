@@ -77,8 +77,8 @@ export default {
   // Transactions
   transactions: {
     add: "إضافة معاملة",
-    edit: "تعديل المعاملة",
-    delete: "حذف المعاملة",
+    edit: "تعديل",
+    delete: "حذف",
     expense: "مصروف",
     income: "دخل",
     amount: "المبلغ",

@@ -77,8 +77,8 @@ export default {
   // Transactions
   transactions: {
     add: "लेनदेन जोड़ें",
-    edit: "लेनदेन संपादित करें",
-    delete: "लेनदेन हटाएं",
+    edit: "संपादित करें",
+    delete: "हटाएं",
     expense: "व्यय",
     income: "आय",
     amount: "राशि",

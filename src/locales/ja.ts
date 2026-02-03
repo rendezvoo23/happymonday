@@ -77,8 +77,8 @@ export default {
   // Transactions
   transactions: {
     add: "取引を追加",
-    edit: "取引を編集",
-    delete: "取引を削除",
+    edit: "編集",
+    delete: "削除",
     expense: "支出",
     income: "収入",
     amount: "金額",

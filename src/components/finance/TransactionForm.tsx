@@ -351,6 +351,7 @@ export function TransactionForm({
           position: "absolute",
           left: "16px",
           top: "-8px",
+          zIndex: 1,
         }}
       >
         <X className="w-5 h-5" />
@@ -368,6 +369,7 @@ export function TransactionForm({
           position: "absolute",
           right: "16px",
           top: "-8px",
+          zIndex: 1,
         }}
       >
         <CheckIcon />

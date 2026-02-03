@@ -137,7 +137,7 @@ export function TransactionItem({
 
           <InlineButtonDialog
             height={100}
-            width={230}
+            width={170}
             zIndex={zIndex}
             buttonSize={26}
             useOutsideClick
@@ -151,7 +151,7 @@ export function TransactionItem({
                       onEdit(transaction);
                       onClose?.();
                     }}
-                    className="w-full flex gap-4 text-md hover:bg-[rgba(0,0,0,0.2)] py-2 px-4 rounded-full"
+                    className="w-full flex gap-4 text-md hover:bg-[rgba(0,0,0,0.05)] dark:hover:bg-[rgba(0,0,0,0.2)] py-2 px-4 rounded-full"
                   >
                     <div className="flex items-center gap-4 text-left whitespace-nowrap overflow-hidden ">
                       <div className="w-5 h-5 shrink-0]">
@@ -187,7 +187,7 @@ export function TransactionItem({
                       onDelete(transaction.id);
                       onClose?.();
                     }}
-                    className="w-full flex gap-4 text-md text-red-500 hover:bg-[rgba(0,0,0,0.2)] py-2 px-4 rounded-full"
+                    className="w-full flex gap-4 text-md text-red-500 hover:bg-[rgba(0,0,0,0.05)] dark:hover:bg-[rgba(0,0,0,0.2)] py-2 px-4 rounded-full"
                   >
                     <div className="leading-[27px] flex items-center gap-4 text-left whitespace-nowrap overflow-hidden">
                       <div className="w-5 h-5 shrink-0">
