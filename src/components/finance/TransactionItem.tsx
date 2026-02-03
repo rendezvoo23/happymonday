@@ -1,4 +1,4 @@
-import { MoreIcon, getIconComponent } from "@/components/icons";
+import { PencilIcon, TrashIcon, getIconComponent } from "@/components/icons";
 import { useCategoryLabel } from "@/hooks/useCategoryLabel";
 import { useCurrency } from "@/hooks/useCurrency";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -21,6 +21,7 @@ import {
   zhCN,
 } from "date-fns/locale";
 import { useState } from "react";
+import { InlineButtonDialog } from "../ui/inline-button-dialog";
 import { TransactionActionsMenu } from "./TransactionActionsMenu";
 
 // Map locale codes to date-fns locales
@@ -53,12 +54,14 @@ interface TransactionItemProps {
   transaction: TransactionWithCategory;
   onEdit: (t: TransactionWithCategory) => void;
   onDelete: (id: string) => void;
+  zIndex?: number;
 }
 
 export function TransactionItem({
   transaction,
   onEdit,
   onDelete,
+  zIndex = 1,
 }: TransactionItemProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const category = transaction.categories;
@@ -67,6 +70,7 @@ export function TransactionItem({
   const { getCategoryLabel } = useCategoryLabel();
   const categoryLabel = subcategory?.name || getCategoryLabel(category?.name);
   const categoryColor = getCategoryColor(category?.color, category?.name);
+  const { t } = useTranslation();
 
   // Use subcategory icon if subcategoryId exists and subcategory has an icon, otherwise fall back to category icon
   const iconToUse =
@@ -131,13 +135,43 @@ export function TransactionItem({
             {formatAmount(transaction.amount)}
           </span>
 
-          <button
-            type="button"
-            onClick={() => setIsMenuOpen(true)}
-            className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
+          <InlineButtonDialog
+            height={90}
+            width={200}
+            zIndex={zIndex}
+            buttonSize={24}
+            useOutsideClick
           >
-            <MoreIcon className="w-5 h-5" />
-          </button>
+            {({ onClose }) => {
+              return (
+                <div className="flex flex-col gap-4">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onEdit(transaction);
+                      onClose?.();
+                    }}
+                    className="w-full flex items-start gap-4 text-sm justify-start"
+                  >
+                    <div className="flex items-center gap-4 text-left whitespace-nowrap overflow-hidden">
+                      <PencilIcon className="w-5 h-5 shrink-0" />
+                      <div className="truncate">{t("transactions.edit")}</div>
+                    </div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onDelete(transaction.id)}
+                    className="w-full flex gap-4 text-sm text-red-500"
+                  >
+                    <div className="flex items-center gap-4 text-left whitespace-nowrap overflow-hidden">
+                      <TrashIcon className="w-5 h-5 shrink-0" />
+                      <div className="truncate">{t("transactions.delete")}</div>
+                    </div>
+                  </button>
+                </div>
+              );
+            }}
+          </InlineButtonDialog>
         </div>
       </div>
 

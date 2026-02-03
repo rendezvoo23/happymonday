@@ -33,7 +33,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 
     const sizes = {
       sm: "h-8 px-3 text-xs rounded-full",
-      md: "h-12 px-6 text-base rounded-full",
+      md: "h-10 px-4 text-base rounded-full",
       lg: "h-14 px-8 text-lg rounded-full",
       icon: "h-10 w-10 p-0 rounded-full flex items-center justify-center",
     };

@@ -4,8 +4,7 @@ import { CategoryDoughnutChart } from "@/components/finance/CategoryDoughnutChar
 import { TransactionList } from "@/components/finance/TransactionList";
 import { Header } from "@/components/layout/Header";
 import { PageShell } from "@/components/layout/PageShell";
-import { Button } from "@/components/ui/Button";
-import { Modal } from "@/components/ui/Modal";
+import { ConfirmAction } from "@/components/modals/confirm-action";
 import { MonthSelector } from "@/components/ui/MonthSelector";
 import { useDate } from "@/context/DateContext";
 import {
@@ -203,6 +202,15 @@ export function StatisticsPage(_props: StatisticsPageProps = {}) {
             </div>
           )}
 
+          <ConfirmAction
+            title={t("statistics.deleteTransaction")}
+            description={t("statistics.deleteConfirmation")}
+            onAction={confirmDelete}
+            onClose={() => setIsDeleteModalOpen(false)}
+            isDestructive
+            open={isDeleteModalOpen}
+          />
+
           {/* Recent Transactions List */}
           <div className="w-full space-y-4">
             <TransactionList
@@ -215,7 +223,7 @@ export function StatisticsPage(_props: StatisticsPageProps = {}) {
         </main>
 
         {/* Delete Confirmation Modal */}
-        <Modal
+        {/* <Modal
           isOpen={isDeleteModalOpen}
           onClose={() => setIsDeleteModalOpen(false)}
           title={t("statistics.deleteTransaction")}
@@ -244,7 +252,7 @@ export function StatisticsPage(_props: StatisticsPageProps = {}) {
               </Button>
             </div>
           </div>
-        </Modal>
+        </Modal> */}
       </PageShell>
     </motion.div>
   );

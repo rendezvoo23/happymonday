@@ -66,7 +66,7 @@ export function TransactionList({
       className="w-full pb-0"
     >
       <div className="card-level-1">
-        {displayed.map((t) => (
+        {displayed.map((t, index, array) => (
           <motion.div
             key={t.id}
             variants={{
@@ -78,6 +78,7 @@ export function TransactionList({
               transaction={t}
               onEdit={onEdit}
               onDelete={onDelete}
+              zIndex={array.length - index}
             />
           </motion.div>
         ))}
