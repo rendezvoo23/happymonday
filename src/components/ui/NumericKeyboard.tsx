@@ -36,6 +36,9 @@ export function NumericKeyboard({
   };
 
   const handleTouchEnd = (key: string) => {
+    if (window.Telegram?.WebApp?.HapticFeedback) {
+      window.Telegram.WebApp.HapticFeedback.impactOccurred("medium");
+    }
     touchUsedRef.current = true;
     handleKeyPress(key);
     // Reset after a short delay to allow onClick to be skipped
@@ -62,13 +65,12 @@ export function NumericKeyboard({
           onTouchEnd={() => handleTouchEnd(key)}
           style={{ borderBottom: "none", borderRight: "none" }}
           className={cn(
-            "h-[60px] rounded-full font-light text-3xl",
-            "bg-[#f5f5f7cc] dark:bg-[#161b22cc]",
+            "h-[65px] rounded-full font-light text-3xl",
+            "bg-[#f5f5f71d] dark:bg-[#161b221d]",
             "text-gray-900 dark:text-gray-100",
-            "border border-[#ffffff1a]",
-            "shadow-md",
+            "border border-[#ffffff] dark:border-[#ffffff1f]",
+            "shadow-sm dark:shadow-none",
             "active:scale-95 transition-all duration-100",
-            "hover:bg-gray-200 dark:hover:bg-gray-700",
             "focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400",
             key === "⌫" &&
               "flex items-center justify-center bg-transparent border-none dark:bg-transparent shadow-none"

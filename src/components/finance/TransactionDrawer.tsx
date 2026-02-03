@@ -75,7 +75,8 @@ export function TransactionDrawer({
         <Drawer.Content
           className={cn(
             "bg-[#f5f5f7bb] dark:bg-[#161b2277] flex flex-col fixed bottom-0 left-0 right-0 max-h-[calc(100vh-100px)] rounded-t-[24px] z-[101] focus:outline-none",
-            "backdrop-blur-lg"
+            "backdrop-blur-lg",
+            "border-t border-gray-200 dark:border-gray-700"
           )}
         >
           {/* Handle - Only this area should drag the drawer */}

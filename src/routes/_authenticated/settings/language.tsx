@@ -28,7 +28,7 @@ function LanguageSettingsPage() {
           </div>
         </div>
       </Header>
-      <div className="px-6 pb-24">
+      <div className="px-3 pb-24">
         <div className="settings-group">
           {languages.map((language, index) => (
             <ModalListItem

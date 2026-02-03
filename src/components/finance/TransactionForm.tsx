@@ -7,6 +7,7 @@ import { useDate } from "@/context/DateContext";
 import { useCurrency } from "@/hooks/useCurrency";
 import { useTranslation } from "@/hooks/useTranslation";
 import { type Subcategory, getSubcategories } from "@/lib/api";
+import { cn } from "@/lib/utils";
 import { useCategoryStore } from "@/stores/categoryStore";
 import type { CategoryId, TransactionType } from "@/types";
 import { CheckIcon, Loader2, X } from "lucide-react";
@@ -211,9 +212,16 @@ export function TransactionForm({
       <div className="space-y-4">
         {/* Amount Display */}
 
-        <div className="relative flex items-center justify-center min-h-[64px] rounded-2xl px-6 py-4 mt-1">
-          <div className="flex items-center gap-2 text-3xl">
-            <span className={amount ? "" : "text-gray-400 dark:text-gray-600"}>
+        <div className="mx-[36px] relative flex items-center justify-center h-[60px] rounded-full px-6 py-1 mt-2">
+          <div
+            className={cn(
+              "flex items-center gap-0",
+              Number.parseFloat(amount ?? "0") > 1_000_000
+                ? "text-[30px]"
+                : "text-[36px]"
+            )}
+          >
+            <span className={amount ? "" : "opacity-70"}>
               {amount
                 ? formatAmount(Number.parseFloat(amount ?? "0"), {
                     hideFractions: false,
@@ -341,7 +349,7 @@ export function TransactionForm({
         onClick={onCancel}
         style={{
           position: "absolute",
-          left: "14px",
+          left: "16px",
           top: "-8px",
         }}
       >
@@ -350,15 +358,15 @@ export function TransactionForm({
 
       <LiquidButton
         type="submit"
-        variant="liquid"
+        variant={amount ? "liquid" : "outline"}
         size="icon-lg"
         onClick={onCancel}
         disabled={!amount}
         style={{
-          backgroundColor: "var(--accent-color)",
-          color: "white",
+          backgroundColor: amount ? "var(--accent-color)" : undefined,
+          color: amount ? "white" : "var(--border-default)",
           position: "absolute",
-          right: "14px",
+          right: "16px",
           top: "-8px",
         }}
       >
