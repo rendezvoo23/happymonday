@@ -59,6 +59,20 @@ export default {
       backdropBlur: {
         xs: "2px",
       },
+      keyframes: {
+        "alert-dialog-in": {
+          from: { transform: "translate(-50%, -50%) scale(0.4)", opacity: "0" },
+          to: { transform: "translate(-50%, -50%) scale(1)", opacity: "1" },
+        },
+        "alert-dialog-out": {
+          from: { transform: "translate(-50%, -50%) scale(1)", opacity: "1" },
+          to: { transform: "translate(-50%, -50%) scale(0.4)", opacity: "0" },
+        },
+      },
+      animation: {
+        "alert-dialog-in": "alert-dialog-in 0.2s ease-out forwards",
+        "alert-dialog-out": "alert-dialog-out 0.2s ease-in forwards",
+      },
     },
   },
   plugins: [],

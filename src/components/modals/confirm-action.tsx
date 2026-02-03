@@ -1,3 +1,4 @@
+import alerStopIconSrc from "@/assets/alert-stop-icon.png";
 import alertIconSrc from "@/assets/alert.png";
 import { Button } from "../ui/Button";
 import {
@@ -22,6 +23,7 @@ type ConfirmActionProps = {
   confirmLabel?: string;
   cancelLabel?: string;
   variant?: "secondary" | "primary" | "ghost" | "danger";
+  useIcon?: boolean;
 };
 
 export function ConfirmAction({
@@ -36,6 +38,7 @@ export function ConfirmAction({
   confirmLabel = "OK",
   cancelLabel = "Cancel",
   variant = isDestructive ? "danger" : "primary",
+  useIcon = false,
 }: ConfirmActionProps) {
   return (
     <AlertDialog open={open}>
@@ -45,20 +48,24 @@ export function ConfirmAction({
         <AlertDialogHeader>
           <AlertDialogTitle asChild>
             <div>
-              <img
-                className="p-2 mb-2 ml-[-8px]"
-                src={alertIconSrc}
-                alt="Alert Icon"
-                width={70}
-                height={70}
-              />
-              <h1 className="text-base font-medium text-primary">{title}</h1>
+              {useIcon && (
+                <img
+                  className="p-2 mb-2 ml-[-8px]"
+                  src={isDestructive ? alerStopIconSrc : alertIconSrc}
+                  alt="Alert Icon"
+                  width={90}
+                  height={90}
+                />
+              )}
+              <p className="text-[20px] font-medium text-primary mt-1">
+                {title}
+              </p>
             </div>
           </AlertDialogTitle>
           <AlertDialogDescription asChild>
-            <h3 className="text-base font-medium text-secondary opacity-50">
+            <p className="text-[20px] font-normal leading-[25px] text-secondary opacity-50">
               {description}
-            </h3>
+            </p>
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

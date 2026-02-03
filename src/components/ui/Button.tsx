@@ -22,13 +22,13 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ) => {
     const variants = {
       primary:
-        "bg-black dark:bg-white text-white dark:text-gray-900 shadow-lg shadow-black/10 dark:shadow-white/10 hover:bg-gray-800 dark:hover:bg-gray-200",
+        "bg-black dark:bg-white text-white dark:text-gray-900 dark:shadow-white/10 hover:bg-gray-800 dark:hover:bg-gray-200",
       secondary:
-        "bg-white dark:bg-gray-800 text-black dark:text-white shadow-sm border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700",
+        "bg-white dark:bg-[var(--background-level-2)] text-black dark:text-white dark:border-gray-700 border border-[var(--border-level-2)]",
       ghost:
         "bg-transparent text-gray-600 dark:text-gray-400 hover:bg-black/5 dark:hover:bg-white/10",
       danger:
-        "bg-red-500 dark:bg-red-600 text-white shadow-lg shadow-red-500/20 dark:shadow-red-600/20 hover:bg-red-600 dark:hover:bg-red-700",
+        "bg-white dark:bg-[var(--background-level-2)] text-red-500 border border-red-500 dark:border-none",
     };
 
     const sizes = {

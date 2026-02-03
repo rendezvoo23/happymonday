@@ -65,7 +65,7 @@ export const InlineButtonDialog = memo(
     };
 
     return (
-      <div className="flex flex-row gap-2 items-center">
+      <div className="flex flex-row items-center">
         {title && (
           <div
             className="cursor-pointer"
@@ -112,7 +112,7 @@ export const InlineButtonDialog = memo(
             padding: 0,
             boxSizing: "border-box",
           }}
-          className="ignore-onclick-outside"
+          className="ignore-onclick-outside-none"
         >
           <motion.div
             layout
@@ -156,7 +156,7 @@ export const InlineButtonDialog = memo(
               position: "absolute",
               backgroundColor: isExpanded
                 ? "var(--background-level-3)"
-                : "var(--background-level-1)",
+                : "var(--background-level-2)",
               border: isExpanded
                 ? "1px solid var(--border-level-2)"
                 : "1px solid transparent",
@@ -254,8 +254,8 @@ export const InlineButtonDialog = memo(
                     <div className="w-full h-full">
                       <div
                         className={cn(
-                          "px-5",
-                          showCloseButton ? "mt-20" : "mt-4"
+                          showCloseButton ? "px-5" : "px-2",
+                          showCloseButton ? "mt-20" : "mt-2"
                         )}
                       >
                         {typeof children === "function"

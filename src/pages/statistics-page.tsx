@@ -147,7 +147,10 @@ export function StatisticsPage(_props: StatisticsPageProps = {}) {
           <MonthSelector totalExpenses={formatAmount(totalExpenses)} />
         </Header>
 
-        <main className="flex flex-col items-center gap-4 pb-32 px-4">
+        <main
+          className="flex flex-col items-center gap-4 pb-32 px-4"
+          style={{ overflowX: "hidden" }}
+        >
           {/* Average Expenses Chart */}
           {transactions.length > 0 && (
             <div id="average-chart" className="w-full scroll-mt-24 space-y-3">
@@ -221,38 +224,6 @@ export function StatisticsPage(_props: StatisticsPageProps = {}) {
             />
           </div>
         </main>
-
-        {/* Delete Confirmation Modal */}
-        {/* <Modal
-          isOpen={isDeleteModalOpen}
-          onClose={() => setIsDeleteModalOpen(false)}
-          title={t("statistics.deleteTransaction")}
-        >
-          <div className="space-y-4">
-            <p className="text-gray-600 dark:text-gray-400">
-              {t("statistics.deleteConfirmation")}
-            </p>
-            <div className="flex gap-3">
-              <Button
-                variant="secondary"
-                fullWidth
-                onClick={() => setIsDeleteModalOpen(false)}
-              >
-                {t("statistics.cancel")}
-              </Button>
-              <Button
-                variant="danger"
-                fullWidth
-                onClick={confirmDelete}
-                disabled={deleteTransactionMutation.isPending}
-              >
-                {deleteTransactionMutation.isPending
-                  ? t("statistics.deleting")
-                  : t("statistics.delete")}
-              </Button>
-            </div>
-          </div>
-        </Modal> */}
       </PageShell>
     </motion.div>
   );

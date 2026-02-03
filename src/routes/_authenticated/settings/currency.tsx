@@ -65,7 +65,7 @@ function CurrencySettingsPage() {
   return (
     <>
       <Header>
-        <div className="flex items-center flex-col justify-between w-full relative px-4">
+        <div className="flex items-center flex-col justify-between w-full relative px-5">
           <AnimatePresence mode="wait">
             <motion.div
               key="header-normal"
@@ -113,7 +113,7 @@ function CurrencySettingsPage() {
           </AnimatePresence>
         </div>
       </Header>
-      <div className="px-3 pb-8">
+      <div className="px-4 pb-8">
         {filteredCurrencies.length > 0 ? (
           <div className="settings-group">
             {filteredCurrencies.map((currency, index) => (
