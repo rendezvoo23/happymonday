@@ -32,6 +32,8 @@
     --shadow-medium: 0 12px 48px rgba(0, 0, 0, 0.08);
     --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.06);
 
+    --text-default: #000000;
+
     --border-level-1: #ffffff;
     --border-level-2: #e5e5e5;
     --border-level-3: #d5d5d5;
@@ -48,6 +50,8 @@
     --background-level-1: #1c1c1e;
     --background-level-2: #222223;
     --background-level-3: #333334;
+
+    --text-default: #ffffff;
 
     --border-level-1: #333333;
     --border-level-2: #444444;
@@ -214,4 +218,20 @@ textarea {
   min-height: 2lh; /* Sets min-height based on line height for consistency */
   /* Optional: Set a maximum height to prevent unrestricted growth */
   max-height: 20lh;
+}
+
+/* Cursor blink animation */
+@keyframes cursor-blink {
+  0%,
+  50% {
+    opacity: 1;
+  }
+  51%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.animate-cursor-blink {
+  animation: cursor-blink 1s step-end infinite;
 }

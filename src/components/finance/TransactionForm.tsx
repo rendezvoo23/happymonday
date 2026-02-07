@@ -224,36 +224,14 @@ export function TransactionForm({
 
         <div
           className={cn(
-            "mx-[36px] relative flex items-center justify-center h-[50px] rounded-full px-6 py-0 mt-2",
-            isKeyboardVisible && "bg-[rgba(0,0,0,0.1)]"
+            "mx-[38px] relative flex h-[48px] rounded-[8px] px-3 mt-[11px] bg-[var(--border-level-1)] rounded-full",
+            isKeyboardVisible && "border border-[var(--border-level-2)]"
           )}
           onClick={() => setIsKeyboardVisible((prev) => !prev)}
-          onKeyUp={(e) => {
-            if (e.key === "Enter") {
-              setIsKeyboardVisible((prev) => !prev);
-            }
-          }}
           onKeyDown={(e) => {
             if (e.key === "Enter") {
               setIsKeyboardVisible((prev) => !prev);
             }
-          }}
-          onKeyPress={(e) => {
-            if (e.key === "Enter") {
-              setIsKeyboardVisible((prev) => !prev);
-            }
-          }}
-          onTouchEnd={() => {
-            setIsKeyboardVisible((prev) => !prev);
-          }}
-          onTouchStart={() => {
-            setIsKeyboardVisible((prev) => !prev);
-          }}
-          onTouchMove={() => {
-            setIsKeyboardVisible((prev) => !prev);
-          }}
-          onTouchCancel={() => {
-            setIsKeyboardVisible((prev) => !prev);
           }}
         >
           <div
@@ -269,10 +247,9 @@ export function TransactionForm({
                 ? formatAmount(Number.parseFloat(amount ?? "0"), {
                     hideFractions: false,
                     forceDecimal: amount.includes("."),
+                    showCurrencyCode: false,
                   })
-                : formatAmount(0, {
-                    hideFractions: false,
-                  })}
+                : isKeyboardVisible && <BlinkCursor />}
             </span>
           </div>
         </div>
@@ -413,7 +390,6 @@ export function TransactionForm({
         size="icon-lg"
         onClick={onCancel}
         disabled={!amount}
-        className="safe-area-top"
         style={{
           backgroundColor: amount ? "var(--accent-color)" : undefined,
           color: amount ? "white" : "var(--border-default)",
@@ -426,5 +402,11 @@ export function TransactionForm({
         <CheckIcon />
       </LiquidButton>
     </form>
+  );
+}
+
+function BlinkCursor() {
+  return (
+    <div className="w-[2.5px] h-[27px] bg-[var(--text-default)] animate-cursor-blink ml-[6px]" />
   );
 }

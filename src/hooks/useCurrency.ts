@@ -1,5 +1,5 @@
 import { useUserStore } from "@/stores/userStore";
-import React, { useMemo } from "react";
+import React, { useCallback, useMemo } from "react";
 
 /**
  * Map of currencies to their "native" or most "standard" locale for symbol placement.
@@ -64,46 +64,41 @@ export function useCurrency() {
     }
   }, [activeLocale, currency.code]);
 
-  const wholeNumberFormatter = useMemo(() => {
-    try {
+  const wholeNumberFormatter = useCallback(
+    ({
+      showSign = false,
+      showCurrencyCode = true,
+    }: { showSign?: boolean; showCurrencyCode?: boolean }) => {
       return new Intl.NumberFormat(activeLocale, {
-        style: "currency",
-        currency: currency.code,
+        ...(showCurrencyCode
+          ? { style: "currency" as const, currency: currency.code }
+          : { style: "decimal" as const }),
+        signDisplay: showSign ? "always" : "auto",
         maximumFractionDigits: 0,
         minimumFractionDigits: 0,
       });
-    } catch (e) {
-      return formatter;
-    }
-  }, [activeLocale, currency.code, formatter]);
+    },
+    [activeLocale, currency.code]
+  );
 
-  const signFormatter = useMemo(() => {
-    try {
-      return new Intl.NumberFormat(activeLocale, {
-        style: "currency",
-        currency: currency.code,
-        signDisplay: "always",
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 2,
-      });
-    } catch (e) {
-      return formatter;
-    }
-  }, [activeLocale, currency.code, formatter]);
-
-  const wholeNumberSignFormatter = useMemo(() => {
-    try {
-      return new Intl.NumberFormat(activeLocale, {
-        style: "currency",
-        currency: currency.code,
-        signDisplay: "always",
-        maximumFractionDigits: 0,
-        minimumFractionDigits: 0,
-      });
-    } catch (e) {
-      return wholeNumberFormatter;
-    }
-  }, [activeLocale, currency.code, wholeNumberFormatter]);
+  const signFormatter = useCallback(
+    ({ showCurrencyCode = true }: { showCurrencyCode?: boolean }) => {
+      try {
+        return new Intl.NumberFormat(activeLocale, {
+          ...(showCurrencyCode
+            ? { style: "currency" as const, currency: currency.code }
+            : { style: "decimal" as const }),
+          currency: currency.code,
+          signDisplay: "always",
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 2,
+        });
+      } catch (e) {
+        return formatter;
+      }
+    },
+    [activeLocale, currency.code, formatter]
+  );
 
   const isSymbolPrefix = useMemo(() => {
     try {
@@ -127,9 +122,15 @@ export function useCurrency() {
       showSign?: boolean;
       hideFractions?: boolean;
       forceDecimal?: boolean;
+      showCurrencyCode?: boolean;
     }
   ) => {
-    const { showSign, hideFractions, forceDecimal } = options || {};
+    const {
+      showSign,
+      hideFractions,
+      forceDecimal,
+      showCurrencyCode = true,
+    } = options || {};
 
     // Check if number has decimals
     const hasDecimals = forceDecimal || !Number.isInteger(amount);
@@ -137,22 +138,41 @@ export function useCurrency() {
     // If showing fractions and number has decimals, use 2 decimal places
     let fmt: Intl.NumberFormat;
     if (hideFractions) {
-      fmt = showSign ? wholeNumberSignFormatter : wholeNumberFormatter;
+      fmt = wholeNumberFormatter({ showSign, showCurrencyCode });
     } else if (hasDecimals) {
       // Create formatter with exactly 2 decimal places for numbers with decimals
       try {
         fmt = new Intl.NumberFormat(activeLocale, {
-          style: "currency",
-          currency: currency.code,
+          ...(showCurrencyCode
+            ? { style: "currency" as const, currency: currency.code }
+            : { style: "decimal" as const }),
           minimumFractionDigits: 2,
           maximumFractionDigits: 2,
           signDisplay: showSign ? "always" : "auto",
         });
       } catch (e) {
-        fmt = showSign ? signFormatter : formatter;
+        fmt = showSign
+          ? signFormatter({ showCurrencyCode })
+          : showCurrencyCode
+            ? formatter
+            : new Intl.NumberFormat(activeLocale, {
+                style: "decimal",
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+                signDisplay: "auto",
+              });
       }
     } else {
-      fmt = showSign ? signFormatter : formatter;
+      fmt = showSign
+        ? signFormatter({ showCurrencyCode })
+        : showCurrencyCode
+          ? formatter
+          : new Intl.NumberFormat(activeLocale, {
+              style: "decimal",
+              maximumFractionDigits: 0,
+              minimumFractionDigits: 0,
+              signDisplay: "auto",
+            });
     }
 
     // Format the amount and replace comma decimal separator with dot
