@@ -9,7 +9,9 @@ import { type Subcategory, getSubcategories } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { useCategoryStore } from "@/stores/categoryStore";
 import type { CategoryId, TransactionType } from "@/types";
-import { CheckIcon, Loader2, X } from "lucide-react";
+import { motion } from "framer-motion";
+import { CheckIcon, X } from "lucide-react";
+import { Spinner } from "../spinner";
 import { SegmentedControl } from "../ui/SegmentedControl";
 import { LiquidButton } from "../ui/button/button";
 import { CategorySelector } from "./CategorySelector";
@@ -72,6 +74,7 @@ export function TransactionForm({
     initialData?.subcategoryId || null
   );
   const dateInputRef = useRef<HTMLInputElement>(null);
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(true);
 
   const { formatAmount } = useCurrency();
   const {
@@ -212,14 +215,47 @@ export function TransactionForm({
     <form
       onSubmit={handleSubmit}
       className={cn(
-        "space-y-6 px-2 safe-area-bottom",
+        "space-y-6 px-2 safe-area-bottom relative",
         showEditNote && "mb-[100px]"
       )}
     >
       <div className="space-y-4">
         {/* Amount Display */}
 
-        <div className="mx-[36px] relative flex items-center justify-center h-[60px] rounded-full px-6 py-1 mt-2">
+        <div
+          className={cn(
+            "mx-[36px] relative flex items-center justify-center h-[50px] rounded-full px-6 py-0 mt-2",
+            isKeyboardVisible && "bg-[rgba(0,0,0,0.1)]"
+          )}
+          onClick={() => setIsKeyboardVisible((prev) => !prev)}
+          onKeyUp={(e) => {
+            if (e.key === "Enter") {
+              setIsKeyboardVisible((prev) => !prev);
+            }
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              setIsKeyboardVisible((prev) => !prev);
+            }
+          }}
+          onKeyPress={(e) => {
+            if (e.key === "Enter") {
+              setIsKeyboardVisible((prev) => !prev);
+            }
+          }}
+          onTouchEnd={() => {
+            setIsKeyboardVisible((prev) => !prev);
+          }}
+          onTouchStart={() => {
+            setIsKeyboardVisible((prev) => !prev);
+          }}
+          onTouchMove={() => {
+            setIsKeyboardVisible((prev) => !prev);
+          }}
+          onTouchCancel={() => {
+            setIsKeyboardVisible((prev) => !prev);
+          }}
+        >
           <div
             className={cn(
               "flex items-center gap-0",
@@ -239,14 +275,6 @@ export function TransactionForm({
                   })}
             </span>
           </div>
-        </div>
-
-        {/* Virtual Keyboard */}
-        <div className="flex justify-center items-center max-w-sm mx-auto">
-          <NumericKeyboard
-            onKeyPress={handleKeyPress}
-            onBackspace={handleBackspace}
-          />
         </div>
       </div>
 
@@ -301,8 +329,8 @@ export function TransactionForm({
           }}
         >
           {categoriesLoading ? (
-            <div className="text-center py-0 text-gray-400 dark:text-gray-500 flex items-center justify-center">
-              <Loader2 className="w-6 h-6 animate-spin" />
+            <div className="text-center py-4 text-gray-400 dark:text-gray-500 text-sm flex items-center justify-center min-h-[200px]">
+              <Spinner size="lg" />
             </div>
           ) : categories.length === 0 ? (
             <div className="text-center py-0 text-gray-400 dark:text-gray-500">
@@ -330,8 +358,8 @@ export function TransactionForm({
             (isLoadingSubcategories || subcategories.length > 0) && (
               <div className="space-y-2 py-1">
                 {isLoadingSubcategories ? (
-                  <div className="text-center py-4 text-gray-400 dark:text-gray-500 text-sm flex items-center justify-center">
-                    <Loader2 className="w-6 h-6 animate-spin" />
+                  <div className="text-center py-4 text-gray-400 dark:text-gray-500 text-sm flex items-center justify-center min-h-[200px]">
+                    <Spinner size="lg" />
                   </div>
                 ) : (
                   <div className="max-w-sm mx-auto">
@@ -348,15 +376,31 @@ export function TransactionForm({
         </div>
       )}
 
+      {/* Virtual Keyboard */}
+      {isKeyboardVisible && (
+        <motion.div
+          className="flex justify-center items-center max-w-sm mx-auto"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <NumericKeyboard
+            onKeyPress={handleKeyPress}
+            onBackspace={handleBackspace}
+          />
+        </motion.div>
+      )}
+
       <LiquidButton
         type="button"
         variant="liquid"
         size="icon-lg"
         onClick={onCancel}
         style={{
-          position: "fixed",
-          left: "16px",
-          top: "calc(-8px + env(--tg-safe-area-inset-top,0px))",
+          position: "absolute",
+          left: "-4px",
+          top: "-20px",
           zIndex: 1,
         }}
       >
@@ -373,9 +417,9 @@ export function TransactionForm({
         style={{
           backgroundColor: amount ? "var(--accent-color)" : undefined,
           color: amount ? "white" : "var(--border-default)",
-          position: "fixed",
-          right: "16px",
-          top: "calc(-8px + env(--tg-safe-area-inset-top,0px))",
+          position: "absolute",
+          right: "-4px",
+          top: "-20px",
           zIndex: 1,
         }}
       >
