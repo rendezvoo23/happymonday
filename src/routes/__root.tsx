@@ -1,3 +1,4 @@
+import { Spinner } from "@/components/spinner";
 import { DrawerManager } from "@/components/ui/drawer";
 import { env } from "@/env";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
@@ -7,7 +8,6 @@ import { parseInitData } from "@/lib/utils";
 import { useUserStore } from "@/stores/userStore";
 import type { QueryClient } from "@tanstack/react-query";
 import { Outlet, createRootRouteWithContext } from "@tanstack/react-router";
-import { Loader2 } from "lucide-react";
 import { Suspense, lazy, useEffect, useState } from "react";
 
 // Lazy load devtools
@@ -238,7 +238,7 @@ function RootComponent() {
   if (isAuthLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[var(--background)] text-gray-900 dark:text-gray-100">
-        <Loader2 className="w-8 h-8 animate-spin" />
+        <Spinner size="lg" />
       </div>
     );
   }

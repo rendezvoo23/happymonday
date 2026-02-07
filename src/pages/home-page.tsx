@@ -2,6 +2,7 @@ import { BubblesCluster } from "@/components/finance/BubblesCluster";
 import { TransactionDrawer } from "@/components/finance/TransactionDrawer";
 import { Header } from "@/components/layout/Header";
 import { PageShell } from "@/components/layout/PageShell";
+import { Spinner } from "@/components/spinner";
 import { MonthSelector } from "@/components/ui/MonthSelector";
 import { useDate } from "@/context/DateContext";
 import { useCurrency } from "@/hooks/useCurrency";
@@ -10,7 +11,7 @@ import { useTransactionStore } from "@/stores/transactionStore";
 import type { Enums, Tables } from "@/types/supabase";
 import { addMonths, subMonths } from "date-fns";
 import { motion } from "framer-motion";
-import { Loader2, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import "./styles.css";
 
@@ -69,7 +70,6 @@ export function HomePage() {
         return cached;
       }
 
-      console.log(`[HomePage] Loading transactions for ${monthKey}...`);
       const txs = await loadTransactions(date);
 
       setMonthsCache((prev) => {
@@ -265,18 +265,18 @@ export function HomePage() {
         <main
           ref={containerRef}
           className="flex flex-col items-center gap-2 touch-none"
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
         >
-          <div className="w-full flex justify-center relative overflow-hidden safe-area-top">
+          <div className="w-full flex justify-center relative overflow-hidden">
             {isInitialLoading ? (
               <div className="text-gray-500 dark:text-gray-400 h-[380px] flex items-center justify-center">
-                <Loader2 className="w-8 h-8 animate-spin" />
+                <Spinner size="lg" />
               </div>
             ) : (
               <div
                 className="w-full relative"
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
                 style={{
                   transform: `translateX(${swipeProgress * 100}%)`,
                   transition: isTransitioning
@@ -331,7 +331,15 @@ export function HomePage() {
             )}
           </div>
 
-          <div className="flex items-center justify-center mt-12 mb-32">
+          <div
+            className="flex items-center justify-center"
+            style={{
+              position: "fixed",
+              bottom: "150px",
+              left: "50%",
+              transform: "translateX(-50%)",
+            }}
+          >
             <div className="glassmorphic-plus-wrap">
               <button
                 type="button"
@@ -363,6 +371,7 @@ export function HomePage() {
         onClose={() => setIsTransactionDrawerOpen(false)}
         initialType={transactionType}
         onTransactionAdded={reloadTransactions}
+        showEditNote={false}
       />
     </motion.div>
   );

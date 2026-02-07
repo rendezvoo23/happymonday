@@ -207,3 +207,11 @@ header {
     var(--tg-safe-area-inset-right, 0px)
   );
 }
+
+textarea {
+  field-sizing: content;
+  /* Optional: Set a minimum height for the initial display */
+  min-height: 2lh; /* Sets min-height based on line height for consistency */
+  /* Optional: Set a maximum height to prevent unrestricted growth */
+  max-height: 20lh;
+}

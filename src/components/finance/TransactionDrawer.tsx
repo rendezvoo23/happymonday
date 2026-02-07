@@ -15,12 +15,14 @@ interface TransactionDrawerProps {
   onClose: () => void;
   initialType?: TransactionDirection;
   onTransactionAdded?: () => void;
+  showEditNote?: boolean;
 }
 
 export function TransactionDrawer({
   isOpen,
   onClose,
   initialType = "expense",
+  showEditNote = true,
   onTransactionAdded,
 }: TransactionDrawerProps) {
   const addTransaction = useTransactionStore((state) => state.addTransaction);
@@ -99,6 +101,7 @@ export function TransactionDrawer({
                   initialType={initialType}
                   onCancel={onClose}
                   onSubmit={handleSubmit}
+                  showEditNote={showEditNote}
                 />
               </motion.div>
             </AnimatePresence>

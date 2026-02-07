@@ -1,6 +1,6 @@
+import { useTranslation } from "@/hooks/useTranslation";
 import { cn } from "@/lib/utils";
 import "@/pages/styles.css";
-import { useTranslation } from "@/hooks/useTranslation";
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import {
@@ -19,7 +19,8 @@ export function BottomNav() {
   const isHomeActive = location.pathname === "/home";
   const isStatsActive =
     location.pathname === "/statistics" ||
-    location.pathname.startsWith("/statistics/");
+    location.pathname.startsWith("/statistics/") ||
+    location.pathname.startsWith("/edit/");
   const isSettingsActive =
     location.pathname === "/settings" ||
     location.pathname.startsWith("/settings/");

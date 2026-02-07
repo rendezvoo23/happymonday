@@ -20,7 +20,7 @@ export function PageShell({
       exit={{ opacity: 0 }}
       transition={{ duration: 0.4, ease: [0.32, 0.72, 0, 1] }}
       className={cn(
-        "max-w-lg mx-auto relative z-10",
+        "max-w-2xl mx-auto relative z-10",
         allowScroll ? "h-full" : "h-full overflow-hidden",
         "safe-area-bottom safe-area-left safe-area-right",
         className

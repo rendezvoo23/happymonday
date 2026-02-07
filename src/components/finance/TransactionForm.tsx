@@ -1,7 +1,6 @@
 import { format } from "date-fns";
 import { useEffect, useRef, useState } from "react";
 
-import { Input } from "@/components/ui/Input";
 import { NumericKeyboard } from "@/components/ui/NumericKeyboard";
 import { useDate } from "@/context/DateContext";
 import { useCurrency } from "@/hooks/useCurrency";
@@ -35,12 +34,14 @@ interface TransactionFormProps {
   };
   initialType?: TransactionType;
   onCancel: () => void;
+  showEditNote?: boolean;
 }
 
 export function TransactionForm({
   onSubmit,
   initialData,
   initialType = "expense",
+  showEditNote = true,
   onCancel,
 }: TransactionFormProps) {
   const { selectedDate } = useDate();
@@ -208,7 +209,13 @@ export function TransactionForm({
   const selectedCategory = categories.find((c) => c.id === categoryId);
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 px-2">
+    <form
+      onSubmit={handleSubmit}
+      className={cn(
+        "space-y-6 px-2 safe-area-bottom",
+        showEditNote && "mb-[100px]"
+      )}
+    >
       <div className="space-y-4">
         {/* Amount Display */}
 
@@ -235,7 +242,7 @@ export function TransactionForm({
         </div>
 
         {/* Virtual Keyboard */}
-        <div className="flex justify-center items-center">
+        <div className="flex justify-center items-center max-w-sm mx-auto">
           <NumericKeyboard
             onKeyPress={handleKeyPress}
             onBackspace={handleBackspace}
@@ -263,7 +270,28 @@ export function TransactionForm({
             }
           />
         </div>
+        <input
+          ref={dateInputRef}
+          type="date"
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+          className="bg-transparent h-[30px] px-2 bg-[var(--border-level-2)] rounded-full"
+          style={{ fontSize: "14px" }}
+          tabIndex={-1}
+        />
       </div>
+
+      {showEditNote && (
+        <div className="gap-3 flex justify-center flex-col items-center max-w-sm mx-auto mb-8 mt-8">
+          <textarea
+            id="note-input"
+            placeholder={t("transactions.notePlaceholder")}
+            value={note}
+            className="bg-[var(--border-level-1)] px-3 py-2 rounded-lg outline-none w-full resize-none"
+            onChange={(e) => setNote(e.target.value)}
+          />
+        </div>
+      )}
 
       {selectedType === "transactions.category" && (
         <div
@@ -281,11 +309,13 @@ export function TransactionForm({
               {t("transactions.noCategories")}
             </div>
           ) : (
-            <CategorySelector
-              categories={categories}
-              selectedId={categoryId}
-              onSelect={setCategoryId}
-            />
+            <div className="max-w-sm mx-auto">
+              <CategorySelector
+                categories={categories}
+                selectedId={categoryId}
+                onSelect={setCategoryId}
+              />
+            </div>
           )}
         </div>
       )}
@@ -304,41 +334,17 @@ export function TransactionForm({
                     <Loader2 className="w-6 h-6 animate-spin" />
                   </div>
                 ) : (
-                  <SubcategorySelector
-                    subcategories={subcategories}
-                    selectedId={subcategoryId}
-                    onSelect={setSubcategoryId}
-                    categoryColor={selectedCategory?.color}
-                  />
+                  <div className="max-w-sm mx-auto">
+                    <SubcategorySelector
+                      subcategories={subcategories}
+                      selectedId={subcategoryId}
+                      onSelect={setSubcategoryId}
+                      categoryColor={selectedCategory?.color}
+                    />
+                  </div>
                 )}
               </div>
             )}
-        </div>
-      )}
-
-      {selectedType === "transactions.subcategory" && (
-        <div className="space-y-2 flex absolute bottom-8 left-4 right-4">
-          <label
-            htmlFor="note-input"
-            className="text-sm font-medium text-gray-500 dark:text-gray-400 ml-1"
-          >
-            {t("transactions.noteOptional")}
-          </label>
-          <Input
-            id="note-input"
-            placeholder={t("transactions.notePlaceholder")}
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-          />
-          <input
-            ref={dateInputRef}
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            className="bg-transparent h-[36px] px-3 border border-[var(--border-default)] rounded-full"
-            style={{ fontSize: "14px", color: "#999" }}
-            tabIndex={-1}
-          />
         </div>
       )}
 
@@ -348,9 +354,9 @@ export function TransactionForm({
         size="icon-lg"
         onClick={onCancel}
         style={{
-          position: "absolute",
+          position: "fixed",
           left: "16px",
-          top: "-8px",
+          top: "calc(-8px + env(--tg-safe-area-inset-top,0px))",
           zIndex: 1,
         }}
       >
@@ -363,12 +369,13 @@ export function TransactionForm({
         size="icon-lg"
         onClick={onCancel}
         disabled={!amount}
+        className="safe-area-top"
         style={{
           backgroundColor: amount ? "var(--accent-color)" : undefined,
           color: amount ? "white" : "var(--border-default)",
-          position: "absolute",
+          position: "fixed",
           right: "16px",
-          top: "-8px",
+          top: "calc(-8px + env(--tg-safe-area-inset-top,0px))",
           zIndex: 1,
         }}
       >

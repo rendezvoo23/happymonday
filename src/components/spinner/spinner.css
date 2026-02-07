@@ -1,0 +1,17 @@
+@keyframes spinner-fade {
+  0%,
+  100% {
+    opacity: 0.1;
+  }
+  8.33% {
+    opacity: 1;
+  }
+}
+
+.apple-spinner {
+  display: inline-block;
+}
+
+.spinner-line {
+  animation: spinner-fade 1s linear infinite;
+}
