@@ -12,6 +12,7 @@ interface SegmentedControlProps {
   onChange: (value: string) => void;
   className?: string;
   layoutId?: string;
+  activeColor?: string;
 }
 
 export function SegmentedControl({
@@ -20,6 +21,7 @@ export function SegmentedControl({
   onChange,
   className,
   layoutId = "segmented-indicator",
+  activeColor = "var(--accent-color)",
 }: SegmentedControlProps) {
   return (
     <div
@@ -35,11 +37,10 @@ export function SegmentedControl({
             type="button"
             key={option.value}
             onClick={() => onChange(option.value)}
+            style={{ backgroundColor: isActive ? activeColor : "transparent" }}
             className={cn(
               "relative flex-1 py-1 px-2 text-sm font-medium transition-colors z-10 rounded-full",
-              isActive
-                ? "text-white bg-[var(--accent-color)]"
-                : "text-gray-500 hover:text-gray-700"
+              isActive ? "text-white" : "text-gray-500 hover:text-gray-700"
             )}
           >
             {isActive && (

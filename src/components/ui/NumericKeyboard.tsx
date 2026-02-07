@@ -9,18 +9,30 @@ interface NumericKeyboardProps {
   className?: string;
 }
 
+const KEY_LABELS: Record<string, string> = {
+  "1": "",
+  "2": "ABC",
+  "3": "DEF",
+  "4": "GHI",
+  "5": "JKL",
+  "6": "MNO",
+  "7": "PQRS",
+  "8": "TUV",
+  "9": "WXYZ",
+};
+
+const keys = [
+  ["1", "2", "3"],
+  ["4", "5", "6"],
+  ["7", "8", "9"],
+  [".", "0", "⌫"],
+];
+
 export function NumericKeyboard({
   onKeyPress,
   onBackspace,
   className,
 }: NumericKeyboardProps) {
-  const keys = [
-    ["1", "2", "3"],
-    ["4", "5", "6"],
-    ["7", "8", "9"],
-    [".", "0", "⌫"],
-  ];
-
   const touchUsedRef = useRef(false);
 
   const handleKeyPress = (key: string) => {
@@ -41,43 +53,40 @@ export function NumericKeyboard({
     }
     touchUsedRef.current = true;
     handleKeyPress(key);
-    // Reset after a short delay to allow onClick to be skipped
     setTimeout(() => {
       touchUsedRef.current = false;
     }, 100);
   };
 
   const handleClick = (key: string) => {
-    // Skip if touch was used
     if (touchUsedRef.current) return;
     handleKeyPress(key);
   };
 
   return (
-    <div
-      className={cn("grid grid-cols-3 gap-1 w-full max-w-[500px]", className)}
-    >
+    <div className={cn("numeric-keyboard", className)}>
       {keys.flat().map((key) => (
         <motion.button
           key={key}
           type="button"
           onClick={() => handleClick(key)}
           onTouchEnd={() => handleTouchEnd(key)}
-          style={{ borderBottom: "none", borderRight: "none" }}
           className={cn(
-            "h-[56px] rounded-md font-light text-3xl",
-            "bg-[#f5f5f71d] dark:bg-[#161b221d]",
-            "opacity-85",
-            "border border-[#ffffff] dark:border-[#ffffff1f]",
-            "shadow-sm dark:shadow-none",
-            "active:scale-95 transition-all duration-100",
-            "focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400",
-            key === "⌫" &&
-              "flex items-center justify-center bg-transparent border-none dark:bg-transparent shadow-none"
+            "numeric-keyboard__key",
+            key === "⌫" && "numeric-keyboard__key--backspace"
           )}
-          whileTap={{ scale: 1.1 }}
+          whileTap={{ scale: 0.95 }}
         >
-          {key === "⌫" ? <Delete className="w-6 h-6" strokeWidth={1.5} /> : key}
+          {key === "⌫" ? (
+            <Delete className="w-6 h-6" strokeWidth={2} />
+          ) : (
+            <>
+              <span>{key}</span>
+              {KEY_LABELS[key] && (
+                <span className="numeric-keyboard__letter">{KEY_LABELS[key]}</span>
+              )}
+            </>
+          )}
         </motion.button>
       ))}
     </div>

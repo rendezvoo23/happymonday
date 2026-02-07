@@ -5,7 +5,6 @@ import { cn } from "@/lib/utils";
 import { useCategoryStore } from "@/stores/categoryStore";
 import { useTransactionStore } from "@/stores/transactionStore";
 import type { Enums } from "@/types/supabase";
-import { AnimatePresence, motion } from "framer-motion";
 import { Drawer } from "vaul";
 
 type TransactionDirection = Enums<"transaction_direction">;
@@ -88,23 +87,12 @@ export function TransactionDrawer({
             className="flex-1 overflow-y-auto overflow-x-hidden"
             data-vaul-no-drag
           >
-            <AnimatePresence mode="wait">
-              <motion.div
-                key="add-transaction"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.2 }}
-                className="px-4 pb-4"
-              >
-                <TransactionForm
-                  initialType={initialType}
-                  onCancel={onClose}
-                  onSubmit={handleSubmit}
-                  showEditNote={showEditNote}
-                />
-              </motion.div>
-            </AnimatePresence>
+            <TransactionForm
+              initialType={initialType}
+              onCancel={onClose}
+              onSubmit={handleSubmit}
+              showEditNote={showEditNote}
+            />
           </div>
         </Drawer.Content>
       </Drawer.Portal>

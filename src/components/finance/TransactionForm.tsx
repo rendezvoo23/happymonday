@@ -219,144 +219,152 @@ export function TransactionForm({
         showEditNote && "mb-[100px]"
       )}
     >
-      <div className="space-y-4">
-        {/* Amount Display */}
+      <div className="px-2">
+        <div className="space-y-4">
+          {/* Amount Display */}
 
-        <div
-          className={cn(
-            "mx-[38px] relative flex h-[48px] rounded-[8px] px-3 mt-[11px] bg-[var(--border-level-1)] rounded-full",
-            isKeyboardVisible && "border border-[var(--border-level-2)]"
-          )}
-          onClick={() => setIsKeyboardVisible((prev) => !prev)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              setIsKeyboardVisible((prev) => !prev);
-            }
-          }}
-        >
           <div
             className={cn(
-              "flex items-center gap-0",
-              Number.parseFloat(amount ?? "0") > 1_000_000
-                ? "text-[30px]"
-                : "text-[36px]"
+              "mx-[38px] relative flex h-[48px] rounded-[8px] px-3 mt-[11px] bg-[#f5f5f7bb] dark:bg-[#161b2277] rounded-full",
+              isKeyboardVisible && "border border-[var(--border-level-2)]"
             )}
+            onClick={() => setIsKeyboardVisible((prev) => !prev)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                setIsKeyboardVisible((prev) => !prev);
+              }
+            }}
           >
-            <span className={amount ? "" : "opacity-70"}>
-              {amount
-                ? formatAmount(Number.parseFloat(amount ?? "0"), {
-                    hideFractions: false,
-                    forceDecimal: amount.includes("."),
-                    showCurrencyCode: false,
-                  })
-                : isKeyboardVisible && <BlinkCursor />}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <div className="flex gap-4 w-full justify-center items-center mt-8">
-        <div>
-          <SegmentedControl
-            layoutId="segmented-control-category-subcategory"
-            options={["transactions.category", "transactions.subcategory"].map(
-              (cat) => ({
-                value: cat,
-                label: t(cat),
-              })
-            )}
-            value={selectedType}
-            onChange={(value) =>
-              setSelectedType(
-                value as unknown as
-                  | "transactions.category"
-                  | "transactions.subcategory"
-              )
-            }
-          />
-        </div>
-        <input
-          ref={dateInputRef}
-          type="date"
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-          className="bg-transparent h-[30px] px-2 bg-[var(--border-level-2)] rounded-full"
-          style={{ fontSize: "14px" }}
-          tabIndex={-1}
-        />
-      </div>
-
-      {showEditNote && (
-        <div className="gap-3 flex justify-center flex-col items-center max-w-sm mx-auto mb-8 mt-8">
-          <textarea
-            id="note-input"
-            placeholder={t("transactions.notePlaceholder")}
-            value={note}
-            className="bg-[var(--border-level-1)] px-3 py-2 rounded-lg outline-none w-full resize-none"
-            onChange={(e) => setNote(e.target.value)}
-          />
-        </div>
-      )}
-
-      {selectedType === "transactions.category" && (
-        <div
-          style={{
-            height: "200px",
-            overflow: "hidden",
-          }}
-        >
-          {categoriesLoading ? (
-            <div className="text-center py-4 text-gray-400 dark:text-gray-500 text-sm flex items-center justify-center min-h-[200px]">
-              <Spinner size="lg" />
-            </div>
-          ) : categories.length === 0 ? (
-            <div className="text-center py-0 text-gray-400 dark:text-gray-500">
-              {t("transactions.noCategories")}
-            </div>
-          ) : (
-            <div className="max-w-sm mx-auto">
-              <CategorySelector
-                categories={categories}
-                selectedId={categoryId}
-                onSelect={setCategoryId}
-              />
-            </div>
-          )}
-        </div>
-      )}
-
-      {selectedType === "transactions.subcategory" && (
-        <div
-          style={{
-            height: "200px",
-          }}
-        >
-          {categoryId &&
-            (isLoadingSubcategories || subcategories.length > 0) && (
-              <div className="space-y-2 py-1">
-                {isLoadingSubcategories ? (
-                  <div className="text-center py-4 text-gray-400 dark:text-gray-500 text-sm flex items-center justify-center min-h-[200px]">
-                    <Spinner size="lg" />
-                  </div>
-                ) : (
-                  <div className="max-w-sm mx-auto">
-                    <SubcategorySelector
-                      subcategories={subcategories}
-                      selectedId={subcategoryId}
-                      onSelect={setSubcategoryId}
-                      categoryColor={selectedCategory?.color}
-                    />
-                  </div>
-                )}
+            {isKeyboardVisible ? null : (
+              <div className="text-sm text-gray-500 dark:text-gray-500 absolute left-[20px] top-[50%] -translate-y-1/2">
+                Enter amount
               </div>
             )}
+            <div
+              className={cn(
+                "flex items-center gap-0",
+                Number.parseFloat(amount ?? "0") > 1_000_000
+                  ? "text-[30px]"
+                  : "text-[36px]"
+              )}
+            >
+              <span className={amount ? "" : "opacity-70"}>
+                {amount
+                  ? formatAmount(Number.parseFloat(amount ?? "0"), {
+                      hideFractions: false,
+                      forceDecimal: amount.includes("."),
+                      showCurrencyCode: false,
+                    })
+                  : isKeyboardVisible && <BlinkCursor />}
+              </span>
+            </div>
+          </div>
         </div>
-      )}
+
+        {showEditNote && (
+          <div className="gap-3 flex justify-center flex-col items-center max-w-sm mx-auto mb-8 mt-8">
+            <textarea
+              id="note-input"
+              placeholder={t("transactions.notePlaceholder")}
+              value={note}
+              className="bg-[var(--border-level-1)] px-3 py-2 rounded-lg outline-none w-full resize-none"
+              onChange={(e) => setNote(e.target.value)}
+            />
+          </div>
+        )}
+
+        <div className="flex gap-4 w-full justify-center items-center mt-4 mb-4">
+          <div>
+            <SegmentedControl
+              layoutId="segmented-control-category-subcategory"
+              options={[
+                "transactions.category",
+                "transactions.subcategory",
+              ].map((cat) => ({
+                value: cat,
+                label: t(cat),
+              }))}
+              activeColor={selectedCategory?.color}
+              value={selectedType}
+              onChange={(value) =>
+                setSelectedType(
+                  value as unknown as
+                    | "transactions.category"
+                    | "transactions.subcategory"
+                )
+              }
+            />
+          </div>
+          <input
+            ref={dateInputRef}
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            className="bg-[#f5f5f7bb] dark:bg-[#161b2277] h-[30px] px-2 bg-[var(--border-level-2)] rounded-full"
+            style={{ fontSize: "13px", fontWeight: "500" }}
+            tabIndex={-1}
+          />
+        </div>
+
+        {selectedType === "transactions.category" && (
+          <div
+            style={{
+              height: "200px",
+              overflow: "hidden",
+            }}
+          >
+            {categoriesLoading ? (
+              <div className="text-center py-4 text-gray-400 dark:text-gray-500 text-sm flex items-center justify-center min-h-[200px]">
+                <Spinner size="lg" />
+              </div>
+            ) : categories.length === 0 ? (
+              <div className="text-center py-0 text-gray-400 dark:text-gray-500">
+                {t("transactions.noCategories")}
+              </div>
+            ) : (
+              <div className="max-w-sm mx-auto">
+                <CategorySelector
+                  categories={categories}
+                  selectedId={categoryId}
+                  onSelect={setCategoryId}
+                />
+              </div>
+            )}
+          </div>
+        )}
+
+        {selectedType === "transactions.subcategory" && (
+          <div
+            style={{
+              height: "200px",
+            }}
+          >
+            {categoryId &&
+              (isLoadingSubcategories || subcategories.length > 0) && (
+                <div className="space-y-2 py-1">
+                  {isLoadingSubcategories ? (
+                    <div className="text-center py-4 text-gray-400 dark:text-gray-500 text-sm flex items-center justify-center min-h-[200px]">
+                      <Spinner size="lg" />
+                    </div>
+                  ) : (
+                    <div className="max-w-sm mx-auto">
+                      <SubcategorySelector
+                        subcategories={subcategories}
+                        selectedId={subcategoryId}
+                        onSelect={setSubcategoryId}
+                        categoryColor={selectedCategory?.color}
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+          </div>
+        )}
+      </div>
 
       {/* Virtual Keyboard */}
       {isKeyboardVisible && (
         <motion.div
-          className="flex justify-center items-center max-w-sm mx-auto"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -376,8 +384,8 @@ export function TransactionForm({
         onClick={onCancel}
         style={{
           position: "absolute",
-          left: "-4px",
-          top: "-20px",
+          left: "8px",
+          top: "-24px",
           zIndex: 1,
         }}
       >
@@ -394,7 +402,7 @@ export function TransactionForm({
           backgroundColor: amount ? "var(--accent-color)" : undefined,
           color: amount ? "white" : "var(--border-default)",
           position: "absolute",
-          right: "-4px",
+          right: "8px",
           top: "-20px",
           zIndex: 1,
         }}
