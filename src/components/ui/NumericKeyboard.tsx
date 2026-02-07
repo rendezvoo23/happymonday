@@ -83,7 +83,9 @@ export function NumericKeyboard({
             <>
               <span>{key}</span>
               {KEY_LABELS[key] && (
-                <span className="numeric-keyboard__letter">{KEY_LABELS[key]}</span>
+                <span className="numeric-keyboard__letter">
+                  {KEY_LABELS[key]}
+                </span>
               )}
             </>
           )}
