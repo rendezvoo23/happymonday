@@ -45,6 +45,7 @@ import { MoreIcon } from "./more";
 import { PencilIcon } from "./pencil";
 import { PersonIcon } from "./person";
 import { PersonFillIcon } from "./personfill";
+import { TakeoutBagAndCupAndStrawMediumIcon } from "./takeoutbag.and.cup.and.straw-medium";
 import { TrashIcon } from "./trash";
 
 // Export all icons
@@ -85,6 +86,7 @@ export {
   PillIcon,
   PlaneIcon,
   StethoscopeIcon,
+  TakeoutBagAndCupAndStrawMediumIcon,
   TakeoutBagIcon,
   TicketIcon,
   TrashIcon,
@@ -141,6 +143,7 @@ export const Icons: Record<string, React.FC> = {
   ":chevronleft:": ChevronLeftIcon,
   ":chevronright:": ChevronRightIcon,
   ":more:": MoreIcon,
+  ":takeoutbagandcupandstrawmedium:": TakeoutBagAndCupAndStrawMediumIcon,
 };
 
 /**

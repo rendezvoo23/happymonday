@@ -9,7 +9,7 @@ import { type Subcategory, getSubcategories } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { useCategoryStore } from "@/stores/categoryStore";
 import type { CategoryId, TransactionType } from "@/types";
-import { CheckIcon, X } from "lucide-react";
+import { X } from "lucide-react";
 import { Spinner } from "../spinner";
 import { SegmentedControl } from "../ui/SegmentedControl";
 import { LiquidButton } from "../ui/button/button";
@@ -73,6 +73,8 @@ export function TransactionForm({
     initialData?.subcategoryId || null
   );
   const dateInputRef = useRef<HTMLInputElement>(null);
+  const categoryScrollRef = useRef<HTMLDivElement>(null);
+  const [activeCategoryPanel, setActiveCategoryPanel] = useState(0);
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
 
   const { formatAmount } = useCurrency();
@@ -235,16 +237,17 @@ export function TransactionForm({
             }}
           >
             {isKeyboardVisible ? null : amount.length === 0 ? (
-              <div className="text-sm text-gray-500 dark:text-gray-500 absolute left-[20px] top-[50%] -translate-y-1/2">
-                Enter amount
+              <div className="text-[16px] text-gray-500 dark:text-gray-600 absolute left-[20px] top-[50%] -translate-y-1/2">
+                {t("transactions.enterAmount")}
               </div>
             ) : null}
             <div
+              style={{ lineHeight: "1" }}
               className={cn(
                 "flex items-center gap-0",
                 Number.parseFloat(amount ?? "0") > 1_000_000
                   ? "text-[30px]"
-                  : "text-[36px]"
+                  : "text-[32px]"
               )}
             >
               <span className={amount ? "" : "opacity-70"}>
@@ -308,78 +311,121 @@ export function TransactionForm({
         )}
 
         <div
-          style={{
-            margin: "8px 0",
-            width: "100%",
-            height: "210px",
-            overflowX: "auto",
-            overflowY: "hidden",
-            scrollSnapType: "x mandatory",
-            scrollBehavior: "smooth",
-            WebkitOverflowScrolling: "touch",
-            display: "flex",
-            flexDirection: "row",
-          }}
+          className="flex flex-col items-center gap-1"
+          style={{ margin: "8px -16px" }}
         >
           <div
+            ref={categoryScrollRef}
+            className="no-scrollbar"
             style={{
-              flex: "0 0 100%",
               width: "100%",
-              minWidth: "100%",
-              height: "210px",
-              overflow: "hidden",
-              scrollSnapAlign: "start",
-              scrollSnapStop: "always",
+              height: "230px",
+              overflowX: "auto",
+              overflowY: "hidden",
+              scrollSnapType: "x mandatory",
+              scrollBehavior: "smooth",
+              WebkitOverflowScrolling: "touch",
+              display: "flex",
+              flexDirection: "row",
+              gap: 4,
+            }}
+            onScroll={() => {
+              const el = categoryScrollRef.current;
+              if (!el) return;
+              const index = Math.round(el.scrollLeft / el.clientWidth);
+              setActiveCategoryPanel(Math.min(index, 1));
             }}
           >
-            {categoriesLoading ? (
-              <div className="text-center py-4 text-gray-400 dark:text-gray-500 text-sm flex items-center justify-center min-h-[200px]">
-                <Spinner size="lg" />
-              </div>
-            ) : categories.length === 0 ? (
-              <div className="text-center py-0 text-gray-400 dark:text-gray-500">
-                {t("transactions.noCategories")}
-              </div>
-            ) : (
-              <div className="max-w-sm mx-auto">
-                <CategorySelector
-                  categories={categories}
-                  selectedId={categoryId}
-                  onSelect={setCategoryId}
-                />
-              </div>
-            )}
-          </div>
-          <div
-            style={{
-              flex: "0 0 100%",
-              width: "100%",
-              minWidth: "100%",
-              height: "210px",
-              overflow: "hidden",
-              scrollSnapAlign: "start",
-              scrollSnapStop: "always",
-            }}
-          >
-            {categoryId &&
-              (isLoadingSubcategories || subcategories.length > 0) && (
-                <div className="space-y-2 py-1">
-                  {isLoadingSubcategories ? (
-                    <div className="text-center py-4 text-gray-400 dark:text-gray-500 text-sm flex items-center justify-center min-h-[200px]">
-                      <Spinner size="lg" />
-                    </div>
-                  ) : (
-                    <div className="max-w-sm mx-auto">
-                      <SubcategorySelector
-                        subcategories={subcategories}
-                        selectedId={subcategoryId}
-                        onSelect={setSubcategoryId}
-                        categoryColor={selectedCategory?.color}
-                      />
-                    </div>
-                  )}
+            <div
+              style={{
+                flex: "0 0 100%",
+                width: "100%",
+                minWidth: "100%",
+                height: "230px",
+                overflow: "hidden",
+                scrollSnapAlign: "start",
+                scrollSnapStop: "always",
+              }}
+            >
+              {categoriesLoading ? (
+                <div className="text-center py-4 text-gray-400 dark:text-gray-500 text-sm flex items-center justify-center">
+                  <Spinner size="lg" />
+                </div>
+              ) : categories.length === 0 ? (
+                <div className="text-center py-0 text-gray-400 dark:text-gray-500">
+                  {t("transactions.noCategories")}
+                </div>
+              ) : (
+                <div className="max-w-sm mx-auto bg-[var(--background-level-1)] rounded-[32px] p-2 h-full">
+                  <CategorySelector
+                    categories={categories}
+                    selectedId={categoryId}
+                    onSelect={setCategoryId}
+                  />
                 </div>
               )}
+            </div>
+            <div
+              style={{
+                flex: "0 0 100%",
+                width: "100%",
+                minWidth: "100%",
+                height: "230px",
+                overflow: "hidden",
+                scrollSnapAlign: "start",
+                scrollSnapStop: "always",
+              }}
+            >
+              {categoryId &&
+                (isLoadingSubcategories || subcategories.length > 0) && (
+                  <div className="space-y-2 py-1">
+                    {isLoadingSubcategories ? (
+                      <div className="text-center py-4 text-gray-400 dark:text-gray-500 text-sm flex items-center justify-center">
+                        <Spinner size="lg" />
+                      </div>
+                    ) : (
+                      <div className="max-w-sm mx-auto bg-[var(--background-level-1)] rounded-[32px] p-[5px] h-[220px]">
+                        <SubcategorySelector
+                          subcategories={subcategories}
+                          selectedId={subcategoryId}
+                          onSelect={setSubcategoryId}
+                          categoryColor={selectedCategory?.color}
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
+            </div>
+          </div>
+          <div className="flex items-center justify-center gap-1.5">
+            <span
+              className="rounded-full transition-colors"
+              style={{
+                width: "8px",
+                height: "8px",
+                backgroundColor:
+                  activeCategoryPanel === 0
+                    ? selectedCategory?.color
+                    : "var(--border-level-2)",
+                border: "1px solid var(--border-level-2)",
+                opacity: activeCategoryPanel === 0 ? 1 : 0.4,
+              }}
+              aria-hidden
+            />
+            <span
+              className="rounded-full transition-colors"
+              style={{
+                width: "8px",
+                height: "8px",
+                backgroundColor:
+                  activeCategoryPanel === 1
+                    ? selectedCategory?.color
+                    : "var(--border-level-2)",
+                border: "1px solid var(--border-level-2)",
+                opacity: activeCategoryPanel === 1 ? 1 : 0.4,
+              }}
+              aria-hidden
+            />
           </div>
         </div>
 
@@ -458,7 +504,7 @@ export function TransactionForm({
         style={{
           position: "absolute",
           left: "8px",
-          top: "-24px",
+          top: "-20px",
           zIndex: 1,
         }}
       >
@@ -467,20 +513,32 @@ export function TransactionForm({
 
       <LiquidButton
         type="submit"
-        variant={amount ? "liquid" : "outline"}
+        variant={amount ? "primary" : "outline"}
         size="icon-lg"
         onClick={onCancel}
         disabled={!amount}
         style={{
           backgroundColor: amount ? "var(--accent-color)" : undefined,
-          color: amount ? "white" : "var(--border-default)",
+          color: amount ? "#00f3ff" : "var(--border-default)",
           position: "absolute",
           right: "8px",
           top: "-20px",
           zIndex: 1,
         }}
       >
-        <CheckIcon />
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          width="24"
+          height="24"
+        >
+          <title>checkmark</title>
+          <path
+            transform="matrix(0.9476216916527855, 0, 0, 0.9476216916527855, -0.8317601332593005, 19.784564131038316)"
+            d="M11.13 2.06C11.82 2.06 12.36 1.79 12.74 1.23L23.71-15.74C23.99-16.16 24.09-16.54 24.09-16.90C24.09-17.82 23.41-18.49 22.46-18.49C21.81-18.49 21.41-18.26 21.01-17.63L11.09-1.90L6-8.34C5.61-8.82 5.21-9.04 4.64-9.04C3.68-9.04 2.99-8.36 2.99-7.42C2.99-7.01 3.13-6.62 3.47-6.21L9.54 1.27C9.98 1.82 10.48 2.06 11.13 2.06Z"
+            fill="currentColor"
+          />
+        </svg>
       </LiquidButton>
     </form>
   );
