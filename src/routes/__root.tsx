@@ -227,8 +227,7 @@ function RootComponent() {
             right?: number;
           };
         };
-        const height =
-          tgExt.viewportStableHeight ?? window.innerHeight;
+        const height = tgExt.viewportStableHeight ?? window.innerHeight;
         document.documentElement.style.setProperty(
           "--tg-height",
           `${height}px`
