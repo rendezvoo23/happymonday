@@ -24,7 +24,7 @@ export function EditTransactionPage({
   > | null>(null);
   const { t } = useTranslation();
 
-  useTelegramBackButton();
+  useTelegramBackButton({ to: "/statistics" });
 
   // Load the specific transaction by ID
   useEffect(() => {

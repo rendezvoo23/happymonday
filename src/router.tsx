@@ -20,6 +20,9 @@ export const router = createRouter({
   },
   defaultPreload: "intent",
   defaultPreloadStaleTime: 0,
+  scrollRestoration: true,
+  // Restore scroll per pathname so returning to a route (e.g. /history) brings back the same position
+  getScrollRestorationKey: (location) => location.pathname,
 });
 
 declare module "@tanstack/react-router" {

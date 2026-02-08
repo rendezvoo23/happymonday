@@ -1,4 +1,5 @@
 import { TransactionList } from "@/components/finance/TransactionList";
+import { FilterIcon } from "@/components/icons/filter";
 import { Header } from "@/components/layout/Header";
 import { PageShell } from "@/components/layout/PageShell";
 import { ModalListItem } from "@/components/lists/modal-list-item";
@@ -7,9 +8,11 @@ import { Spinner } from "@/components/spinner";
 import { Button } from "@/components/ui/Button";
 import { InlineButtonDialog } from "@/components/ui/inline-button-dialog";
 import { useDeleteTransaction } from "@/hooks/use-transactions-query";
+import { useTelegramBackButton } from "@/hooks/useTelegramBackButton";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useTransactionStore } from "@/stores/transactionStore";
 import { useNavigate } from "@tanstack/react-router";
+
 import { useEffect, useState } from "react";
 
 type SortByOption = "occurred_at" | "updated_at";
@@ -31,6 +34,8 @@ export function HistoryPage() {
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const pageSize = 20;
+
+  useTelegramBackButton();
 
   useEffect(() => {
     // Initial load
@@ -76,48 +81,50 @@ export function HistoryPage() {
   return (
     <PageShell>
       <Header>
-        <div className="flex items-center justify-center w-full relative px-6 gap-4 relative">
-          <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100 flex-1">
-            {t("nav.history")}
-          </h1>
-          <InlineButtonDialog
-            height={SORT_OPTIONS.length * 50}
-            width={230}
-            zIndex={1}
-            buttonSize={26}
-            expandedYOffset={8}
-            useOutsideClick
-          >
-            {({ onClose }) => (
-              <div className="flex flex-col gap-0">
-                {SORT_OPTIONS.map((option, index) => (
-                  <ModalListItem
-                    key={option.value}
-                    onClick={() => {
-                      handleSortBySelect(option.value);
-                      onClose?.();
-                    }}
-                    position={
-                      index === 0
-                        ? SORT_OPTIONS.length === 1
-                          ? "single"
-                          : "first"
-                        : index === SORT_OPTIONS.length - 1
-                          ? "last"
-                          : "middle"
-                    }
-                    isSelected={sortBy === option.value}
-                  >
-                    <span className="font-normal text-[17px] text-gray-900 dark:text-gray-100 truncate">
-                      {t(option.labelKey)}
-                    </span>
-                  </ModalListItem>
-                ))}
-              </div>
-            )}
-          </InlineButtonDialog>
-        </div>
+        <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100 flex-1">
+          {t("nav.history")}
+        </h1>
       </Header>
+
+      <div className="flex items-center justify-end w-full relative px-6 gap-4 relative">
+        <InlineButtonDialog
+          icon={<FilterIcon className="w-full h-full" />}
+          height={SORT_OPTIONS.length * 50}
+          width={230}
+          zIndex={1}
+          buttonSize={36}
+          expandedYOffset={8}
+          useOutsideClick
+        >
+          {({ onClose }) => (
+            <div className="flex flex-col gap-0">
+              {SORT_OPTIONS.map((option, index) => (
+                <ModalListItem
+                  key={option.value}
+                  onClick={() => {
+                    handleSortBySelect(option.value);
+                    onClose?.();
+                  }}
+                  position={
+                    index === 0
+                      ? SORT_OPTIONS.length === 1
+                        ? "single"
+                        : "first"
+                      : index === SORT_OPTIONS.length - 1
+                        ? "last"
+                        : "middle"
+                  }
+                  isSelected={sortBy === option.value}
+                >
+                  <span className="font-normal text-[17px] text-gray-900 dark:text-gray-100 truncate">
+                    {t(option.labelKey)}
+                  </span>
+                </ModalListItem>
+              ))}
+            </div>
+          )}
+        </InlineButtonDialog>
+      </div>
 
       <main className="px-3 pb-32">
         <TransactionList

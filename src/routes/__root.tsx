@@ -212,9 +212,52 @@ function RootComponent() {
 
   // Disable Telegram swipe-to-close behavior for the entire app
   useEffect(() => {
-    if (window.Telegram?.WebApp) {
-      window.Telegram.WebApp.disableVerticalSwipes();
-      window.Telegram.WebApp.expand();
+    const tg = window.Telegram?.WebApp;
+    if (tg) {
+      tg.disableVerticalSwipes();
+      tg.expand();
+
+      function updateSize() {
+        const tgExt = tg as {
+          viewportStableHeight?: number;
+          contentSafeAreaInset?: {
+            top?: number;
+            bottom?: number;
+            left?: number;
+            right?: number;
+          };
+        };
+        const height =
+          tgExt.viewportStableHeight ?? window.innerHeight;
+        document.documentElement.style.setProperty(
+          "--tg-height",
+          `${height}px`
+        );
+        const inset = tgExt.contentSafeAreaInset ?? {
+          top: 0,
+          bottom: 0,
+          left: 0,
+          right: 0,
+        };
+        document.documentElement.style.setProperty(
+          "--tg-content-safe-area-inset-top",
+          `${inset.top}px`
+        );
+        document.documentElement.style.setProperty(
+          "--tg-content-safe-area-inset-bottom",
+          `${inset.bottom}px`
+        );
+        document.documentElement.style.setProperty(
+          "--tg-content-safe-area-inset-left",
+          `${inset.left}px`
+        );
+        document.documentElement.style.setProperty(
+          "--tg-content-safe-area-inset-right",
+          `${inset.right}px`
+        );
+      }
+      tg.onEvent("viewportChanged", updateSize);
+      updateSize();
     }
 
     return () => {

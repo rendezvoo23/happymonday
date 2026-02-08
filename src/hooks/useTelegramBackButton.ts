@@ -1,7 +1,7 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 
-export function useTelegramBackButton() {
+export function useTelegramBackButton({ to = ".." }: { to?: string } = {}) {
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -16,7 +16,7 @@ export function useTelegramBackButton() {
 
     // Set up the click handler
     const handleBackClick = () => {
-      navigate({ to: ".." });
+      navigate({ to });
     };
 
     tg.BackButton.onClick(handleBackClick);

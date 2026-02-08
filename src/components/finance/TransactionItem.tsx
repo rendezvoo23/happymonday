@@ -136,7 +136,7 @@ export function TransactionItem({
           </span>
 
           <InlineButtonDialog
-            height={100}
+            height={90}
             width={170}
             zIndex={zIndex}
             buttonSize={26}

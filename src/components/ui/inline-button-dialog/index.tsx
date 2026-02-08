@@ -23,6 +23,7 @@ type InlineButtonDialogProps = {
   showCloseButton?: boolean;
   "data-testid"?: string;
   expandedYOffset?: number;
+  icon?: React.ReactNode;
 };
 
 export const InlineButtonDialog = memo(
@@ -37,6 +38,7 @@ export const InlineButtonDialog = memo(
     children,
     useOutsideClick: _useOutsideClick = true,
     "data-testid": dataTestId,
+    icon = <MoreIcon className="w-full h-full opacity-50" />,
   }: InlineButtonDialogProps) => {
     const [isExpanded, setIsExpanded] = useState(false);
     const [height, setHeight] = useState(_height);
@@ -185,7 +187,7 @@ export const InlineButtonDialog = memo(
                 <div
                   style={{ width: buttonSize / 1.5, height: buttonSize / 1.5 }}
                 >
-                  <MoreIcon className="w-4 h-4 opacity-50" />
+                  {icon}
                 </div>
               </motion.div>
             )}
