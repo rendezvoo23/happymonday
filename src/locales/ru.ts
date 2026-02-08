@@ -74,6 +74,13 @@ export default {
     automaticDescription: "Следовать системе",
   },
 
+  // History
+  history: {
+    sortByOccurredAt: "По дате",
+    sortByUpdatedAt: "По последнему обновлению",
+    endOfList: "Всё",
+  },
+
   // Transactions
   transactions: {
     add: "Добавить транзакцию",

@@ -74,6 +74,13 @@ export default {
     automaticDescription: "システムに従う",
   },
 
+  // History
+  history: {
+    sortByOccurredAt: "日付順",
+    sortByUpdatedAt: "更新順",
+    endOfList: "以上です",
+  },
+
   // Transactions
   transactions: {
     add: "取引を追加",

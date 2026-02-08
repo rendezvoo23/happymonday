@@ -58,8 +58,8 @@ export function TransactionForm({
   const [note, setNote] = useState(initialData?.note || "");
   const [date, setDate] = useState(
     initialData?.date
-      ? format(new Date(initialData.date), "yyyy-MM-dd")
-      : format(selectedDate, "yyyy-MM-dd")
+      ? format(new Date(initialData.date), "yyyy-MM-dd HH:mm")
+      : format(selectedDate, "yyyy-MM-dd HH:mm")
   );
 
   const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
@@ -286,7 +286,7 @@ export function TransactionForm({
         )}
 
         <div
-          className="flex flex-col items-center gap-1"
+          className="flex flex-col items-center gap-1 relative"
           style={{ margin: "8px -16px", marginTop: "12px" }}
         >
           <div
@@ -372,7 +372,7 @@ export function TransactionForm({
                 )}
             </div>
           </div>
-          <div className="flex items-center justify-center gap-2 mt-[-20px] mb-2">
+          <div className="flex items-center justify-center gap-2 bottom-[8px] absolute">
             <span
               className="rounded-full transition-colors"
               style={{

@@ -74,6 +74,13 @@ export default {
     automaticDescription: "Coincidir con sistema",
   },
 
+  // History
+  history: {
+    sortByOccurredAt: "Por fecha",
+    sortByUpdatedAt: "Por última actualización",
+    endOfList: "Eso es todo",
+  },
+
   // Transactions
   transactions: {
     add: "Agregar transacción",

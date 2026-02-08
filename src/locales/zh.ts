@@ -74,6 +74,13 @@ export default {
     automaticDescription: "跟随系统",
   },
 
+  // History
+  history: {
+    sortByOccurredAt: "按日期",
+    sortByUpdatedAt: "按最近更新",
+    endOfList: "没了",
+  },
+
   // Transactions
   transactions: {
     add: "添加交易",

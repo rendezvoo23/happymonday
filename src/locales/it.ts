@@ -74,6 +74,13 @@ export default {
     automaticDescription: "Segui il sistema",
   },
 
+  // History
+  history: {
+    sortByOccurredAt: "Per data",
+    sortByUpdatedAt: "Per ultimo aggiornamento",
+    endOfList: "È tutto",
+  },
+
   // Transactions
   transactions: {
     add: "Aggiungi transazione",

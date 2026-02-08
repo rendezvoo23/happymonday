@@ -74,6 +74,13 @@ export default {
     automaticDescription: "متابعة النظام",
   },
 
+  // History
+  history: {
+    sortByOccurredAt: "حسب التاريخ",
+    sortByUpdatedAt: "حسب آخر تحديث",
+    endOfList: "انتهى",
+  },
+
   // Transactions
   transactions: {
     add: "إضافة معاملة",

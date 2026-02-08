@@ -22,6 +22,7 @@ type InlineButtonDialogProps = {
   useOutsideClick?: boolean;
   showCloseButton?: boolean;
   "data-testid"?: string;
+  expandedYOffset?: number;
 };
 
 export const InlineButtonDialog = memo(
@@ -30,6 +31,7 @@ export const InlineButtonDialog = memo(
     height: _height = 250,
     zIndex = 1,
     buttonSize = 40,
+    expandedYOffset = -8,
     showCloseButton = false,
     title,
     children,
@@ -132,7 +134,7 @@ export const InlineButtonDialog = memo(
                 width: width,
                 height: height,
                 x: -width + buttonSize + 0,
-                y: -8,
+                y: expandedYOffset,
                 borderRadius: 24,
                 scale: 1,
                 transition: {
@@ -260,8 +262,8 @@ export const InlineButtonDialog = memo(
                     <div className="w-full h-full">
                       <div
                         className={cn(
-                          showCloseButton ? "px-5" : "px-2",
-                          showCloseButton ? "mt-20" : "mt-2"
+                          showCloseButton ? "px-5" : "px-0",
+                          showCloseButton ? "mt-20" : "mt-0"
                         )}
                       >
                         {typeof children === "function"

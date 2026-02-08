@@ -1,14 +1,23 @@
 import { TransactionList } from "@/components/finance/TransactionList";
 import { Header } from "@/components/layout/Header";
 import { PageShell } from "@/components/layout/PageShell";
+import { ModalListItem } from "@/components/lists/modal-list-item";
 import { ConfirmAction } from "@/components/modals/confirm-action";
 import { Spinner } from "@/components/spinner";
 import { Button } from "@/components/ui/Button";
+import { InlineButtonDialog } from "@/components/ui/inline-button-dialog";
 import { useDeleteTransaction } from "@/hooks/use-transactions-query";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useTransactionStore } from "@/stores/transactionStore";
 import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+
+type SortByOption = "occurred_at" | "updated_at";
+
+const SORT_OPTIONS: { value: SortByOption; labelKey: string }[] = [
+  { value: "occurred_at", labelKey: "history.sortByOccurredAt" },
+  { value: "updated_at", labelKey: "history.sortByUpdatedAt" },
+];
 
 export function HistoryPage() {
   const navigate = useNavigate();
@@ -18,25 +27,31 @@ export function HistoryPage() {
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [sortBy, setSortBy] = useState<SortByOption>("occurred_at");
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const pageSize = 20;
 
   useEffect(() => {
     // Initial load
-    loadHistory(0, pageSize).then(({ hasMore }) => {
+    loadHistory(0, pageSize, sortBy).then(({ hasMore }) => {
       setHasMore(hasMore);
     });
-  }, []);
+  }, [sortBy]);
 
   const handleLoadMore = async () => {
     if (loadingMore || !hasMore) return;
     setLoadingMore(true);
     const nextPage = page + 1;
-    const { hasMore: more } = await loadHistory(nextPage, pageSize);
+    const { hasMore: more } = await loadHistory(nextPage, pageSize, sortBy);
     setHasMore(more);
     setPage(nextPage);
     setLoadingMore(false);
+  };
+
+  const handleSortBySelect = (value: SortByOption) => {
+    setSortBy(value);
+    setPage(0);
   };
 
   const handleEdit = (transaction: { id: string }) => {
@@ -54,7 +69,7 @@ export function HistoryPage() {
       setIsDeleteModalOpen(false);
       setDeleteTargetId(null);
       // Reload filtering
-      loadHistory(0, (page + 1) * pageSize);
+      loadHistory(0, (page + 1) * pageSize, sortBy);
     }
   };
 
@@ -62,9 +77,45 @@ export function HistoryPage() {
     <PageShell>
       <Header>
         <div className="flex items-center justify-center w-full relative px-6 gap-4 relative">
-          <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+          <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100 flex-1">
             {t("nav.history")}
           </h1>
+          <InlineButtonDialog
+            height={SORT_OPTIONS.length * 50}
+            width={230}
+            zIndex={1}
+            buttonSize={26}
+            expandedYOffset={8}
+            useOutsideClick
+          >
+            {({ onClose }) => (
+              <div className="flex flex-col gap-0">
+                {SORT_OPTIONS.map((option, index) => (
+                  <ModalListItem
+                    key={option.value}
+                    onClick={() => {
+                      handleSortBySelect(option.value);
+                      onClose?.();
+                    }}
+                    position={
+                      index === 0
+                        ? SORT_OPTIONS.length === 1
+                          ? "single"
+                          : "first"
+                        : index === SORT_OPTIONS.length - 1
+                          ? "last"
+                          : "middle"
+                    }
+                    isSelected={sortBy === option.value}
+                  >
+                    <span className="font-normal text-[17px] text-gray-900 dark:text-gray-100 truncate">
+                      {t(option.labelKey)}
+                    </span>
+                  </ModalListItem>
+                ))}
+              </div>
+            )}
+          </InlineButtonDialog>
         </div>
       </Header>
 
@@ -74,6 +125,8 @@ export function HistoryPage() {
           onEdit={handleEdit}
           onDelete={handleDeleteRequest}
           disableLimit
+          groupByMonth
+          sortBy={sortBy}
         />
 
         <div className="flex items-center justify-center w-full mt-4">
@@ -92,7 +145,7 @@ export function HistoryPage() {
 
         {!hasMore && historyTransactions.length > 0 && (
           <div className="text-center py-8 text-gray-400 text-sm">
-            {t("transactions.noTransactions")}
+            {t("history.endOfList")}
           </div>
         )}
       </main>

@@ -74,6 +74,13 @@ export default {
     automaticDescription: "सिस्टम का अनुसरण करें",
   },
 
+  // History
+  history: {
+    sortByOccurredAt: "तारीख के अनुसार",
+    sortByUpdatedAt: "अंतिम अपडेट के अनुसार",
+    endOfList: "बस इतना ही",
+  },
+
   // Transactions
   transactions: {
     add: "लेनदेन जोड़ें",

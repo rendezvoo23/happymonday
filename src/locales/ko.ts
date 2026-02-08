@@ -74,6 +74,13 @@ export default {
     automaticDescription: "시스템 따르기",
   },
 
+  // History
+  history: {
+    sortByOccurredAt: "날짜순",
+    sortByUpdatedAt: "최근 업데이트순",
+    endOfList: "끝",
+  },
+
   // Transactions
   transactions: {
     add: "거래 추가",

@@ -43,6 +43,23 @@ export function HomePage() {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const screenWidthRef = useRef(0);
+  const [clusterHeight, setClusterHeight] = useState<number>(300);
+
+  useEffect(() => {
+    const windowHeight = window.innerHeight;
+
+    console.log("[HomePage] Window height:", {
+      windowHeight,
+      innerHeight: window.innerHeight,
+    });
+
+    if (!windowHeight) return;
+
+    const clusterHeight = Math.max(windowHeight - (116 + 300), 350);
+    console.log("[HomePage] Cluster height:", { clusterHeight });
+
+    setClusterHeight(clusterHeight);
+  }, []);
 
   // Cache for all loaded months - key is "YYYY-MM" format
   const [monthsCache, setMonthsCache] = useState<
@@ -265,11 +282,11 @@ export function HomePage() {
         </Header>
         <main
           ref={containerRef}
-          className="flex flex-col items-center gap-2 touch-none"
+          className="flex flex-col items-center gap-2 touch-none" //
         >
           <div className="w-full flex justify-center relative overflow-hidden">
             {isInitialLoading ? (
-              <div className="text-gray-500 dark:text-gray-400 h-[380px] flex items-center justify-center">
+              <div className="text-gray-500 dark:text-gray-400 flex items-center justify-center">
                 <Spinner size="lg" />
               </div>
             ) : (
@@ -297,7 +314,7 @@ export function HomePage() {
                     mode="cluster"
                     animateBubbles={false}
                     key="prev-month-bubbles"
-                    height={380}
+                    height={clusterHeight}
                   />
                 </div>
 
@@ -307,7 +324,7 @@ export function HomePage() {
                     transactions={transactions}
                     mode="cluster"
                     animateBubbles={!isTransactionDrawerOpen}
-                    height={380}
+                    height={clusterHeight}
                   />
                 </div>
 
@@ -323,7 +340,7 @@ export function HomePage() {
                       transactions={nextMonthTransactions}
                       mode="cluster"
                       animateBubbles={false}
-                      height={380}
+                      height={clusterHeight}
                       key="next-month-bubbles"
                     />
                   </div>

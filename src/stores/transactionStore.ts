@@ -28,7 +28,8 @@ interface TransactionState {
   loadTransactionById: (id: string) => Promise<TransactionWithCategory | null>;
   loadHistory: (
     page: number,
-    pageSize: number
+    pageSize: number,
+    sortBy?: "occurred_at" | "updated_at"
   ) => Promise<{ hasMore: boolean }>;
   addTransaction: (
     transaction: Omit<TransactionInsert, "user_id">
@@ -131,7 +132,11 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
     }
   },
 
-  loadHistory: async (page: number, pageSize: number) => {
+  loadHistory: async (
+    page: number,
+    pageSize: number,
+    sortBy: "occurred_at" | "updated_at" = "occurred_at"
+  ) => {
     // optimize: do not set global loading if it's pagination?
     // User wants "no long loading time", so we rely on appending.
     if (page === 0)
@@ -161,7 +166,7 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
                 `
         )
         .is("deleted_at", null)
-        .order("occurred_at", { ascending: false })
+        .order(sortBy, { ascending: false })
         .range(start, end);
 
       if (error) throw error;

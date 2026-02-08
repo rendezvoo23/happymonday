@@ -74,6 +74,13 @@ export default {
     automaticDescription: "Match system",
   },
 
+  // History
+  history: {
+    sortByOccurredAt: "By date",
+    sortByUpdatedAt: "By last updated",
+    endOfList: "That's all",
+  },
+
   // Transactions
   transactions: {
     add: "Add Transaction",
