@@ -32,7 +32,7 @@ export const InlineButtonDialog = memo(
     height: _height = 250,
     zIndex = 1,
     buttonSize = 40,
-    expandedYOffset = -8,
+    expandedYOffset = 2,
     showCloseButton = false,
     title,
     children,

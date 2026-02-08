@@ -1,4 +1,4 @@
-import { Check } from "lucide-react";
+import { CheckmarkIcon } from "@/components/icons/checkmark";
 
 export function ModalListItem({
   children,
@@ -35,7 +35,7 @@ export function ModalListItem({
       className={`w-full flex items-center justify-between px-4 pl-12 py-3 bg-white dark:bg-[var(--background-level-1)] hover:bg-gray-50 dark:hover:bg-[var(--background-level-2)] transition-colors relative ${getRoundedClass()}`}
     >
       {isSelected && (
-        <Check className="w-5 h-5 text-[var(--accent-color)] flex-shrink-0 absolute left-4" />
+        <CheckmarkIcon className="w-5 h-5 text-[var(--accent-color)] flex-shrink-0 absolute left-4" />
       )}
       {children}
 

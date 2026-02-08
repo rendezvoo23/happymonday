@@ -2,7 +2,7 @@ import { useCategoryLabel } from "@/hooks/useCategoryLabel";
 import { cn } from "@/lib/utils";
 import type { Category, CategoryId } from "@/types";
 import { motion } from "framer-motion";
-import { Check } from "lucide-react";
+import { CheckmarkIcon } from "@/components/icons/checkmark";
 
 interface CategorySelectorProps {
   categories: Category[];
@@ -52,7 +52,7 @@ export function CategorySelector({
                     animate={{ scale: 1, opacity: 1 }}
                     className="absolute inset-0 flex items-center justify-center rounded-full"
                   >
-                    <Check className="w-6 h-6 text-white" strokeWidth={3} />
+                    <CheckmarkIcon className="w-6 h-6 text-white" />
                   </motion.div>
                 )}
               </motion.div>

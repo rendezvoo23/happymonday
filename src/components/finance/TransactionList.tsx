@@ -19,7 +19,7 @@ import {
   ru,
   zhCN,
 } from "date-fns/locale";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { TransactionItem } from "./TransactionItem";
 
 type Transaction = Tables<"transactions">;
@@ -154,30 +154,40 @@ export function TransactionList({
                       {monthName}
                     </div>
                     <div className="card-level-1">
-                      {monthTransactions.map((transaction, index, array) => (
-                        <motion.div
-                          key={transaction.id}
-                          variants={{
-                            hidden: {
-                              opacity: 0,
-                              y: 15,
-                              scale: 0.98,
-                            },
-                            show: {
-                              opacity: 1,
-                              y: 0,
-                              scale: 1,
-                            },
-                          }}
-                        >
-                          <TransactionItem
+                      <AnimatePresence mode="popLayout">
+                        {monthTransactions.map((transaction, index, array) => (
+                          <motion.div
+                            key={transaction.id}
+                            layout
+                            variants={{
+                              hidden: {
+                                opacity: 0,
+                                y: 15,
+                                scale: 0.98,
+                              },
+                              show: {
+                                opacity: 1,
+                                y: 0,
+                                scale: 1,
+                              },
+                              exit: {
+                                opacity: 0,
+                                height: 0,
+                                overflow: "hidden",
+                                transition: { duration: 0.2 },
+                              },
+                            }}
+                            exit="exit"
+                          >
+                            <TransactionItem
                             transaction={transaction}
                             onEdit={onEdit}
                             onDelete={onDelete}
                             zIndex={array.length - index}
                           />
-                        </motion.div>
-                      ))}
+                          </motion.div>
+                        ))}
+                      </AnimatePresence>
                     </div>
                   </div>
                 );
@@ -205,22 +215,32 @@ export function TransactionList({
       className="w-full pb-0"
     >
       <div className="card-level-1">
-        {displayed.map((txn, index, array) => (
-          <motion.div
-            key={txn.id}
-            variants={{
-              hidden: { opacity: 0, y: 15, scale: 0.98 },
-              show: { opacity: 1, y: 0, scale: 1 },
-            }}
-          >
-            <TransactionItem
+        <AnimatePresence mode="popLayout">
+          {displayed.map((txn, index, array) => (
+            <motion.div
+              key={txn.id}
+              layout
+              variants={{
+                hidden: { opacity: 0, y: 15, scale: 0.98 },
+                show: { opacity: 1, y: 0, scale: 1 },
+                exit: {
+                  opacity: 0,
+                  height: 0,
+                  overflow: "hidden",
+                  transition: { duration: 0.2 },
+                },
+              }}
+              exit="exit"
+            >
+              <TransactionItem
               transaction={txn}
               onEdit={onEdit}
               onDelete={onDelete}
               zIndex={array.length - index}
             />
-          </motion.div>
-        ))}
+            </motion.div>
+          ))}
+        </AnimatePresence>
       </div>
       {!disableLimit && limit && sorted.length > limit && (
         <motion.div

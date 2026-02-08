@@ -12,8 +12,9 @@ import { useTelegramBackButton } from "@/hooks/useTelegramBackButton";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useTransactionStore } from "@/stores/transactionStore";
 import { useNavigate } from "@tanstack/react-router";
+import { useInView } from "framer-motion";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 type SortByOption = "occurred_at" | "updated_at";
 
@@ -24,7 +25,8 @@ const SORT_OPTIONS: { value: SortByOption; labelKey: string }[] = [
 
 export function HistoryPage() {
   const navigate = useNavigate();
-  const { historyTransactions, loadHistory } = useTransactionStore();
+  const { historyTransactions, loadHistory, removeHistoryTransaction } =
+    useTransactionStore();
   const deleteTransactionMutation = useDeleteTransaction();
   const { t } = useTranslation();
   const [page, setPage] = useState(0);
@@ -37,6 +39,9 @@ export function HistoryPage() {
 
   useTelegramBackButton();
 
+  const loadMoreRef = useRef<HTMLDivElement>(null);
+  const loadMoreInView = useInView(loadMoreRef, { once: false });
+
   useEffect(() => {
     // Initial load
     loadHistory(0, pageSize, sortBy).then(({ hasMore }) => {
@@ -44,7 +49,7 @@ export function HistoryPage() {
     });
   }, [sortBy]);
 
-  const handleLoadMore = async () => {
+  const handleLoadMore = useCallback(async () => {
     if (loadingMore || !hasMore) return;
     setLoadingMore(true);
     const nextPage = page + 1;
@@ -52,7 +57,13 @@ export function HistoryPage() {
     setHasMore(more);
     setPage(nextPage);
     setLoadingMore(false);
-  };
+  }, [page, sortBy, loadHistory, loadingMore, hasMore]);
+
+  useEffect(() => {
+    if (loadMoreInView && hasMore && !loadingMore) {
+      handleLoadMore();
+    }
+  }, [loadMoreInView, hasMore, loadingMore, handleLoadMore]);
 
   const handleSortBySelect = (value: SortByOption) => {
     setSortBy(value);
@@ -71,10 +82,9 @@ export function HistoryPage() {
   const confirmDelete = async () => {
     if (deleteTargetId) {
       await deleteTransactionMutation.mutateAsync(deleteTargetId);
+      removeHistoryTransaction(deleteTargetId);
       setIsDeleteModalOpen(false);
       setDeleteTargetId(null);
-      // Reload filtering
-      loadHistory(0, (page + 1) * pageSize, sortBy);
     }
   };
 
@@ -136,7 +146,10 @@ export function HistoryPage() {
           sortBy={sortBy}
         />
 
-        <div className="flex items-center justify-center w-full mt-4">
+        <div
+          ref={loadMoreRef}
+          className="flex items-center justify-center w-full mt-4 min-h-[48px]"
+        >
           {hasMore && (
             <Button
               variant="ghost"

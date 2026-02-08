@@ -1,7 +1,7 @@
 import type { Subcategory } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
-import { Check } from "lucide-react";
+import { CheckmarkIcon } from "@/components/icons/checkmark";
 import { getIconComponent } from "../icons";
 
 interface SubcategorySelectorProps {
@@ -92,7 +92,7 @@ export function SubcategorySelector({
                       animate={{ scale: 1, opacity: 1 }}
                       className="text-white"
                     >
-                      <Check strokeWidth={3} className="w-5 h-5" />
+                      <CheckmarkIcon className="w-5 h-5" />
                     </motion.div>
                   ) : (
                     <div className="relative z-10 flex items-center justify-center">

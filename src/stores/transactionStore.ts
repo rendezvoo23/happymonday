@@ -31,6 +31,7 @@ interface TransactionState {
     pageSize: number,
     sortBy?: "occurred_at" | "updated_at"
   ) => Promise<{ hasMore: boolean }>;
+  removeHistoryTransaction: (id: string) => void;
   addTransaction: (
     transaction: Omit<TransactionInsert, "user_id">
   ) => Promise<void>;
@@ -191,6 +192,12 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
       });
       return { hasMore: false };
     }
+  },
+
+  removeHistoryTransaction: (id) => {
+    set((state) => ({
+      historyTransactions: state.historyTransactions.filter((t) => t.id !== id),
+    }));
   },
 
   addTransaction: async (transaction) => {

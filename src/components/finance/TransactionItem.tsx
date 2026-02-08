@@ -136,7 +136,7 @@ export function TransactionItem({
           </span>
 
           <InlineButtonDialog
-            height={90}
+            height={92}
             width={170}
             zIndex={zIndex}
             buttonSize={26}
@@ -144,7 +144,7 @@ export function TransactionItem({
           >
             {({ onClose }) => {
               return (
-                <div className="flex flex-col">
+                <div className="flex flex-col m-1">
                   <button
                     type="button"
                     onClick={() => {

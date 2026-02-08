@@ -1,5 +1,6 @@
 import moonIconSrc from "@/assets/moon.png";
 import { DollarSignIcon, GlobeIcon } from "@/components/icons";
+import { CheckmarkIcon } from "@/components/icons/checkmark";
 import { Header } from "@/components/layout/Header";
 import { useLocale } from "@/context/LocaleContext";
 import { useTheme } from "@/context/ThemeContext";
@@ -203,21 +204,7 @@ function ThemePreview({
             : "border-gray-400 dark:border-gray-600"
         }`}
       >
-        {selected && (
-          <svg
-            className="w-4 h-4 text-white"
-            fill="none"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="3"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            aria-label="Selected"
-          >
-            <title>Selected</title>
-            <path d="M5 13l4 4L19 7" />
-          </svg>
-        )}
+        {selected && <CheckmarkIcon className="w-5 h-5 text-white" />}
       </div>
     </button>
   );
