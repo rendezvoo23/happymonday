@@ -268,10 +268,6 @@
   scrollbar-width: none; /* Firefox */
 }
 
-header {
-  margin-top: calc(env(safe-area-inset-top) + 32px);
-}
-
 .safe-area-bottom {
   padding-bottom: max(
     env(safe-area-inset-bottom),

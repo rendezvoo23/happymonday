@@ -1,0 +1,17 @@
+.plus-button-container {
+  display: flex;
+  position: fixed;
+  bottom: 150px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+@media (orientation: landscape) and (max-width: 844px) {
+  .plus-button-container {
+    /* Landscape-specific styles */
+    left: auto;
+    right: calc(env(safe-area-inset-right) + 32px);
+    bottom: calc(env(safe-area-inset-bottom) + 24px);
+    transform: translateX(0%) scale(0.7);
+  }
+}

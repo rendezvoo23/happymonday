@@ -13,6 +13,7 @@ import { addMonths, subMonths } from "date-fns";
 import { motion } from "framer-motion";
 import { Plus } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import "./home.css";
 import "./styles.css";
 
 type TransactionDirection = Enums<"transaction_direction">;
@@ -331,15 +332,7 @@ export function HomePage() {
             )}
           </div>
 
-          <div
-            className="flex items-center justify-center"
-            style={{
-              position: "fixed",
-              bottom: "150px",
-              left: "50%",
-              transform: "translateX(-50%)",
-            }}
-          >
+          <div className="plus-button-container">
             <div className="glassmorphic-plus-wrap">
               <button
                 type="button"

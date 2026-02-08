@@ -226,7 +226,7 @@ export function TransactionForm({
 
           <div
             className={cn(
-              "mx-[38px] relative flex h-[48px] rounded-[8px] px-3 mt-[11px] bg-[#f5f5f7bb] dark:bg-[#161b2277] rounded-full",
+              "mx-[50px] relative flex h-[48px] rounded-[8px] px-3 mt-[8px] bg-[#f5f5f7bb] dark:bg-[#161b2277] rounded-full",
               isKeyboardVisible && "border border-[var(--border-level-2)]"
             )}
             onClick={() => setIsKeyboardVisible((prev) => !prev)}
@@ -312,7 +312,7 @@ export function TransactionForm({
 
         <div
           className="flex flex-col items-center gap-1"
-          style={{ margin: "8px -16px" }}
+          style={{ margin: "8px -16px", marginTop: "12px" }}
         >
           <div
             ref={categoryScrollRef}
@@ -397,7 +397,7 @@ export function TransactionForm({
                 )}
             </div>
           </div>
-          <div className="flex items-center justify-center gap-1.5">
+          <div className="flex items-center justify-center gap-2 mt-[0px]">
             <span
               className="rounded-full transition-colors"
               style={{
@@ -406,9 +406,7 @@ export function TransactionForm({
                 backgroundColor:
                   activeCategoryPanel === 0
                     ? selectedCategory?.color
-                    : "var(--border-level-2)",
-                border: "1px solid var(--border-level-2)",
-                opacity: activeCategoryPanel === 0 ? 1 : 0.4,
+                    : "var(--text-default)",
               }}
               aria-hidden
             />
@@ -420,9 +418,7 @@ export function TransactionForm({
                 backgroundColor:
                   activeCategoryPanel === 1
                     ? selectedCategory?.color
-                    : "var(--border-level-2)",
-                border: "1px solid var(--border-level-2)",
-                opacity: activeCategoryPanel === 1 ? 1 : 0.4,
+                    : "var(--text-default)",
               }}
               aria-hidden
             />
@@ -488,7 +484,7 @@ export function TransactionForm({
 
       {/* Virtual Keyboard */}
       {isKeyboardVisible && (
-        <div style={{ margin: 0, padding: 0 }} className="max-w-sm mx-auto">
+        <div style={{ marginTop: 0, padding: 0 }} className="max-w-sm mx-auto">
           <NumericKeyboard
             onKeyPress={handleKeyPress}
             onBackspace={handleBackspace}
@@ -503,8 +499,8 @@ export function TransactionForm({
         onClick={onCancel}
         style={{
           position: "absolute",
-          left: "8px",
-          top: "-20px",
+          left: "16px",
+          top: "-19px",
           zIndex: 1,
         }}
       >
@@ -521,8 +517,8 @@ export function TransactionForm({
           backgroundColor: amount ? "var(--accent-color)" : undefined,
           color: amount ? "#00f3ff" : "var(--border-default)",
           position: "absolute",
-          right: "8px",
-          top: "-20px",
+          right: "16px",
+          top: "-19px",
           zIndex: 1,
         }}
       >

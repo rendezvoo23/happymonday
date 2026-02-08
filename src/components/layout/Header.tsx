@@ -7,7 +7,7 @@ interface HeaderProps {
 export function Header({ children }: HeaderProps) {
   return (
     <header
-      className="flex flex-col items-center pb-8"
+      className="flex flex-col items-center pb-5 mt-2"
       style={{
         zIndex: 1,
         position: "sticky",

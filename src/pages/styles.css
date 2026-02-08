@@ -444,8 +444,8 @@
 
 /* Plus icon inside the button */
 .glassmorphic-plus-button .plus-icon {
-  width: 40px;
-  height: 40px;
+  width: var(--plus-button-size, 40px);
+  height: var(--plus-button-size, 40px);
   color: var(--color-text-primary);
   filter: drop-shadow(0 .05em .05em var(--color-black-13));
   transition: all .4s cubic-bezier(0.25, 1, 0.5, 1);

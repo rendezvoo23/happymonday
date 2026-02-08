@@ -10,6 +10,7 @@ import {
   HouseFillIcon,
   HouseIcon,
 } from "../icons";
+import "./navigation.css";
 
 export function BottomNav() {
   const location = useLocation();
@@ -90,7 +91,7 @@ export function BottomNav() {
   const activeIndex = navItems.findIndex((item) => item.isActive);
 
   return (
-    <div className="fixed bottom-8 left-0 right-0 z-40 flex items-center justify-center px-6 pointer-events-none">
+    <div className="navigation-container">
       {/* Liquid Glass Navigation */}
       <div className="liquid-glass-nav-wrap">
         <div className="liquid-glass-nav">
