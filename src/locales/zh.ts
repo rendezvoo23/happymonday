@@ -112,6 +112,7 @@ export default {
     selectCategory: "选择类别",
     selectSubcategory: "选择子类别",
     enterAmount: "输入金额",
+    chooseSpendingCategory: "选择支出类别",
     enterNote: "输入备注（可选）",
     confirmDelete: "确定要删除这笔交易吗？",
   },

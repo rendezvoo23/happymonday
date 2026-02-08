@@ -112,6 +112,7 @@ export default {
     selectCategory: "श्रेणी चुनें",
     selectSubcategory: "उपश्रेणी चुनें",
     enterAmount: "राशि दर्ज करें",
+    chooseSpendingCategory: "खर्च की श्रेणी चुनें",
     enterNote: "नोट दर्ज करें (वैकल्पिक)",
     confirmDelete: "क्या आप वाकई इस लेनदेन को हटाना चाहते हैं?",
   },

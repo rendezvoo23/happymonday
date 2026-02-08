@@ -232,7 +232,7 @@ export function TransactionForm({
 
           <div
             className={cn(
-              "mx-[50px] relative flex h-[48px] rounded-[8px] px-3 mt-[8px] bg-[#f5f5f7bb] dark:bg-[#161b2277] rounded-full",
+              "mx-[50px] relative flex h-[48px] rounded-[8px] px-3 mt-[8px] bg-[var(--background)] rounded-full",
               isKeyboardVisible && "border border-[var(--border-level-2)]"
             )}
             onClick={() => setIsKeyboardVisible((prev) => !prev)}
@@ -243,8 +243,8 @@ export function TransactionForm({
             }}
           >
             {isKeyboardVisible ? null : amount.length === 0 ? (
-              <div className="text-[16px] text-gray-500 dark:text-gray-600 absolute left-[20px] top-[50%] -translate-y-1/2">
-                {t("transactions.enterAmount")}
+              <div className="text-[14px] font-medium text-gray-500 dark:text-gray-600 absolute left-[20px] top-[50%] -translate-y-1/2">
+                {t("transactions.chooseSpendingCategory")}
               </div>
             ) : null}
             <div
@@ -256,15 +256,18 @@ export function TransactionForm({
                   : "text-[32px]"
               )}
             >
-              <span className={amount ? "" : "opacity-70"}>
+              <span className={amount ? "" : "opacity-75"}>
                 {amount
-                  ? formatAmount(Number.parseFloat(amount ?? "0"), {
-                      hideFractions: false,
-                      forceDecimal: amount.includes("."),
-                      showCurrencyCode: false,
-                    })
-                  : isKeyboardVisible && <BlinkCursor />}
+                  ? isKeyboardVisible && amount.includes(".")
+                    ? amount
+                    : formatAmount(Number.parseFloat(amount ?? "0"), {
+                        hideFractions: false,
+                        forceDecimal: amount.includes("."),
+                        showCurrencyCode: false,
+                      })
+                  : null}
               </span>
+              {isKeyboardVisible && <BlinkCursor />}
             </div>
           </div>
         </div>
@@ -419,7 +422,7 @@ export function TransactionForm({
           exit={{ opacity: 0, y: "100%" }}
           transition={{ duration: 0.5 }}
           style={{ marginTop: 0 }}
-          className="max-w-sm mx-auto safe-area-bottom"
+          className="max-w-sm mx-auto"
         >
           <NumericKeyboard
             onKeyPress={handleKeyPress}

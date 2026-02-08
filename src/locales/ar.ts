@@ -112,6 +112,7 @@ export default {
     selectCategory: "اختر الفئة",
     selectSubcategory: "اختر الفئة الفرعية",
     enterAmount: "أدخل المبلغ",
+    chooseSpendingCategory: "اختر فئة الإنفاق",
     enterNote: "أدخل ملاحظة (اختياري)",
     confirmDelete: "هل أنت متأكد من حذف هذه المعاملة؟",
   },

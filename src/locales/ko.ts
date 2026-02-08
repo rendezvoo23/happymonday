@@ -112,6 +112,7 @@ export default {
     selectCategory: "카테고리 선택",
     selectSubcategory: "하위 카테고리 선택",
     enterAmount: "금액 입력",
+    chooseSpendingCategory: "지출 카테고리 선택",
     enterNote: "메모 입력 (선택사항)",
     confirmDelete: "이 거래를 삭제하시겠습니까?",
   },

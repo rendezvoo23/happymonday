@@ -112,6 +112,7 @@ export default {
     selectCategory: "Sélectionner la catégorie",
     selectSubcategory: "Sélectionner la sous-catégorie",
     enterAmount: "Entrez le montant",
+    chooseSpendingCategory: "Choisissez une catégorie de dépenses",
     enterNote: "Entrez une note (optionnel)",
     confirmDelete: "Êtes-vous sûr de vouloir supprimer cette transaction?",
   },

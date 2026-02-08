@@ -112,6 +112,7 @@ export default {
     selectCategory: "Выбрать категорию",
     selectSubcategory: "Выбрать подкатегорию",
     enterAmount: "Введите сумму",
+    chooseSpendingCategory: "Выберите категорию расходов",
     enterNote: "Введите заметку (необязательно)",
     confirmDelete: "Вы уверены, что хотите удалить эту транзакцию?",
   },

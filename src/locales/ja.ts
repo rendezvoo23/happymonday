@@ -112,6 +112,7 @@ export default {
     selectCategory: "カテゴリーを選択",
     selectSubcategory: "サブカテゴリーを選択",
     enterAmount: "金額を入力",
+    chooseSpendingCategory: "支出カテゴリーを選択",
     enterNote: "メモを入力（任意）",
     confirmDelete: "この取引を削除してもよろしいですか？",
   },

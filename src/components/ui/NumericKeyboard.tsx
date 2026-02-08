@@ -91,6 +91,7 @@ export function NumericKeyboard({
           )}
         </motion.button>
       ))}
+      <div className="safe-area-bottom" style={{ content: "" }} />
     </div>
   );
 }

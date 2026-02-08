@@ -28,7 +28,7 @@ export function CategorySelector({
             key={category.id}
             onClick={() => {
               if (window.Telegram?.WebApp?.HapticFeedback) {
-                window.Telegram.WebApp.HapticFeedback.selectionChanged();
+                window.Telegram.WebApp.HapticFeedback.impactOccurred("medium");
               }
               onSelect(category.id);
             }}
