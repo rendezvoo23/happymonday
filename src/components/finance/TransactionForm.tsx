@@ -48,9 +48,6 @@ export function TransactionForm({
   const { t } = useTranslation();
 
   const [type] = useState<TransactionType>(initialData?.type || initialType);
-  const [selectedType, setSelectedType] = useState<
-    "transactions.category" | "transactions.subcategory"
-  >("transactions.category");
   const [amount, setAmount] = useState(initialData?.amount?.toString() || "");
   const [categoryId, setCategoryId] = useState<CategoryId>(
     initialData?.categoryId || ""
@@ -74,7 +71,7 @@ export function TransactionForm({
   const dateInputRef = useRef<HTMLInputElement>(null);
   const categoryScrollRef = useRef<HTMLDivElement>(null);
   const [activeCategoryPanel, setActiveCategoryPanel] = useState(0);
-  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(showEditNote);
 
   const { formatAmount } = useCurrency();
   const {
@@ -275,14 +272,14 @@ export function TransactionForm({
         )}
 
         {showEditNote && (
-          <div className="flex gap-4 w-full justify-center items-center mt-4 mb-4">
+          <div className="flex gap-4 w-full justify-center items-center mt-4 mb-8">
             <input
               ref={dateInputRef}
-              type="date"
+              type="datetime-local"
               value={date}
               onChange={(e) => setDate(e.target.value)}
-              className="bg-[#f5f5f7bb] dark:bg-[#161b2277] h-[30px] px-2 bg-[var(--border-level-2)] rounded-full"
-              style={{ fontSize: "13px", fontWeight: "500" }}
+              className="h-[30px] px-2 bg-[var(--background-level-2)] rounded-full"
+              style={{ fontSize: "16px", fontWeight: "500" }}
               tabIndex={-1}
             />
           </div>
@@ -414,20 +411,22 @@ export function TransactionForm({
         </div>
       )}
 
-      <LiquidButton
-        type="button"
-        variant="liquid"
-        size="icon-lg"
-        onClick={onCancel}
-        style={{
-          position: "absolute",
-          left: "16px",
-          top: "-19px",
-          zIndex: 1,
-        }}
-      >
-        <X className="w-5 h-5" />
-      </LiquidButton>
+      {!showEditNote && (
+        <LiquidButton
+          type="button"
+          variant="liquid"
+          size="icon-lg"
+          onClick={onCancel}
+          style={{
+            position: "absolute",
+            left: "16px",
+            top: "-19px",
+            zIndex: 1,
+          }}
+        >
+          <X className="w-5 h-5" />
+        </LiquidButton>
+      )}
 
       <LiquidButton
         type="submit"
