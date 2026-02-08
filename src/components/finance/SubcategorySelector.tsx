@@ -1,7 +1,7 @@
+import { CheckmarkIcon } from "@/components/icons/checkmark";
 import type { Subcategory } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
-import { CheckmarkIcon } from "@/components/icons/checkmark";
 import { getIconComponent } from "../icons";
 
 interface SubcategorySelectorProps {

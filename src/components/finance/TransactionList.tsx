@@ -180,11 +180,11 @@ export function TransactionList({
                             exit="exit"
                           >
                             <TransactionItem
-                            transaction={transaction}
-                            onEdit={onEdit}
-                            onDelete={onDelete}
-                            zIndex={array.length - index}
-                          />
+                              transaction={transaction}
+                              onEdit={onEdit}
+                              onDelete={onDelete}
+                              zIndex={array.length - index}
+                            />
                           </motion.div>
                         ))}
                       </AnimatePresence>
@@ -233,11 +233,11 @@ export function TransactionList({
               exit="exit"
             >
               <TransactionItem
-              transaction={txn}
-              onEdit={onEdit}
-              onDelete={onDelete}
-              zIndex={array.length - index}
-            />
+                transaction={txn}
+                onEdit={onEdit}
+                onDelete={onDelete}
+                zIndex={array.length - index}
+              />
             </motion.div>
           ))}
         </AnimatePresence>

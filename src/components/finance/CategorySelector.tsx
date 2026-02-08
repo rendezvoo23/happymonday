@@ -1,8 +1,8 @@
+import { CheckmarkIcon } from "@/components/icons/checkmark";
 import { useCategoryLabel } from "@/hooks/useCategoryLabel";
 import { cn } from "@/lib/utils";
 import type { Category, CategoryId } from "@/types";
 import { motion } from "framer-motion";
-import { CheckmarkIcon } from "@/components/icons/checkmark";
 
 interface CategorySelectorProps {
   categories: Category[];
