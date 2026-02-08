@@ -57,6 +57,8 @@
     --keyboard-number-font-weight: 400;
     --keyboard-letter-font-size: 10px;
     --keyboard-letter-font-weight: 400;
+
+    --liquid-background-color: #f5f5f778;
   }
 
   .dark {
@@ -104,6 +106,8 @@
     --keyboard-key-text-primary: #ffffff;
     --keyboard-key-text-secondary: rgba(255, 255, 255, 0.9);
     --keyboard-backspace-icon: #ffffff;
+
+    --liquid-background-color: #161b2278;
   }
 
   * {

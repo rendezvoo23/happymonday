@@ -93,6 +93,7 @@ export default {
     notes: "ملاحظات",
     description: "الوصف",
     loadingTransactions: "جاري تحميل المعاملات...",
+    loadMore: "تحميل المزيد...",
     loadingCategories: "جاري تحميل الفئات...",
     loadingSubcategories: "جاري تحميل الفئات الفرعية...",
     noTransactions: "لا توجد معاملات بعد",

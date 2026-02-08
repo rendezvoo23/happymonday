@@ -6,7 +6,7 @@
   transform: translateX(-50%);
 }
 
-@media (orientation: landscape) and (max-width: 844px) {
+@media (orientation: landscape) {
   .plus-button-container {
     /* Landscape-specific styles */
     left: auto;

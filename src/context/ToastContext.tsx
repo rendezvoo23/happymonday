@@ -8,6 +8,7 @@ interface Toast {
   message: string;
   category?: string;
   amount?: string;
+  color?: string;
   onUndo?: () => void;
 }
 
@@ -25,7 +26,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     setToasts((prev) => [...prev, { ...toast, id }]);
     setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== id));
-    }, 4000);
+    }, 5_000);
   };
 
   return (
@@ -39,11 +40,15 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
               initial={{ opacity: 0, y: -20, scale: 0.9 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9, y: -10 }}
-              className="pointer-events-auto bg-black/90 dark:bg-white/90 text-white dark:text-black px-6 py-2.5 rounded-full shadow-lg flex items-center justify-center gap-3 min-w-[240px] backdrop-blur-md relative"
+              className="pointer-events-auto bg-[var(--liquid-background-color)] backdrop-blur-md px-6 py-2.5 rounded-full shadow-sm flex items-center justify-center gap-3 min-w-[240px] relative"
             >
               <div className="flex flex-col items-center text-center">
+                <div
+                  className="w-6 h-6 rounded-full"
+                  style={{ backgroundColor: toast.color }}
+                />
                 <p className="text-[10px] font-bold uppercase tracking-widest opacity-60">
-                  Transaction Added
+                  {toast.message}
                 </p>
                 <p className="text-sm font-semibold">
                   {toast.category} • {toast.amount}

@@ -93,6 +93,7 @@ export default {
     notes: "메모",
     description: "설명",
     loadingTransactions: "거래 로딩 중...",
+    loadMore: "더 불러오기...",
     loadingCategories: "카테고리 로딩 중...",
     loadingSubcategories: "하위 카테고리 로딩 중...",
     noTransactions: "거래 내역이 없습니다",

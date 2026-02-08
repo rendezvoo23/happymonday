@@ -1,6 +1,7 @@
 import { TransactionForm } from "@/components/finance/TransactionForm";
 import { Header } from "@/components/layout/Header";
 import { PageShell } from "@/components/layout/PageShell";
+import { useTelegramBackButton } from "@/hooks/useTelegramBackButton";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useTransactionStore } from "@/stores/transactionStore";
 import type { CategoryId, TransactionType } from "@/types";
@@ -22,6 +23,8 @@ export function EditTransactionPage({
     ReturnType<typeof loadTransactionById>
   > | null>(null);
   const { t } = useTranslation();
+
+  useTelegramBackButton();
 
   // Load the specific transaction by ID
   useEffect(() => {
@@ -47,13 +50,6 @@ export function EditTransactionPage({
           <p className="text-gray-500 dark:text-gray-400">
             Transaction not found
           </p>
-          <button
-            type="button"
-            onClick={() => navigate({ to: "/statistics" })}
-            className="mt-4 text-blue-600 dark:text-blue-400 font-medium"
-          >
-            Go Back
-          </button>
         </div>
       </PageShell>
     );

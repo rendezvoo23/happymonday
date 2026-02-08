@@ -1,8 +1,9 @@
 import { TransactionList } from "@/components/finance/TransactionList";
 import { Header } from "@/components/layout/Header";
 import { PageShell } from "@/components/layout/PageShell";
+import { ConfirmAction } from "@/components/modals/confirm-action";
+import { Spinner } from "@/components/spinner";
 import { Button } from "@/components/ui/Button";
-import { Modal } from "@/components/ui/Modal";
 import { useDeleteTransaction } from "@/hooks/use-transactions-query";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useTransactionStore } from "@/stores/transactionStore";
@@ -75,53 +76,35 @@ export function HistoryPage() {
           disableLimit
         />
 
-        {hasMore && (
-          <button
-            type="button"
-            onClick={handleLoadMore}
-            disabled={loadingMore}
-            className="w-full py-4 text-center text-blue-600 font-medium disabled:opacity-50 mt-4"
-          >
-            {loadingMore ? "Loading..." : "Load More"}
-          </button>
-        )}
+        <div className="flex items-center justify-center w-full mt-4">
+          {hasMore && (
+            <Button
+              variant="ghost"
+              size="md"
+              style={{ color: "var(--accent-color)" }}
+              onClick={handleLoadMore}
+              disabled={loadingMore}
+            >
+              {loadingMore ? <Spinner size="md" /> : t("transactions.loadMore")}
+            </Button>
+          )}
+        </div>
 
         {!hasMore && historyTransactions.length > 0 && (
           <div className="text-center py-8 text-gray-400 text-sm">
-            No more transactions
+            {t("transactions.noTransactions")}
           </div>
         )}
       </main>
 
-      <Modal
-        isOpen={isDeleteModalOpen}
+      <ConfirmAction
+        title={t("statistics.deleteTransaction")}
+        description={t("statistics.deleteConfirmation")}
+        onAction={confirmDelete}
         onClose={() => setIsDeleteModalOpen(false)}
-        title="Delete Transaction"
-      >
-        <div className="space-y-4">
-          <p className="text-gray-600 dark:text-gray-400">
-            Are you sure you want to delete this transaction? This action cannot
-            be undone.
-          </p>
-          <div className="flex gap-3">
-            <Button
-              variant="secondary"
-              fullWidth
-              onClick={() => setIsDeleteModalOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="danger"
-              fullWidth
-              onClick={confirmDelete}
-              disabled={deleteTransactionMutation.isPending}
-            >
-              {deleteTransactionMutation.isPending ? "Deleting..." : "Delete"}
-            </Button>
-          </div>
-        </div>
-      </Modal>
+        isDestructive
+        open={isDeleteModalOpen}
+      />
     </PageShell>
   );
 }

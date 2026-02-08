@@ -93,6 +93,7 @@ export default {
     notes: "Notas",
     description: "Descrição",
     loadingTransactions: "Carregando transações...",
+    loadMore: "Carregar mais...",
     loadingCategories: "Carregando categorias...",
     loadingSubcategories: "Carregando subcategorias...",
     noTransactions: "Nenhuma transação ainda",

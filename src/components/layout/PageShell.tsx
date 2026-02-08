@@ -20,8 +20,8 @@ export function PageShell({
       exit={{ opacity: 0 }}
       transition={{ duration: 0.4, ease: [0.32, 0.72, 0, 1] }}
       className={cn(
-        "mx-auto relative z-10",
-        allowScroll ? "h-full" : "h-full overflow-hidden",
+        "mx-auto relative z-10 h-[var(--tg-viewport-stable-height, 100%)]",
+        allowScroll ? undefined : "overflow-hidden",
         "safe-area-bottom safe-area-left safe-area-right",
         className
       )}

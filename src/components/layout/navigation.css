@@ -2,7 +2,7 @@
   @apply fixed bottom-8 left-0 right-0 z-40 flex items-center justify-center px-6 pointer-events-none;
 }
 
-@media (orientation: landscape) and (max-width: 844px) {
+@media (orientation: landscape) {
   .navigation-container {
     /* Landscape-specific styles */
     left: 0;

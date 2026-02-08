@@ -93,6 +93,7 @@ export default {
     notes: "备注",
     description: "描述",
     loadingTransactions: "加载交易中...",
+    loadMore: "加载更多...",
     loadingCategories: "加载类别中...",
     loadingSubcategories: "加载子类别中...",
     noTransactions: "暂无交易",

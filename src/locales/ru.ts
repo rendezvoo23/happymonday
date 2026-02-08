@@ -93,6 +93,7 @@ export default {
     notes: "Заметки",
     description: "Описание",
     loadingTransactions: "Загрузка транзакций...",
+    loadMore: "Загрузить ещё...",
     loadingCategories: "Загрузка категорий...",
     loadingSubcategories: "Загрузка подкатегорий...",
     noTransactions: "Пока нет транзакций",

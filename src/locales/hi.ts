@@ -93,6 +93,7 @@ export default {
     notes: "नोट्स",
     description: "विवरण",
     loadingTransactions: "लेनदेन लोड हो रहे हैं...",
+    loadMore: "और लोड करें...",
     loadingCategories: "श्रेणियां लोड हो रही हैं...",
     loadingSubcategories: "उपश्रेणियां लोड हो रही हैं...",
     noTransactions: "अभी तक कोई लेनदेन नहीं",

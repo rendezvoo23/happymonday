@@ -45,7 +45,7 @@ export function ConfirmAction({
       {trigger && <AlertDialogTrigger asChild>{trigger}</AlertDialogTrigger>}
       {children && <AlertDialogTrigger asChild>{children}</AlertDialogTrigger>}
       <AlertDialogContent>
-        <AlertDialogHeader>
+        <AlertDialogHeader className="px-4 pt-2">
           <AlertDialogTitle asChild>
             <div>
               {useIcon && (
@@ -69,11 +69,11 @@ export function ConfirmAction({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <Button variant="secondary" size="md" onClick={() => onClose?.()}>
+          <Button variant="secondary" size="lg" onClick={() => onClose?.()}>
             {cancelLabel}
           </Button>
 
-          <Button variant={variant} size="md" onClick={() => onAction()}>
+          <Button variant={variant} size="lg" onClick={() => onAction()}>
             {isDestructive ? "Delete" : confirmLabel}
           </Button>
         </AlertDialogFooter>

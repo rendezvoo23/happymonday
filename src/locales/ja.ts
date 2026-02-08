@@ -93,6 +93,7 @@ export default {
     notes: "メモ",
     description: "説明",
     loadingTransactions: "取引を読み込み中...",
+    loadMore: "さらに読み込む...",
     loadingCategories: "カテゴリーを読み込み中...",
     loadingSubcategories: "サブカテゴリーを読み込み中...",
     noTransactions: "取引がありません",

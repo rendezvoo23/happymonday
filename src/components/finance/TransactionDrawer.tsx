@@ -1,6 +1,7 @@
 import { TransactionForm } from "@/components/finance/TransactionForm";
 import { useToast } from "@/context/ToastContext";
 import { useCurrency } from "@/hooks/useCurrency";
+import { useTranslation } from "@/hooks/useTranslation";
 import { cn } from "@/lib/utils";
 import { useCategoryStore } from "@/stores/categoryStore";
 import { useTransactionStore } from "@/stores/transactionStore";
@@ -28,6 +29,7 @@ export function TransactionDrawer({
   const { formatAmount } = useCurrency();
   const { showToast } = useToast();
   const { getCategoryById } = useCategoryStore();
+  const { t } = useTranslation();
 
   const handleSubmit = async (data: {
     type: TransactionDirection;
@@ -54,8 +56,9 @@ export function TransactionDrawer({
     }
 
     showToast({
-      message: "Transaction Added",
-      category: category?.name || "Expense",
+      message: t("success.transactionAdded"),
+      category: category?.name || t("transactions.expense"),
+      color: category?.color || "var(--text-default)",
       amount: formatAmount(data.amount),
     });
 
@@ -72,11 +75,11 @@ export function TransactionDrawer({
       shouldScaleBackground={false}
     >
       <Drawer.Portal>
-        <Drawer.Overlay className="fixed inset-0 bg-black/40 z-[100]" />
+        <Drawer.Overlay className="fixed inset-0 bg-black/10 z-[100]" />
         <Drawer.Content
           className={cn(
-            "bg-[#f5f5f7bb] dark:bg-[#161b2277] flex flex-col fixed bottom-0 left-0 right-0 max-h-[calc(100vh-100px)] rounded-t-[24px] z-[101] focus:outline-none",
-            "backdrop-blur-lg",
+            "bg-[#f5f5f7bb] dark:bg-[#161b2277] flex flex-col fixed bottom-0 left-0 right-0 max-h-[calc(100vh-80px)] rounded-t-[24px] z-[101] focus:outline-none",
+            "backdrop-blur-2xl",
             "border-t border-gray-200 dark:border-gray-700"
           )}
         >

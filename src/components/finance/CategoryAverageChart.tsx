@@ -360,7 +360,7 @@ export function CategoryAverageChart({
       <div className="grid grid-cols-3 gap-4 mb-4">
         {topCategories.map((cat) => (
           <div key={cat.id}>
-            <p
+            <div
               className="text-xs font-medium mb-1"
               style={{ color: cat.color }}
             >
@@ -371,10 +371,10 @@ export function CategoryAverageChart({
                 />
                 <span className="truncate">{getCategoryLabel(cat.name)}</span>
               </div>
-            </p>
-            <p className="text-sm font-bold text-gray-900 dark:text-gray-100">
+            </div>
+            <div className="text-sm font-bold text-gray-900 dark:text-gray-100">
               {formatCompactAmount(cat.amount)}
-            </p>
+            </div>
           </div>
         ))}
       </div>

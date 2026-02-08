@@ -11,7 +11,6 @@ import { useCategoryStore } from "@/stores/categoryStore";
 import type { CategoryId, TransactionType } from "@/types";
 import { X } from "lucide-react";
 import { Spinner } from "../spinner";
-import { SegmentedControl } from "../ui/SegmentedControl";
 import { LiquidButton } from "../ui/button/button";
 import { CategorySelector } from "./CategorySelector";
 import { SubcategorySelector } from "./SubcategorySelector";
@@ -277,27 +276,6 @@ export function TransactionForm({
 
         {showEditNote && (
           <div className="flex gap-4 w-full justify-center items-center mt-4 mb-4">
-            <div>
-              <SegmentedControl
-                layoutId="segmented-control-category-subcategory"
-                options={[
-                  "transactions.category",
-                  "transactions.subcategory",
-                ].map((cat) => ({
-                  value: cat,
-                  label: t(cat),
-                }))}
-                activeColor={"var(--border-default)"}
-                value={selectedType}
-                onChange={(value) =>
-                  setSelectedType(
-                    value as unknown as
-                      | "transactions.category"
-                      | "transactions.subcategory"
-                  )
-                }
-              />
-            </div>
             <input
               ref={dateInputRef}
               type="date"
@@ -397,7 +375,7 @@ export function TransactionForm({
                 )}
             </div>
           </div>
-          <div className="flex items-center justify-center gap-2 mt-[0px]">
+          <div className="flex items-center justify-center gap-2 mt-[-20px] mb-2">
             <span
               className="rounded-full transition-colors"
               style={{
@@ -406,7 +384,7 @@ export function TransactionForm({
                 backgroundColor:
                   activeCategoryPanel === 0
                     ? selectedCategory?.color
-                    : "var(--text-default)",
+                    : "var(--border-default)",
               }}
               aria-hidden
             />
@@ -418,68 +396,12 @@ export function TransactionForm({
                 backgroundColor:
                   activeCategoryPanel === 1
                     ? selectedCategory?.color
-                    : "var(--text-default)",
+                    : "var(--border-default)",
               }}
               aria-hidden
             />
           </div>
         </div>
-
-        {/* {selectedType === "transactions.category" && (
-          <div
-            style={{
-              height: "210px",
-              overflow: "hidden",
-            }}
-          >
-            {categoriesLoading ? (
-              <div className="text-center py-4 text-gray-400 dark:text-gray-500 text-sm flex items-center justify-center min-h-[200px]">
-                <Spinner size="lg" />
-              </div>
-            ) : categories.length === 0 ? (
-              <div className="text-center py-0 text-gray-400 dark:text-gray-500">
-                {t("transactions.noCategories")}
-              </div>
-            ) : (
-              <div className="max-w-sm mx-auto">
-                <CategorySelector
-                  categories={categories}
-                  selectedId={categoryId}
-                  onSelect={setCategoryId}
-                />
-              </div>
-            )}
-          </div>
-        )} */}
-
-        {/* {selectedType === "transactions.subcategory" && (
-          <div
-            style={{
-              height: "210px",
-              overflow: "hidden",
-            }}
-          >
-            {categoryId &&
-              (isLoadingSubcategories || subcategories.length > 0) && (
-                <div className="space-y-2 py-1">
-                  {isLoadingSubcategories ? (
-                    <div className="text-center py-4 text-gray-400 dark:text-gray-500 text-sm flex items-center justify-center min-h-[200px]">
-                      <Spinner size="lg" />
-                    </div>
-                  ) : (
-                    <div className="max-w-sm mx-auto">
-                      <SubcategorySelector
-                        subcategories={subcategories}
-                        selectedId={subcategoryId}
-                        onSelect={setSubcategoryId}
-                        categoryColor={selectedCategory?.color}
-                      />
-                    </div>
-                  )}
-                </div>
-              )}
-          </div>
-        )} */}
       </div>
 
       {/* Virtual Keyboard */}
@@ -511,7 +433,6 @@ export function TransactionForm({
         type="submit"
         variant={amount ? "primary" : "outline"}
         size="icon-lg"
-        onClick={onCancel}
         disabled={!amount}
         style={{
           backgroundColor: amount ? "var(--accent-color)" : undefined,
