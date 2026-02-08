@@ -43,7 +43,7 @@ export function CategorySelector({
                     : "scale-100 shadow-none hover:scale-105"
                 )}
                 style={{ backgroundColor: category.color }}
-                whileTap={{ scale: 0.9 }}
+                whileTap={{ scale: 1.2 }}
                 transition={{ type: "spring", stiffness: 400, damping: 25 }}
               >
                 {isSelected && (

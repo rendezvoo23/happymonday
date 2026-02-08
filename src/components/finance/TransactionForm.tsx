@@ -9,6 +9,7 @@ import { type Subcategory, getSubcategories } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { useCategoryStore } from "@/stores/categoryStore";
 import type { CategoryId, TransactionType } from "@/types";
+import { motion } from "framer-motion";
 import { X } from "lucide-react";
 import { Spinner } from "../spinner";
 import { LiquidButton } from "../ui/button/button";
@@ -93,7 +94,7 @@ export function TransactionForm({
   // Set default category when categories are loaded or type changes
   useEffect(() => {
     if (categories.length > 0 && !categoryId) {
-      setCategoryId(categories[0].id);
+      setCategoryId(categories.at(-1)?.id || "");
     } else if (categories.length > 0 && categoryId) {
       // Validate current category is valid for current type
       if (!categories.find((c) => c.id === categoryId)) {
@@ -116,6 +117,18 @@ export function TransactionForm({
       previousCategoryIdRef.current !== categoryId;
     const isInitialLoad = previousCategoryIdRef.current === null;
     previousCategoryIdRef.current = categoryId;
+
+    if (categoryChanged) {
+      setIsKeyboardVisible(true);
+      // scroll to subcategory panel (end)
+      const el = categoryScrollRef.current;
+      if (el) {
+        const scrollLeft = el.scrollWidth - el.clientWidth;
+        setTimeout(() => {
+          el.scrollTo({ left: scrollLeft, behavior: "smooth" });
+        }, 500);
+      }
+    }
 
     setIsLoadingSubcategories(true);
     getSubcategories(categoryId)
@@ -211,10 +224,7 @@ export function TransactionForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className={cn(
-        "space-y-6 px-2 safe-area-bottom relative",
-        showEditNote && "mb-[100px]"
-      )}
+      className={cn("space-y-6 px-2 relative", showEditNote && "mb-[100px]")}
     >
       <div className="px-2">
         <div className="space-y-4">
@@ -403,12 +413,19 @@ export function TransactionForm({
 
       {/* Virtual Keyboard */}
       {isKeyboardVisible && (
-        <div style={{ marginTop: 0, padding: 0 }} className="max-w-sm mx-auto">
+        <motion.div
+          initial={{ opacity: 0, y: "100%" }}
+          animate={{ opacity: 1, y: "0%" }}
+          exit={{ opacity: 0, y: "100%" }}
+          transition={{ duration: 0.5 }}
+          style={{ marginTop: 0 }}
+          className="max-w-sm mx-auto safe-area-bottom"
+        >
           <NumericKeyboard
             onKeyPress={handleKeyPress}
             onBackspace={handleBackspace}
           />
-        </div>
+        </motion.div>
       )}
 
       {!showEditNote && (
