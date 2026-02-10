@@ -48,13 +48,54 @@ import { PersonFillIcon } from "./personfill";
 import { TakeoutBagAndCupAndStrawMediumIcon } from "./takeoutbag.and.cup.and.straw-medium";
 import { TrashIcon } from "./trash";
 
+// Subcategory icons
+import { AntennaIcon } from "./antenna";
+import { BankIcon } from "./bank";
+import { BanknoteIcon } from "./banknote";
+import { BicycleIcon } from "./bicycle";
+import { BookIcon } from "./book";
+import { BrainIcon } from "./brain";
+import { BriefcaseIcon } from "./briefcase";
+import { CakeIcon } from "./cake";
+import { CloudIcon } from "./cloud";
+import { DropletIcon } from "./droplet";
+import { GiftIcon } from "./gift";
+import { GraduationCapIcon } from "./graduationcap";
+import { HeartIcon } from "./heart";
+import { HeartCircleIcon } from "./heartcircle";
+import { LipsIcon } from "./lips";
+import { LockIcon } from "./lock";
+import { MapIcon } from "./map";
+import { MusicIcon } from "./music";
+import { ParkingIcon } from "./parking";
+import { PercentIcon } from "./percent";
+import { PersonCircleIcon } from "./personcircle";
+import { PlayIcon } from "./play";
+import { ShieldIcon } from "./shield";
+import { ShippingBoxIcon } from "./shippingbox";
+import { SparklesIcon } from "./sparkles";
+import { SuitcaseIcon } from "./suitcase";
+import { TestTubesIcon } from "./testtubes";
+import { ThumbsUpIcon } from "./thumbsup";
+import { TriangleIcon } from "./triangle";
+import { WalkingIcon } from "./walking";
+import { WarningIcon } from "./warning";
+
 // Export all icons
 export {
+  AntennaIcon,
   ArrowIcon,
+  BankIcon,
+  BanknoteIcon,
   BedIcon,
+  BicycleIcon,
   BinocularsIcon,
   BoltIcon,
+  BookIcon,
+  BrainIcon,
+  BriefcaseIcon,
   BusIcon,
+  CakeIcon,
   CarIcon,
   CarrotIcon,
   CartIcon,
@@ -62,9 +103,11 @@ export {
   ChartIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  CloudIcon,
   CreditCardIcon,
   CupIcon,
   DollarSignIcon,
+  DropletIcon,
   FilmIcon,
   FitnessIcon,
   ForkIcon,
@@ -72,26 +115,47 @@ export {
   GameControllerIcon,
   GearBigIcon,
   GearSmallIcon,
+  GiftIcon,
   GlobeIcon,
+  GraduationCapIcon,
+  HeartIcon,
+  HeartCircleIcon,
   HouseFillIcon,
   HouseIcon,
   LampIcon,
   LeafIcon,
+  LipsIcon,
+  LockIcon,
+  MapIcon,
   MoonIcon,
   MoreIcon,
+  MusicIcon,
   PaintPaletteIcon,
+  ParkingIcon,
   PencilIcon,
+  PercentIcon,
+  PersonCircleIcon,
   PersonFillIcon,
   PersonIcon,
   PillIcon,
   PlaneIcon,
+  PlayIcon,
+  ShieldIcon,
+  ShippingBoxIcon,
+  SparklesIcon,
   StethoscopeIcon,
+  SuitcaseIcon,
   TakeoutBagAndCupAndStrawMediumIcon,
   TakeoutBagIcon,
+  TestTubesIcon,
+  ThumbsUpIcon,
   TicketIcon,
   TrashIcon,
+  TriangleIcon,
   TshirtIcon,
   TvIcon,
+  WalkingIcon,
+  WarningIcon,
   WifiIcon,
   WineGlassIcon,
   WrenchIcon,
@@ -144,6 +208,38 @@ export const Icons: Record<string, React.FC> = {
   ":chevronright:": ChevronRightIcon,
   ":more:": MoreIcon,
   ":takeoutbagandcupandstrawmedium:": TakeoutBagAndCupAndStrawMediumIcon,
+  // Subcategory icons
+  ":suitcase:": SuitcaseIcon,
+  ":lock:": LockIcon,
+  ":walking:": WalkingIcon,
+  ":antenna:": AntennaIcon,
+  ":parking:": ParkingIcon,
+  ":bank:": BankIcon,
+  ":bicycle:": BicycleIcon,
+  ":cloud:": CloudIcon,
+  ":warning:": WarningIcon,
+  ":triangle:": TriangleIcon,
+  ":graduationcap:": GraduationCapIcon,
+  ":personcircle:": PersonCircleIcon,
+  ":music:": MusicIcon,
+  ":play:": PlayIcon,
+  ":heart:": HeartIcon,
+  ":map:": MapIcon,
+  ":lips:": LipsIcon,
+  ":brain:": BrainIcon,
+  ":testtubes:": TestTubesIcon,
+  ":shield:": ShieldIcon,
+  ":cake:": CakeIcon,
+  ":droplet:": DropletIcon,
+  ":briefcase:": BriefcaseIcon,
+  ":shippingbox:": ShippingBoxIcon,
+  ":gift:": GiftIcon,
+  ":book:": BookIcon,
+  ":sparkles:": SparklesIcon,
+  ":banknote:": BanknoteIcon,
+  ":heartcircle:": HeartCircleIcon,
+  ":thumbsup:": ThumbsUpIcon,
+  ":percent:": PercentIcon,
 };
 
 /**
