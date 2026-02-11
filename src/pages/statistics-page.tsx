@@ -37,10 +37,10 @@ export function StatisticsPage(_props: StatisticsPageProps = {}) {
   // Modals state
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
-  const [chartMode, setChartMode] = useState<"week" | "month">("week");
+  const [chartMode, setChartMode] = useState<"day" | "week" | "month">("week");
 
-  // Handle period click (week click in month mode)
-  const handlePeriodClick = (date: Date, mode: "week" | "month") => {
+  // Handle period click (week click in month mode, day click in week mode)
+  const handlePeriodClick = (date: Date, mode: "day" | "week" | "month") => {
     setDate(date);
     setChartMode(mode);
   };
@@ -159,6 +159,17 @@ export function StatisticsPage(_props: StatisticsPageProps = {}) {
                 <div className="flex items-center justify-center gap-0 bg-gray-200 dark:bg-gray-700 rounded-full">
                   <button
                     type="button"
+                    onClick={() => setChartMode("day")}
+                    className={`px-4 py-1 rounded-full text-sm font-medium transition-colors ${
+                      chartMode === "day"
+                        ? "bg-blue-500 text-white"
+                        : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
+                    }`}
+                  >
+                    {t("statistics.day")}
+                  </button>
+                  <button
+                    type="button"
                     onClick={() => setChartMode("week")}
                     className={`px-4 py-1 rounded-full text-sm font-medium transition-colors ${
                       chartMode === "week"
@@ -214,13 +225,14 @@ export function StatisticsPage(_props: StatisticsPageProps = {}) {
             open={isDeleteModalOpen}
           />
 
-          {/* Recent Transactions List */}
+          {/* Recent Transactions List - grouped by day */}
           <div className="w-full space-y-4">
             <TransactionList
               transactions={transactions}
               onEdit={handleEdit}
               onDelete={handleDeleteRequest}
-              limit={5}
+              limit={20}
+              groupByDay
             />
           </div>
         </main>

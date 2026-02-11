@@ -4,7 +4,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import type { Tables } from "@/types/supabase";
 import { useNavigate } from "@tanstack/react-router";
 import type { Locale } from "date-fns";
-import { format } from "date-fns";
+import { format, isToday, isYesterday } from "date-fns";
 import {
   ar,
   de,
@@ -47,6 +47,26 @@ const dateLocales: Record<string, Locale> = {
   hi,
 };
 
+function groupTransactionsByDay(
+  transactions: TransactionWithCategory[],
+  dateField: "occurred_at" | "updated_at"
+): Map<string, TransactionWithCategory[]> {
+  const grouped = new Map<string, TransactionWithCategory[]>();
+
+  for (const t of transactions) {
+    const dateStr = t[dateField];
+    if (!dateStr) continue;
+    const date = new Date(dateStr);
+    const key = format(date, "yyyy-MM-dd");
+
+    const dayGroup = grouped.get(key) ?? [];
+    dayGroup.push(t);
+    grouped.set(key, dayGroup);
+  }
+
+  return grouped;
+}
+
 function groupByYearAndMonth(
   transactions: TransactionWithCategory[],
   dateField: "occurred_at" | "updated_at"
@@ -83,6 +103,7 @@ interface TransactionListProps {
   limit?: number;
   disableLimit?: boolean;
   groupByMonth?: boolean;
+  groupByDay?: boolean;
   sortBy?: "occurred_at" | "updated_at";
 }
 
@@ -93,6 +114,7 @@ export function TransactionList({
   limit,
   disableLimit,
   groupByMonth = false,
+  groupByDay = false,
   sortBy = "occurred_at",
 }: TransactionListProps) {
   const navigate = useNavigate();
@@ -192,6 +214,81 @@ export function TransactionList({
                   </div>
                 );
               })}
+            </div>
+          );
+        })}
+      </motion.div>
+    );
+  }
+
+  if (groupByDay) {
+    const grouped = groupTransactionsByDay(displayed, sortBy);
+    const dayKeys = Array.from(grouped.keys()).sort((a, b) => b.localeCompare(a));
+
+    return (
+      <motion.div
+        initial="hidden"
+        animate="show"
+        variants={{
+          hidden: { opacity: 0 },
+          show: {
+            opacity: 1,
+            transition: { staggerChildren: 0.03 },
+          },
+        }}
+        className="w-full pb-0 space-y-6"
+      >
+        {dayKeys.map((dayKey) => {
+          const dayTransactions = grouped.get(dayKey) ?? [];
+          const [y, m, d] = dayKey.split("-").map(Number);
+          const dayDate = new Date(y, m - 1, d);
+          const dayLabel = isToday(dayDate)
+            ? t("date.today")
+            : isYesterday(dayDate)
+              ? t("date.yesterday")
+              : format(dayDate, "EEEE, MMM d", { locale: dateLocale });
+
+          return (
+            <div key={dayKey} className="space-y-3">
+              <div className="px-2 text-xl font-medium text-gray-500 dark:text-gray-400">
+                {dayLabel}
+              </div>
+              <div className="card-level-1">
+                <AnimatePresence mode="popLayout">
+                  {dayTransactions.map((transaction, index, array) => (
+                    <motion.div
+                      key={transaction.id}
+                      layout
+                      variants={{
+                        hidden: {
+                          opacity: 0,
+                          y: 15,
+                          scale: 0.98,
+                        },
+                        show: {
+                          opacity: 1,
+                          y: 0,
+                          scale: 1,
+                        },
+                        exit: {
+                          opacity: 0,
+                          height: 0,
+                          overflow: "hidden",
+                          transition: { duration: 0.2 },
+                        },
+                      }}
+                      exit="exit"
+                    >
+                      <TransactionItem
+                        transaction={transaction}
+                        onEdit={onEdit}
+                        onDelete={onDelete}
+                        zIndex={array.length - index}
+                      />
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+              </div>
             </div>
           );
         })}
