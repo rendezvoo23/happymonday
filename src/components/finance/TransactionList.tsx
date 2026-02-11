@@ -223,7 +223,9 @@ export function TransactionList({
 
   if (groupByDay) {
     const grouped = groupTransactionsByDay(displayed, sortBy);
-    const dayKeys = Array.from(grouped.keys()).sort((a, b) => b.localeCompare(a));
+    const dayKeys = Array.from(grouped.keys()).sort((a, b) =>
+      b.localeCompare(a)
+    );
 
     return (
       <motion.div
