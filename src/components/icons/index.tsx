@@ -63,6 +63,7 @@ import { GiftIcon } from "./gift";
 import { GraduationCapIcon } from "./graduationcap";
 import { HeartIcon } from "./heart";
 import { HeartCircleIcon } from "./heartcircle";
+import { KeyIcon } from "./key";
 import { LipsIcon } from "./lips";
 import { LockIcon } from "./lock";
 import { MapIcon } from "./map";
@@ -124,6 +125,7 @@ export {
   HouseIcon,
   LampIcon,
   LeafIcon,
+  KeyIcon,
   LipsIcon,
   LockIcon,
   MapIcon,
@@ -208,6 +210,7 @@ export const Icons: Record<string, React.FC> = {
   ":chevronright:": ChevronRightIcon,
   ":more:": MoreIcon,
   ":takeoutbagandcupandstrawmedium:": TakeoutBagAndCupAndStrawMediumIcon,
+  ":key:": KeyIcon,
   // Subcategory icons
   ":suitcase:": SuitcaseIcon,
   ":lock:": LockIcon,
