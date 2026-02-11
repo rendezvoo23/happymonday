@@ -9,10 +9,12 @@ import { useCurrency } from "@/hooks/useCurrency";
 import { useCategoryStore } from "@/stores/categoryStore";
 import { useTransactionStore } from "@/stores/transactionStore";
 import type { Enums, Tables } from "@/types/supabase";
-import { addMonths, subMonths } from "date-fns";
+import { useNavigate } from "@tanstack/react-router";
+import { addMonths, isSameMonth, subMonths } from "date-fns";
 import { motion } from "framer-motion";
 import { Plus } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Route } from "@/routes/_authenticated/home";
 import "./home.css";
 import "./styles.css";
 
@@ -25,11 +27,18 @@ type TransactionWithCategory = Tables<"transactions"> & {
   subcategories: Pick<Tables<"subcategories">, "id" | "name" | "icon"> | null;
 };
 
+function parseMonthKey(monthKey: string): Date {
+  const [year, month] = monthKey.split("-").map(Number);
+  return new Date(year, month - 1, 1);
+}
+
 export function HomePage() {
   const { loadTransactions } = useTransactionStore();
   const { loadCategories } = useCategoryStore();
-  const { selectedDate, prevMonth, nextMonth, canGoNext } = useDate();
+  const { selectedDate, setDate, prevMonth, nextMonth, canGoNext } = useDate();
   const { formatAmount } = useCurrency();
+  const navigate = useNavigate();
+  const { month: urlMonth } = Route.useSearch();
 
   // Transaction drawer state
   const [isTransactionDrawerOpen, setIsTransactionDrawerOpen] = useState(false);
@@ -80,7 +89,7 @@ export function HomePage() {
 
   // Helper to load and cache a month's transactions
   const loadAndCacheMonth = useCallback(
-    async (date: Date, forceReload = false) => {
+    async (date: Date, forceReload = false, preserveIfEmpty = false) => {
       const monthKey = getMonthKey(date);
 
       const cached = monthsCacheRef.current.get(monthKey);
@@ -92,6 +101,17 @@ export function HomePage() {
 
       setMonthsCache((prev) => {
         const newCache = new Map(prev);
+        // Don't overwrite with empty when we just added a transaction (Supabase read-after-write lag)
+        const existing = prev.get(monthKey) || [];
+        const hasOptimistic = existing.some((t) => t.id.startsWith("temp-"));
+        if (
+          preserveIfEmpty &&
+          (txs?.length ?? 0) === 0 &&
+          existing.length > 0 &&
+          hasOptimistic
+        ) {
+          return prev;
+        }
         newCache.set(monthKey, txs || []);
         monthsCacheRef.current = newCache;
         return newCache;
@@ -103,23 +123,26 @@ export function HomePage() {
   );
 
   // Function to reload transactions
-  const reloadTransactions = useCallback(async () => {
-    console.log("[HomePage] Reloading current month and neighbors...");
+  const reloadTransactions = useCallback(
+    async (preserveIfEmpty = false) => {
+      console.log("[HomePage] Reloading current month and neighbors...");
 
-    await loadAndCacheMonth(selectedDate, true);
+      await loadAndCacheMonth(selectedDate, true, preserveIfEmpty);
 
-    const prevDate = subMonths(selectedDate, 1);
-    if (monthsCacheRef.current.has(getMonthKey(prevDate))) {
-      loadAndCacheMonth(prevDate, true);
-    }
-
-    if (canGoNext) {
-      const nextDate = addMonths(selectedDate, 1);
-      if (monthsCacheRef.current.has(getMonthKey(nextDate))) {
-        loadAndCacheMonth(nextDate, true);
+      const prevDate = subMonths(selectedDate, 1);
+      if (monthsCacheRef.current.has(getMonthKey(prevDate))) {
+        loadAndCacheMonth(prevDate, true);
       }
-    }
-  }, [selectedDate, getMonthKey, loadAndCacheMonth, canGoNext]);
+
+      if (canGoNext) {
+        const nextDate = addMonths(selectedDate, 1);
+        if (monthsCacheRef.current.has(getMonthKey(nextDate))) {
+          loadAndCacheMonth(nextDate, true);
+        }
+      }
+    },
+    [selectedDate, getMonthKey, loadAndCacheMonth, canGoNext]
+  );
 
   useEffect(() => {
     const loadAllMonthsData = async () => {
@@ -144,6 +167,30 @@ export function HomePage() {
 
     loadAllMonthsData();
   }, [selectedDate, loadCategories, canGoNext, loadAndCacheMonth]);
+
+  // Sync URL <-> selected month (for reload persistence)
+  const updateUrlMonth = useCallback(
+    (date: Date) => {
+      const monthKey = getMonthKey(date);
+      navigate({
+        to: "/home",
+        search: { month: monthKey },
+        replace: true,
+      });
+    },
+    [navigate, getMonthKey]
+  );
+
+  useEffect(() => {
+    if (urlMonth) {
+      const parsed = parseMonthKey(urlMonth);
+      if (!isSameMonth(selectedDate, parsed)) {
+        setDate(parsed);
+      }
+    } else {
+      updateUrlMonth(selectedDate);
+    }
+  }, [urlMonth]); // Only run when URL changes (e.g. initial load, back/forward)
 
   // Get transactions from cache
   const currentMonthKey = getMonthKey(selectedDate);
@@ -203,7 +250,9 @@ export function HomePage() {
       setSwipeProgress(1);
 
       setTimeout(() => {
+        const newDate = subMonths(selectedDate, 1);
         prevMonth();
+        updateUrlMonth(newDate);
         setSwipeProgress(0);
         setIsTransitioning(false);
         setTouchStartX(null);
@@ -214,7 +263,9 @@ export function HomePage() {
       setSwipeProgress(-1);
 
       setTimeout(() => {
+        const newDate = addMonths(selectedDate, 1);
         nextMonth();
+        updateUrlMonth(newDate);
         setSwipeProgress(0);
         setIsTransitioning(false);
         setTouchStartX(null);
@@ -238,7 +289,9 @@ export function HomePage() {
     setSwipeProgress(1);
 
     setTimeout(() => {
+      const newDate = subMonths(selectedDate, 1);
       prevMonth();
+      updateUrlMonth(newDate);
       setSwipeProgress(0);
       setIsTransitioning(false);
     }, 300);
@@ -251,7 +304,9 @@ export function HomePage() {
     setSwipeProgress(-1);
 
     setTimeout(() => {
+      const newDate = addMonths(selectedDate, 1);
       nextMonth();
+      updateUrlMonth(newDate);
       setSwipeProgress(0);
       setIsTransitioning(false);
     }, 300);
@@ -264,6 +319,61 @@ export function HomePage() {
     setTransactionType(type);
     setIsTransactionDrawerOpen(true);
   };
+
+  // Optimistically add new transaction to cache so both BubblesClusters update immediately
+  const handleTransactionAdded = useCallback(
+    async (optimisticData?: {
+      amount: number;
+      categoryId: string;
+      subcategoryId?: string | null;
+      date: string;
+      type: TransactionDirection;
+    }) => {
+      if (optimisticData) {
+        const { getCategoryById } = useCategoryStore.getState();
+        const category = getCategoryById(optimisticData.categoryId);
+        const txDate = new Date(optimisticData.date);
+        const monthKey = getMonthKey(txDate);
+        const optimisticTx: TransactionWithCategory = {
+          id: `temp-${Date.now()}`,
+          amount: optimisticData.amount,
+          category_id: optimisticData.categoryId,
+          subcategory_id: optimisticData.subcategoryId ?? null,
+          occurred_at: optimisticData.date,
+          direction: optimisticData.type,
+          currency_code: "USD",
+          note: null,
+          user_id: "",
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          deleted_at: null,
+          categories: category
+            ? {
+                id: category.id,
+                name: category.name,
+                color: category.color,
+                icon: category.icon,
+              }
+            : null,
+          subcategories: null,
+        };
+        setMonthsCache((prev) => {
+          const newCache = new Map(prev);
+          const existing = newCache.get(monthKey) || [];
+          newCache.set(monthKey, [optimisticTx, ...existing]);
+          monthsCacheRef.current = newCache;
+          return newCache;
+        });
+      }
+      // Preserve optimistic data if Supabase returns empty (read-after-write lag)
+      await reloadTransactions(!!optimisticData);
+      // Retry after delay if we preserved (Supabase may need time to propagate)
+      if (optimisticData) {
+        setTimeout(() => reloadTransactions(false), 1500);
+      }
+    },
+    [getMonthKey, reloadTransactions]
+  );
 
   return (
     <motion.div
@@ -380,7 +490,7 @@ export function HomePage() {
         isOpen={isTransactionDrawerOpen}
         onClose={() => setIsTransactionDrawerOpen(false)}
         initialType={transactionType}
-        onTransactionAdded={reloadTransactions}
+        onTransactionAdded={handleTransactionAdded}
         showEditNote={false}
       />
     </motion.div>

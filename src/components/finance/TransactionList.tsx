@@ -1,8 +1,6 @@
-import { Button } from "@/components/ui/Button";
 import { useLocale } from "@/context/LocaleContext";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { Tables } from "@/types/supabase";
-import { useNavigate } from "@tanstack/react-router";
 import type { Locale } from "date-fns";
 import { format, isToday, isYesterday } from "date-fns";
 import {
@@ -67,6 +65,41 @@ function groupTransactionsByDay(
   return grouped;
 }
 
+function groupByYearMonthDay(
+  transactions: TransactionWithCategory[],
+  dateField: "occurred_at" | "updated_at"
+): Map<number, Map<number, Map<string, TransactionWithCategory[]>>> {
+  const grouped = new Map<
+    number,
+    Map<number, Map<string, TransactionWithCategory[]>>
+  >();
+
+  for (const t of transactions) {
+    const dateStr = t[dateField];
+    if (!dateStr) continue;
+    const date = new Date(dateStr);
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const dateKey = format(date, "yyyy-MM-dd");
+
+    let yearGroup = grouped.get(year);
+    if (!yearGroup) {
+      yearGroup = new Map();
+      grouped.set(year, yearGroup);
+    }
+    let monthGroup = yearGroup.get(month);
+    if (!monthGroup) {
+      monthGroup = new Map();
+      yearGroup.set(month, monthGroup);
+    }
+    const dayGroup = monthGroup.get(dateKey) ?? [];
+    dayGroup.push(t);
+    monthGroup.set(dateKey, dayGroup);
+  }
+
+  return grouped;
+}
+
 function groupByYearAndMonth(
   transactions: TransactionWithCategory[],
   dateField: "occurred_at" | "updated_at"
@@ -104,6 +137,8 @@ interface TransactionListProps {
   disableLimit?: boolean;
   groupByMonth?: boolean;
   groupByDay?: boolean;
+  /** When true with groupByMonth, show days within each month */
+  groupByDayInMonth?: boolean;
   sortBy?: "occurred_at" | "updated_at";
 }
 
@@ -115,9 +150,9 @@ export function TransactionList({
   disableLimit,
   groupByMonth = false,
   groupByDay = false,
+  groupByDayInMonth = false,
   sortBy = "occurred_at",
 }: TransactionListProps) {
-  const navigate = useNavigate();
   const { t } = useTranslation();
   const { locale } = useLocale();
   const dateLocale = dateLocales[locale] ?? enUS;
@@ -137,6 +172,114 @@ export function TransactionList({
   });
 
   const displayed = disableLimit || !limit ? sorted : sorted.slice(0, limit);
+
+  if (groupByMonth && groupByDayInMonth) {
+    const grouped = groupByYearMonthDay(displayed, sortBy);
+    const years = Array.from(grouped.keys()).sort((a, b) => b - a);
+
+    return (
+      <motion.div
+        initial="hidden"
+        animate="show"
+        variants={{
+          hidden: { opacity: 0 },
+          show: {
+            opacity: 1,
+            transition: { staggerChildren: 0.03 },
+          },
+        }}
+        className="w-full pb-0 space-y-6"
+      >
+        {years.map((year) => {
+          const yearData = grouped.get(year);
+          if (!yearData) return null;
+          const months = Array.from(yearData.keys()).sort((a, b) => b - a);
+          return (
+            <div key={year} className="space-y-3">
+              <div className="px-2 text-2xl font-semibold text-gray-500 dark:text-gray-400">
+                {year}
+              </div>
+              {months.map((month) => {
+                const monthDays = yearData.get(month);
+                if (!monthDays) return null;
+                const monthDate = new Date(year, month, 1);
+                const monthName = format(monthDate, "MMM", {
+                  locale: dateLocale,
+                });
+                const dayKeys = Array.from(monthDays.keys()).sort((a, b) =>
+                  b.localeCompare(a)
+                );
+                return (
+                  <div key={`${year}-${month}`} className="space-y-3">
+                    <div className="px-2 text-xl font-medium text-gray-500 dark:text-gray-400">
+                      {monthName}
+                    </div>
+                    {dayKeys.map((dateKey) => {
+                      const dayTransactions = monthDays.get(dateKey) ?? [];
+                      const [y, m, d] = dateKey.split("-").map(Number);
+                      const dayDate = new Date(y, m - 1, d);
+                      const dayLabel = isToday(dayDate)
+                        ? t("date.today")
+                        : isYesterday(dayDate)
+                          ? t("date.yesterday")
+                          : format(dayDate, "EEEE, MMM d", {
+                              locale: dateLocale,
+                            });
+                      return (
+                        <div key={dateKey} className="space-y-1">
+                          <div className="px-2 text-lg font-normal opacity-70 py-1">
+                            {dayLabel}
+                          </div>
+                          <div className="card-level-1">
+                            <AnimatePresence mode="popLayout">
+                              {dayTransactions.map(
+                                (transaction, index, array) => (
+                                  <motion.div
+                                    key={transaction.id}
+                                    layout
+                                    variants={{
+                                      hidden: {
+                                        opacity: 0,
+                                        y: 15,
+                                        scale: 0.98,
+                                      },
+                                      show: {
+                                        opacity: 1,
+                                        y: 0,
+                                        scale: 1,
+                                      },
+                                      exit: {
+                                        opacity: 0,
+                                        height: 0,
+                                        overflow: "hidden",
+                                        transition: { duration: 0.2 },
+                                      },
+                                    }}
+                                    exit="exit"
+                                  >
+                                    <TransactionItem
+                                      transaction={transaction}
+                                      onEdit={onEdit}
+                                      onDelete={onDelete}
+                                      zIndex={array.length - index}
+                                    />
+                                  </motion.div>
+                                )
+                              )}
+                            </AnimatePresence>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })}
+      </motion.div>
+    );
+  }
 
   if (groupByMonth) {
     const grouped = groupByYearAndMonth(displayed, sortBy);
@@ -341,24 +484,6 @@ export function TransactionList({
           ))}
         </AnimatePresence>
       </div>
-      {!disableLimit && limit && sorted.length > limit && (
-        <motion.div
-          className="w-full text-center"
-          variants={{
-            hidden: { opacity: 0, y: 20 },
-            show: { opacity: 1, y: 0 },
-          }}
-        >
-          <Button
-            variant="ghost"
-            className="mt-5"
-            style={{ color: "var(--accent-color)" }}
-            onClick={() => navigate({ to: "/statistics/history" })}
-          >
-            {t("transactions.viewAll")}
-          </Button>
-        </motion.div>
-      )}
     </motion.div>
   );
 }

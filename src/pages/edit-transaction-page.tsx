@@ -1,3 +1,4 @@
+import { useDate } from "@/context/DateContext";
 import { TransactionForm } from "@/components/finance/TransactionForm";
 import { Header } from "@/components/layout/Header";
 import { PageShell } from "@/components/layout/PageShell";
@@ -6,6 +7,10 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { useTransactionStore } from "@/stores/transactionStore";
 import type { CategoryId, TransactionType } from "@/types";
 import { useNavigate } from "@tanstack/react-router";
+
+function getMonthKey(date: Date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+}
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 
@@ -17,14 +22,23 @@ export function EditTransactionPage({
   transactionId,
 }: EditTransactionPageProps) {
   const navigate = useNavigate();
+  const { selectedDate } = useDate();
   const { updateTransaction, loadTransactionById, isLoading } =
     useTransactionStore();
+  const statsSearch = {
+    month: getMonthKey(selectedDate),
+    mode: "week" as const,
+    category: undefined as string | undefined,
+  };
   const [transaction, setTransaction] = useState<Awaited<
     ReturnType<typeof loadTransactionById>
   > | null>(null);
   const { t } = useTranslation();
 
-  useTelegramBackButton({ to: "/statistics" });
+  useTelegramBackButton({
+    to: "/statistics",
+    search: statsSearch,
+  });
 
   // Load the specific transaction by ID
   useEffect(() => {
@@ -81,7 +95,7 @@ export function EditTransactionPage({
         <main className="px-3">
           <TransactionForm
             initialData={formData}
-            onCancel={() => navigate({ to: "/statistics" })}
+            onCancel={() => navigate({ to: "/statistics", search: statsSearch })}
             onSubmit={async (data) => {
               // Map form fields back to Supabase fields
               await updateTransaction(transaction.id, {
@@ -92,7 +106,7 @@ export function EditTransactionPage({
                 note: data.note,
                 occurred_at: data.date,
               });
-              navigate({ to: "/statistics" });
+              navigate({ to: "/statistics", search: statsSearch });
             }}
           />
         </main>

@@ -5,6 +5,7 @@ import { TransactionList } from "@/components/finance/TransactionList";
 import { Header } from "@/components/layout/Header";
 import { PageShell } from "@/components/layout/PageShell";
 import { ConfirmAction } from "@/components/modals/confirm-action";
+import { Button } from "@/components/ui/Button";
 import { MonthSelector } from "@/components/ui/MonthSelector";
 import { useDate } from "@/context/DateContext";
 import {
@@ -15,17 +16,45 @@ import { useCurrency } from "@/hooks/useCurrency";
 import { useTranslation } from "@/hooks/useTranslation";
 import { getCategoryColor } from "@/stores/categoryStore";
 import { useNavigate, useSearch } from "@tanstack/react-router";
+import { addMonths, isSameMonth, subMonths } from "date-fns";
 import { motion } from "framer-motion";
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+
+const MODE_SCHEMA = ["day", "week", "month"] as const;
+
+function parseMonthKey(monthKey: string): Date {
+  const [year, month] = monthKey.split("-").map(Number);
+  return new Date(year, month - 1, 1);
+}
+
+function getMonthKey(date: Date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+}
+
+type ChartMode = "day" | "week" | "month";
 
 interface StatisticsPageProps {
   selectedMonth?: string;
 }
 
-export function StatisticsPage(_props: StatisticsPageProps = {}) {
+export function StatisticsPage(props: StatisticsPageProps = {}) {
+  const { selectedMonth: propsMonth } = props;
   const navigate = useNavigate();
-  const searchParams = useSearch({ strict: false });
-  const { selectedDate, setDate } = useDate();
+  const search = useSearch({ strict: false }) as {
+    month?: string;
+    mode?: string;
+    category?: string;
+  };
+  const urlMonth =
+    search?.month && /^\d{4}-(0[1-9]|1[0-2])$/.test(search.month)
+      ? search.month
+      : undefined;
+  const urlMode =
+    search?.mode && MODE_SCHEMA.includes(search.mode as ChartMode)
+      ? (search.mode as ChartMode)
+      : undefined;
+  const categoryParam = search?.category;
+  const { selectedDate, setDate, prevMonth, nextMonth } = useDate();
   const { formatAmount } = useCurrency();
   const { t } = useTranslation();
   const deleteTransactionMutation = useDeleteTransaction();
@@ -37,16 +66,74 @@ export function StatisticsPage(_props: StatisticsPageProps = {}) {
   // Modals state
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
-  const [chartMode, setChartMode] = useState<"day" | "week" | "month">("week");
+  const [chartMode, setChartMode] = useState<ChartMode>(urlMode || "week");
+
+  // Sync URL <-> selected month & mode (for reload persistence)
+  const updateUrl = useCallback(
+    (date: Date, mode: ChartMode, category?: string) => {
+      navigate({
+        to: "/statistics",
+        search: {
+          month: getMonthKey(date),
+          mode,
+          category: category ?? undefined,
+        },
+        replace: true,
+      });
+    },
+    [navigate]
+  );
+
+  // Sync URL <-> date (from search param or path param like /statistics/2025-02)
+  const monthFromUrl = urlMonth || propsMonth;
+  useEffect(() => {
+    if (monthFromUrl) {
+      const parsed = parseMonthKey(monthFromUrl);
+      if (!isSameMonth(selectedDate, parsed)) {
+        setDate(parsed);
+      }
+      // If we came from path param (propsMonth), normalize to search params
+      if (propsMonth && !urlMonth) {
+        updateUrl(parsed, urlMode || chartMode, categoryParam);
+      }
+    } else {
+      updateUrl(selectedDate, chartMode, categoryParam);
+    }
+  }, [monthFromUrl]);
+
+  useEffect(() => {
+    if (urlMode && urlMode !== chartMode) {
+      setChartMode(urlMode);
+    }
+  }, [urlMode]);
+
+  // Custom prev/next that update URL
+  const handlePrevMonth = useCallback(() => {
+    const newDate = subMonths(selectedDate, 1);
+    prevMonth();
+    updateUrl(newDate, chartMode, categoryParam);
+  }, [selectedDate, chartMode, categoryParam, prevMonth, updateUrl]);
+
+  const handleNextMonth = useCallback(() => {
+    const newDate = addMonths(selectedDate, 1);
+    nextMonth();
+    updateUrl(newDate, chartMode, categoryParam);
+  }, [selectedDate, chartMode, categoryParam, nextMonth, updateUrl]);
+
+  const handleChartModeChange = useCallback(
+    (mode: ChartMode) => {
+      setChartMode(mode);
+      updateUrl(selectedDate, mode, categoryParam);
+    },
+    [selectedDate, categoryParam, updateUrl]
+  );
 
   // Handle period click (week click in month mode, day click in week mode)
-  const handlePeriodClick = (date: Date, mode: "day" | "week" | "month") => {
+  const handlePeriodClick = (date: Date, mode: ChartMode) => {
     setDate(date);
     setChartMode(mode);
+    updateUrl(date, mode, categoryParam);
   };
-
-  // Get category from URL params
-  const categoryParam = (searchParams as any)?.category;
 
   // Data is already in the correct format with categories and subcategories joined
   const transactions = useMemo(() => {
@@ -144,7 +231,11 @@ export function StatisticsPage(_props: StatisticsPageProps = {}) {
     >
       <PageShell>
         <Header>
-          <MonthSelector totalExpenses={formatAmount(totalExpenses)} />
+          <MonthSelector
+            totalExpenses={formatAmount(totalExpenses)}
+            onPrevMonth={handlePrevMonth}
+            onNextMonth={handleNextMonth}
+          />
         </Header>
 
         <main
@@ -159,7 +250,7 @@ export function StatisticsPage(_props: StatisticsPageProps = {}) {
                 <div className="flex items-center justify-center gap-0 bg-gray-200 dark:bg-gray-700 rounded-full">
                   <button
                     type="button"
-                    onClick={() => setChartMode("day")}
+                    onClick={() => handleChartModeChange("day")}
                     className={`px-4 py-1 rounded-full text-sm font-medium transition-colors ${
                       chartMode === "day"
                         ? "bg-blue-500 text-white"
@@ -170,7 +261,7 @@ export function StatisticsPage(_props: StatisticsPageProps = {}) {
                   </button>
                   <button
                     type="button"
-                    onClick={() => setChartMode("week")}
+                    onClick={() => handleChartModeChange("week")}
                     className={`px-4 py-1 rounded-full text-sm font-medium transition-colors ${
                       chartMode === "week"
                         ? "bg-blue-500 text-white"
@@ -181,7 +272,7 @@ export function StatisticsPage(_props: StatisticsPageProps = {}) {
                   </button>
                   <button
                     type="button"
-                    onClick={() => setChartMode("month")}
+                    onClick={() => handleChartModeChange("month")}
                     className={`px-4 py-1 rounded-full text-sm font-medium transition-colors ${
                       chartMode === "month"
                         ? "bg-blue-500 text-white"
@@ -235,6 +326,23 @@ export function StatisticsPage(_props: StatisticsPageProps = {}) {
               groupByDay
             />
           </div>
+
+          <motion.div
+            className="w-full text-center"
+            variants={{
+              hidden: { opacity: 0, y: 20 },
+              show: { opacity: 1, y: 0 },
+            }}
+          >
+            <Button
+              variant="ghost"
+              className="mt-5"
+              style={{ color: "var(--accent-color)" }}
+              onClick={() => navigate({ to: "/statistics/history" })}
+            >
+              {t("transactions.viewAll")}
+            </Button>
+          </motion.div>
         </main>
       </PageShell>
     </motion.div>

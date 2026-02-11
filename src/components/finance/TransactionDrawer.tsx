@@ -3,18 +3,26 @@ import { useToast } from "@/context/ToastContext";
 import { useCurrency } from "@/hooks/useCurrency";
 import { useTranslation } from "@/hooks/useTranslation";
 import { cn } from "@/lib/utils";
-import { useCategoryStore } from "@/stores/categoryStore";
+import { getCategoryColor, useCategoryStore } from "@/stores/categoryStore";
 import { useTransactionStore } from "@/stores/transactionStore";
 import type { Enums } from "@/types/supabase";
 import { Drawer } from "vaul";
 
 type TransactionDirection = Enums<"transaction_direction">;
 
+interface OnTransactionAddedData {
+  amount: number;
+  categoryId: string;
+  subcategoryId?: string | null;
+  date: string;
+  type: TransactionDirection;
+}
+
 interface TransactionDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   initialType?: TransactionDirection;
-  onTransactionAdded?: () => void;
+  onTransactionAdded?: (data?: OnTransactionAddedData) => void | Promise<void>;
   showEditNote?: boolean;
 }
 
@@ -58,12 +66,20 @@ export function TransactionDrawer({
     showToast({
       message: t("success.transactionAdded"),
       category: category?.name || t("transactions.expense"),
-      color: category?.color || "var(--text-default)",
+      color:
+        getCategoryColor(category?.color, category?.name) ||
+        "var(--text-default)",
       amount: formatAmount(data.amount),
     });
 
-    // Trigger reload in parent component
-    onTransactionAdded?.();
+    // Trigger reload in parent component (optimistic update + refresh)
+    await onTransactionAdded?.({
+      amount: data.amount,
+      categoryId: data.categoryId,
+      subcategoryId: data.subcategoryId,
+      date: data.date,
+      type: data.type,
+    });
 
     onClose();
   };

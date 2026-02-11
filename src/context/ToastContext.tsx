@@ -1,5 +1,4 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { X } from "lucide-react";
 import type React from "react";
 import { createContext, useContext, useState } from "react";
 
@@ -32,7 +31,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   return (
     <ToastContext.Provider value={{ showToast }}>
       {children}
-      <div className="fixed top-20 left-0 right-0 z-[100] flex flex-col items-center pointer-events-none gap-2">
+      <div className="fixed top-10 left-0 right-0 z-[100] flex flex-col items-center pointer-events-none gap-2">
         <AnimatePresence>
           {toasts.map((toast) => (
             <motion.div
@@ -54,29 +53,6 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                   {toast.category} • {toast.amount}
                 </p>
               </div>
-              {toast.onUndo && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    toast.onUndo?.();
-                    setToasts((prev) => prev.filter((t) => t.id !== toast.id));
-                  }}
-                  className="ml-2 text-xs font-bold uppercase tracking-wider text-blue-400 dark:text-blue-600"
-                >
-                  Undo
-                </button>
-              )}
-              {!toast.onUndo && (
-                <button
-                  type="button"
-                  onClick={() =>
-                    setToasts((prev) => prev.filter((t) => t.id !== toast.id))
-                  }
-                  className="absolute right-4 p-1 rounded-full hover:bg-white/10 dark:hover:bg-black/10 transition-colors"
-                >
-                  <X className="w-3.5 h-3.5 opacity-40" />
-                </button>
-              )}
             </motion.div>
           ))}
         </AnimatePresence>

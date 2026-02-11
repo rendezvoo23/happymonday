@@ -143,6 +143,7 @@ export function HistoryPage() {
           onDelete={handleDeleteRequest}
           disableLimit
           groupByMonth
+          groupByDayInMonth
           sortBy={sortBy}
         />
 

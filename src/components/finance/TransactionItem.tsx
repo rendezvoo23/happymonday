@@ -113,7 +113,7 @@ export function TransactionItem({
             </p>
             <p className="text-[14px] text-gray-500 dark:text-gray-400 mt-0.5 truncate">
               {transaction.occurred_at
-                ? format(parseISO(transaction.occurred_at), "MMM d, HH:mm", {
+                ? format(parseISO(transaction.occurred_at), "HH:mm", {
                     locale: dateLocale,
                   })
                 : "N/A"}

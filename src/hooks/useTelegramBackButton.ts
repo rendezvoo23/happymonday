@@ -1,7 +1,12 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 
-export function useTelegramBackButton({ to = ".." }: { to?: string } = {}) {
+type BackButtonOptions = {
+  to?: string;
+  search?: Record<string, unknown>;
+};
+
+export function useTelegramBackButton({ to = "..", search }: BackButtonOptions = {}) {
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -16,7 +21,7 @@ export function useTelegramBackButton({ to = ".." }: { to?: string } = {}) {
 
     // Set up the click handler
     const handleBackClick = () => {
-      navigate({ to });
+      navigate({ to, ...(search && { search }) });
     };
 
     tg.BackButton.onClick(handleBackClick);
@@ -26,5 +31,5 @@ export function useTelegramBackButton({ to = ".." }: { to?: string } = {}) {
       tg.BackButton.hide();
       tg.BackButton.offClick(handleBackClick);
     };
-  }, [navigate]);
+  }, [navigate, to, search]);
 }

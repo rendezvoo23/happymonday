@@ -1,3 +1,4 @@
+import { useDate } from "@/context/DateContext";
 import { useCategoryLabel } from "@/hooks/useCategoryLabel";
 import { useCurrency } from "@/hooks/useCurrency";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -37,7 +38,11 @@ export function BubblesCluster({
   useGooeyFilter = false,
 }: BubblesClusterProps) {
   const navigate = useNavigate();
+  const { selectedDate } = useDate();
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const getMonthKey = (date: Date) =>
+    `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const { getCategoryById } = useCategoryStore();
   const { formatCompactAmount } = useCurrency();
@@ -86,7 +91,10 @@ export function BubblesCluster({
 
   // Aggregate expenses by category
   const bubbles = useMemo(() => {
-    if (dimensions.width === 0 || dimensions.height === 0) return [];
+    // Use height prop as fallback when container not yet measured (e.g. drawer open)
+    const effectiveWidth = dimensions.width || 300;
+    const effectiveHeight = dimensions.height || height;
+    if (effectiveWidth === 0 || effectiveHeight === 0) return [];
 
     const expenses = transactions.filter((t) => t.direction === "expense");
     const total = expenses.reduce((acc, t) => acc + t.amount, 0);
@@ -192,8 +200,8 @@ export function BubblesCluster({
     const contentHeight = maxY - minY;
 
     const padding = 10;
-    const containerWidth = dimensions.width - padding * 2;
-    const containerHeight = dimensions.height - padding * 2;
+    const containerWidth = effectiveWidth - padding * 2;
+    const containerHeight = effectiveHeight - padding * 2;
 
     const scaleX = contentWidth > 0 ? containerWidth / contentWidth : 1;
     const scaleY = contentHeight > 0 ? containerHeight / contentHeight : 1;
@@ -220,7 +228,7 @@ export function BubblesCluster({
         r: layout.r * scale,
       };
     });
-  }, [transactions, mode, dimensions, getCategoryById]);
+  }, [transactions, mode, dimensions, height, getCategoryById]);
 
   if (transactions.filter((t) => t.direction === "expense").length === 0) {
     return (
@@ -228,7 +236,7 @@ export function BubblesCluster({
         className="flex items-center justify-center text-gray-400 text-sm"
         style={{ height }}
       >
-        {t("statistics.noData")}
+        {t("transactions.noTransactions")}
       </div>
     );
   }
@@ -237,7 +245,14 @@ export function BubblesCluster({
     if (onBubbleClick && mode === "blurred") {
       onBubbleClick(categoryId);
     } else if (mode === "cluster") {
-      navigate({ to: "/statistics", search: { category: categoryId } });
+      navigate({
+        to: "/statistics",
+        search: {
+          month: getMonthKey(selectedDate),
+          mode: "week" as const,
+          category: categoryId,
+        },
+      });
     }
   };
 

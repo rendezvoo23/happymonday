@@ -1,3 +1,4 @@
+import { useDate } from "@/context/DateContext";
 import { useTranslation } from "@/hooks/useTranslation";
 import { cn } from "@/lib/utils";
 import "@/pages/styles.css";
@@ -12,10 +13,15 @@ import {
 } from "../icons";
 import "./navigation.css";
 
+function getMonthKey(date: Date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+}
+
 export function BottomNav() {
   const location = useLocation();
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { selectedDate } = useDate();
 
   const isHomeActive = location.pathname === "/home";
   const isStatsActive =
@@ -63,9 +69,16 @@ export function BottomNav() {
     }
   }, [navigate]);
 
+  const homeSearch = { month: getMonthKey(selectedDate) };
+  const statsSearch = {
+    month: getMonthKey(selectedDate),
+    mode: "week" as const,
+    category: undefined as string | undefined,
+  };
   const navItems = [
     {
       to: "/home",
+      search: homeSearch,
       icon: HouseIcon,
       iconFill: HouseFillIcon,
       label: t("nav.home"),
@@ -73,6 +86,7 @@ export function BottomNav() {
     },
     {
       to: "/statistics",
+      search: statsSearch,
       icon: ChartIcon,
       iconFill: ChartFillIcon,
       label: t("nav.statistics"),
@@ -109,6 +123,7 @@ export function BottomNav() {
               <Link
                 key={item.to}
                 to={item.to}
+                {...(item.search && { search: item.search })}
                 onClick={() => {
                   if (window.Telegram?.WebApp?.HapticFeedback) {
                     window.Telegram.WebApp.HapticFeedback.selectionChanged();
