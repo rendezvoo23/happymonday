@@ -6,7 +6,10 @@ type BackButtonOptions = {
   search?: Record<string, unknown>;
 };
 
-export function useTelegramBackButton({ to = "..", search }: BackButtonOptions = {}) {
+export function useTelegramBackButton({
+  to = "..",
+  search,
+}: BackButtonOptions = {}) {
   const navigate = useNavigate();
 
   useEffect(() => {

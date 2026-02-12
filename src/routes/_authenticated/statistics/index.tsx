@@ -6,11 +6,13 @@ type ChartMode = (typeof modeSchema)[number];
 export const Route = createFileRoute("/_authenticated/statistics/")({
   validateSearch: (search: Record<string, unknown>) => {
     const month =
-      typeof search.month === "string" && /^\d{4}-(0[1-9]|1[0-2])$/.test(search.month)
+      typeof search.month === "string" &&
+      /^\d{4}-(0[1-9]|1[0-2])$/.test(search.month)
         ? search.month
         : undefined;
     const mode =
-      typeof search.mode === "string" && modeSchema.includes(search.mode as ChartMode)
+      typeof search.mode === "string" &&
+      modeSchema.includes(search.mode as ChartMode)
         ? (search.mode as ChartMode)
         : undefined;
     const category =

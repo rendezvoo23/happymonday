@@ -7,10 +7,6 @@ function getCurrentMonthKey() {
 
 export const Route = createFileRoute("/")({
   component: () => (
-    <Navigate
-      to="/home"
-      search={{ month: getCurrentMonthKey() }}
-      replace
-    />
+    <Navigate to="/home" search={{ month: getCurrentMonthKey() }} replace />
   ),
 });

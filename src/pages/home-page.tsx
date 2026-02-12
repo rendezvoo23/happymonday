@@ -6,6 +6,7 @@ import { Spinner } from "@/components/spinner";
 import { MonthSelector } from "@/components/ui/MonthSelector";
 import { useDate } from "@/context/DateContext";
 import { useCurrency } from "@/hooks/useCurrency";
+import { Route } from "@/routes/_authenticated/home";
 import { useCategoryStore } from "@/stores/categoryStore";
 import { useTransactionStore } from "@/stores/transactionStore";
 import type { Enums, Tables } from "@/types/supabase";
@@ -14,7 +15,6 @@ import { addMonths, isSameMonth, subMonths } from "date-fns";
 import { motion } from "framer-motion";
 import { Plus } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Route } from "@/routes/_authenticated/home";
 import "./home.css";
 import "./styles.css";
 

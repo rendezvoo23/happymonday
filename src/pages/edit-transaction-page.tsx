@@ -1,7 +1,7 @@
-import { useDate } from "@/context/DateContext";
 import { TransactionForm } from "@/components/finance/TransactionForm";
 import { Header } from "@/components/layout/Header";
 import { PageShell } from "@/components/layout/PageShell";
+import { useDate } from "@/context/DateContext";
 import { useTelegramBackButton } from "@/hooks/useTelegramBackButton";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useTransactionStore } from "@/stores/transactionStore";
@@ -95,7 +95,9 @@ export function EditTransactionPage({
         <main className="px-3">
           <TransactionForm
             initialData={formData}
-            onCancel={() => navigate({ to: "/statistics", search: statsSearch })}
+            onCancel={() =>
+              navigate({ to: "/statistics", search: statsSearch })
+            }
             onSubmit={async (data) => {
               // Map form fields back to Supabase fields
               await updateTransaction(transaction.id, {
