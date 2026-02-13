@@ -36,13 +36,8 @@ export function HistoryPage() {
 
   useTelegramBackButton();
 
-  const {
-    data,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    isLoading,
-  } = useHistoryTransactions(sortBy, PAGE_SIZE);
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
+    useHistoryTransactions(sortBy, PAGE_SIZE);
 
   const historyTransactions = useMemo(
     () => data?.pages.flatMap((p) => p.transactions) ?? [],

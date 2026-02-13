@@ -28,8 +28,7 @@ export const useUIStore = create<UIState>((set) => ({
     transactionType: "expense",
   },
 
-  setNavBarVisible: (visible) =>
-    set({ isNavBarVisible: visible }),
+  setNavBarVisible: (visible) => set({ isNavBarVisible: visible }),
 
   openAddTransactionDrawer: (type = "expense") =>
     set({

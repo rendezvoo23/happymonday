@@ -26,9 +26,11 @@ export function EditTransactionPage({
 }: EditTransactionPageProps) {
   const navigate = useNavigate();
   const { selectedDate } = useDate();
-  const { data: transaction, isLoading, isError } = useTransactionById(
-    transactionId
-  );
+  const {
+    data: transaction,
+    isLoading,
+    isError,
+  } = useTransactionById(transactionId);
   const updateTransactionMutation = useUpdateTransaction();
   const { t } = useTranslation();
 

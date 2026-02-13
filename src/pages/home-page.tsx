@@ -5,18 +5,16 @@ import { PageShell } from "@/components/layout/PageShell";
 import { Spinner } from "@/components/spinner";
 import { MonthSelector } from "@/components/ui/MonthSelector";
 import { useDate } from "@/context/DateContext";
+import { useMonthTransactionsWithCategories } from "@/hooks/use-transactions-query";
 import { useCurrency } from "@/hooks/useCurrency";
-import {
-  useMonthTransactionsWithCategories,
-} from "@/hooks/use-transactions-query";
+import { Route } from "@/routes/_authenticated/home";
 import { useCategoryStore } from "@/stores/categoryStore";
 import { useUIStore } from "@/stores/uiStore";
-import { Route } from "@/routes/_authenticated/home";
+import { useNavigate } from "@tanstack/react-router";
 import { addMonths, isSameMonth, subMonths } from "date-fns";
 import { motion } from "framer-motion";
 import { Plus } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "@tanstack/react-router";
 import "./home.css";
 import "./styles.css";
 
@@ -116,7 +114,8 @@ export function HomePage() {
   const prevMonthTransactions = prevMonthQuery.data ?? [];
   const nextMonthTransactions = canGoNext ? (nextMonthQuery.data ?? []) : [];
 
-  const isInitialLoading = currentMonthQuery.isLoading && !currentMonthQuery.data;
+  const isInitialLoading =
+    currentMonthQuery.isLoading && !currentMonthQuery.data;
 
   const totalExpenses = useMemo(() => {
     const expenses = transactions.filter((t) => t.direction === "expense");
@@ -236,7 +235,9 @@ export function HomePage() {
             onPrevMonth={handlePrevMonthClick}
             onNextMonth={handleNextMonthClick}
             onJumpToCurrentMonth={() =>
-              updateUrlMonth(new Date(new Date().getFullYear(), new Date().getMonth(), 1))
+              updateUrlMonth(
+                new Date(new Date().getFullYear(), new Date().getMonth(), 1)
+              )
             }
           />
         </Header>
