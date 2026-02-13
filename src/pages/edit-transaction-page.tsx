@@ -1,18 +1,21 @@
 import { TransactionForm } from "@/components/finance/TransactionForm";
 import { Header } from "@/components/layout/Header";
 import { PageShell } from "@/components/layout/PageShell";
+import { Spinner } from "@/components/spinner";
 import { useDate } from "@/context/DateContext";
+import {
+  useTransactionById,
+  useUpdateTransaction,
+} from "@/hooks/use-transactions-query";
 import { useTelegramBackButton } from "@/hooks/useTelegramBackButton";
 import { useTranslation } from "@/hooks/useTranslation";
-import { useTransactionStore } from "@/stores/transactionStore";
 import type { CategoryId, TransactionType } from "@/types";
 import { useNavigate } from "@tanstack/react-router";
+import { motion } from "framer-motion";
 
 function getMonthKey(date: Date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
 }
-import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
 
 interface EditTransactionPageProps {
   transactionId: string;
@@ -23,53 +26,39 @@ export function EditTransactionPage({
 }: EditTransactionPageProps) {
   const navigate = useNavigate();
   const { selectedDate } = useDate();
-  const { updateTransaction, loadTransactionById, isLoading } =
-    useTransactionStore();
+  const { data: transaction, isLoading, isError } = useTransactionById(
+    transactionId
+  );
+  const updateTransactionMutation = useUpdateTransaction();
+  const { t } = useTranslation();
+
   const statsSearch = {
     month: getMonthKey(selectedDate),
     mode: "week" as const,
     category: undefined as string | undefined,
   };
-  const [transaction, setTransaction] = useState<Awaited<
-    ReturnType<typeof loadTransactionById>
-  > | null>(null);
-  const { t } = useTranslation();
 
   useTelegramBackButton({
     to: "/statistics",
     search: statsSearch,
   });
 
-  // Load the specific transaction by ID
-  useEffect(() => {
-    loadTransactionById(transactionId).then((data) => {
-      setTransaction(data);
-    });
-  }, [transactionId, loadTransactionById]);
-
-  if (isLoading) {
+  if (isLoading || !transaction) {
     return (
       <PageShell>
         <div className="flex flex-col items-center justify-center h-[60vh]">
-          <p className="text-gray-500 dark:text-gray-400">Loading...</p>
+          {isLoading ? (
+            <Spinner size="lg" />
+          ) : (
+            <p className="text-gray-500 dark:text-gray-400">
+              {isError ? t("errors.generic") : "Transaction not found"}
+            </p>
+          )}
         </div>
       </PageShell>
     );
   }
 
-  if (!transaction) {
-    return (
-      <PageShell>
-        <div className="flex flex-col items-center justify-center h-[60vh]">
-          <p className="text-gray-500 dark:text-gray-400">
-            Transaction not found
-          </p>
-        </div>
-      </PageShell>
-    );
-  }
-
-  // Map Supabase fields to form fields
   const formData = {
     type: transaction.direction as TransactionType,
     amount: transaction.amount,
@@ -99,14 +88,16 @@ export function EditTransactionPage({
               navigate({ to: "/statistics", search: statsSearch })
             }
             onSubmit={async (data) => {
-              // Map form fields back to Supabase fields
-              await updateTransaction(transaction.id, {
-                direction: data.type,
-                amount: data.amount,
-                category_id: data.categoryId,
-                subcategory_id: data.subcategoryId || null,
-                note: data.note,
-                occurred_at: data.date,
+              await updateTransactionMutation.mutateAsync({
+                id: transaction.id,
+                payload: {
+                  type: data.type,
+                  amount: data.amount,
+                  categoryId: data.categoryId,
+                  subcategoryId: data.subcategoryId ?? null,
+                  note: data.note,
+                  date: data.date,
+                },
               });
               navigate({ to: "/statistics", search: statsSearch });
             }}

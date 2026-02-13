@@ -7,14 +7,15 @@ import { ConfirmAction } from "@/components/modals/confirm-action";
 import { Spinner } from "@/components/spinner";
 import { Button } from "@/components/ui/Button";
 import { InlineButtonDialog } from "@/components/ui/inline-button-dialog";
-import { useDeleteTransaction } from "@/hooks/use-transactions-query";
+import {
+  useDeleteTransaction,
+  useHistoryTransactions,
+} from "@/hooks/use-transactions-query";
 import { useTelegramBackButton } from "@/hooks/useTelegramBackButton";
 import { useTranslation } from "@/hooks/useTranslation";
-import { useTransactionStore } from "@/stores/transactionStore";
 import { useNavigate } from "@tanstack/react-router";
 import { useInView } from "framer-motion";
-
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 type SortByOption = "occurred_at" | "updated_at";
 
@@ -23,51 +24,48 @@ const SORT_OPTIONS: { value: SortByOption; labelKey: string }[] = [
   { value: "updated_at", labelKey: "history.sortByUpdatedAt" },
 ];
 
+const PAGE_SIZE = 20;
+
 export function HistoryPage() {
   const navigate = useNavigate();
-  const { historyTransactions, loadHistory, removeHistoryTransaction } =
-    useTransactionStore();
   const deleteTransactionMutation = useDeleteTransaction();
   const { t } = useTranslation();
-  const [page, setPage] = useState(0);
-  const [hasMore, setHasMore] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
   const [sortBy, setSortBy] = useState<SortByOption>("occurred_at");
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const pageSize = 20;
 
   useTelegramBackButton();
+
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+  } = useHistoryTransactions(sortBy, PAGE_SIZE);
+
+  const historyTransactions = useMemo(
+    () => data?.pages.flatMap((p) => p.transactions) ?? [],
+    [data]
+  );
 
   const loadMoreRef = useRef<HTMLDivElement>(null);
   const loadMoreInView = useInView(loadMoreRef, { once: false });
 
-  useEffect(() => {
-    // Initial load
-    loadHistory(0, pageSize, sortBy).then(({ hasMore }) => {
-      setHasMore(hasMore);
-    });
-  }, [sortBy]);
-
-  const handleLoadMore = useCallback(async () => {
-    if (loadingMore || !hasMore) return;
-    setLoadingMore(true);
-    const nextPage = page + 1;
-    const { hasMore: more } = await loadHistory(nextPage, pageSize, sortBy);
-    setHasMore(more);
-    setPage(nextPage);
-    setLoadingMore(false);
-  }, [page, sortBy, loadHistory, loadingMore, hasMore]);
+  const handleLoadMore = useCallback(() => {
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   useEffect(() => {
-    if (loadMoreInView && hasMore && !loadingMore) {
+    if (loadMoreInView && hasNextPage && !isFetchingNextPage) {
       handleLoadMore();
     }
-  }, [loadMoreInView, hasMore, loadingMore, handleLoadMore]);
+  }, [loadMoreInView, hasNextPage, isFetchingNextPage, handleLoadMore]);
 
   const handleSortBySelect = (value: SortByOption) => {
     setSortBy(value);
-    setPage(0);
   };
 
   const handleEdit = (transaction: { id: string }) => {
@@ -82,7 +80,6 @@ export function HistoryPage() {
   const confirmDelete = async () => {
     if (deleteTargetId) {
       await deleteTransactionMutation.mutateAsync(deleteTargetId);
-      removeHistoryTransaction(deleteTargetId);
       setIsDeleteModalOpen(false);
       setDeleteTargetId(null);
     }
@@ -137,37 +134,49 @@ export function HistoryPage() {
       </div>
 
       <main className="px-3 pb-32">
-        <TransactionList
-          transactions={historyTransactions}
-          onEdit={handleEdit}
-          onDelete={handleDeleteRequest}
-          disableLimit
-          groupByMonth
-          groupByDayInMonth
-          sortBy={sortBy}
-        />
-
-        <div
-          ref={loadMoreRef}
-          className="flex items-center justify-center w-full mt-4 min-h-[48px]"
-        >
-          {hasMore && (
-            <Button
-              variant="ghost"
-              size="md"
-              style={{ color: "var(--accent-color)" }}
-              onClick={handleLoadMore}
-              disabled={loadingMore}
-            >
-              {loadingMore ? <Spinner size="md" /> : t("transactions.loadMore")}
-            </Button>
-          )}
-        </div>
-
-        {!hasMore && historyTransactions.length > 0 && (
-          <div className="text-center py-8 text-gray-400 text-sm">
-            {t("history.endOfList")}
+        {isLoading ? (
+          <div className="flex justify-center py-12">
+            <Spinner size="lg" />
           </div>
+        ) : (
+          <>
+            <TransactionList
+              transactions={historyTransactions}
+              onEdit={handleEdit}
+              onDelete={handleDeleteRequest}
+              disableLimit
+              groupByMonth
+              groupByDayInMonth
+              sortBy={sortBy}
+            />
+
+            <div
+              ref={loadMoreRef}
+              className="flex justify-center w-full mt-4 min-h-[48px]"
+            >
+              {hasNextPage && (
+                <Button
+                  variant="ghost"
+                  size="md"
+                  style={{ color: "var(--accent-color)" }}
+                  onClick={handleLoadMore}
+                  disabled={isFetchingNextPage}
+                >
+                  {isFetchingNextPage ? (
+                    <Spinner size="md" />
+                  ) : (
+                    t("transactions.loadMore")
+                  )}
+                </Button>
+              )}
+            </div>
+
+            {!hasNextPage && historyTransactions.length > 0 && (
+              <div className="text-center py-8 text-gray-400 text-sm">
+                {t("history.endOfList")}
+              </div>
+            )}
+          </>
         )}
       </main>
 

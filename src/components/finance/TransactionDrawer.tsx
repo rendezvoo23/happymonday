@@ -1,28 +1,19 @@
 import { TransactionForm } from "@/components/finance/TransactionForm";
 import { useToast } from "@/context/ToastContext";
 import { useCurrency } from "@/hooks/useCurrency";
+import { useCreateTransaction } from "@/hooks/use-transactions-query";
 import { useTranslation } from "@/hooks/useTranslation";
 import { cn } from "@/lib/utils";
 import { getCategoryColor, useCategoryStore } from "@/stores/categoryStore";
-import { useTransactionStore } from "@/stores/transactionStore";
 import type { Enums } from "@/types/supabase";
 import { Drawer } from "vaul";
 
 type TransactionDirection = Enums<"transaction_direction">;
 
-interface OnTransactionAddedData {
-  amount: number;
-  categoryId: string;
-  subcategoryId?: string | null;
-  date: string;
-  type: TransactionDirection;
-}
-
 interface TransactionDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   initialType?: TransactionDirection;
-  onTransactionAdded?: (data?: OnTransactionAddedData) => void | Promise<void>;
   showEditNote?: boolean;
 }
 
@@ -31,9 +22,8 @@ export function TransactionDrawer({
   onClose,
   initialType = "expense",
   showEditNote = true,
-  onTransactionAdded,
 }: TransactionDrawerProps) {
-  const addTransaction = useTransactionStore((state) => state.addTransaction);
+  const createTransactionMutation = useCreateTransaction();
   const { formatAmount } = useCurrency();
   const { showToast } = useToast();
   const { getCategoryById } = useCategoryStore();
@@ -49,14 +39,13 @@ export function TransactionDrawer({
   }) => {
     const category = getCategoryById(data.categoryId);
 
-    await addTransaction({
+    await createTransactionMutation.mutateAsync({
       amount: data.amount,
-      category_id: data.categoryId,
-      subcategory_id: data.subcategoryId || null,
-      occurred_at: data.date,
-      note: data.note,
-      direction: data.type,
-      currency_code: "USD",
+      categoryId: data.categoryId,
+      subcategoryId: data.subcategoryId ?? null,
+      date: data.date,
+      description: data.note,
+      type: data.type,
     });
 
     if (window.Telegram?.WebApp?.HapticFeedback) {
@@ -70,15 +59,6 @@ export function TransactionDrawer({
         getCategoryColor(category?.color, category?.name) ||
         "var(--text-default)",
       amount: formatAmount(data.amount),
-    });
-
-    // Trigger reload in parent component (optimistic update + refresh)
-    await onTransactionAdded?.({
-      amount: data.amount,
-      categoryId: data.categoryId,
-      subcategoryId: data.subcategoryId,
-      date: data.date,
-      type: data.type,
     });
 
     onClose();
@@ -99,9 +79,6 @@ export function TransactionDrawer({
             "border-t border-gray-200 dark:border-gray-700"
           )}
         >
-          {/* Handle - Only this area should drag the drawer */}
-
-          {/* Content - Prevent dragging on form area */}
           <div
             className="flex-1 overflow-y-auto overflow-x-hidden"
             data-vaul-no-drag
