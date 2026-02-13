@@ -1,8 +1,10 @@
 import { TransactionForm } from "@/components/finance/TransactionForm";
 import { useToast } from "@/context/ToastContext";
+import { useCreateTransaction } from "@/hooks/use-transactions-query";
+import { useCategoryLabel } from "@/hooks/useCategoryLabel";
 import { useCurrency } from "@/hooks/useCurrency";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useCategoryStore } from "@/stores/categoryStore";
-import { useTransactionStore } from "@/stores/transactionStore";
 import type { Enums } from "@/types/supabase";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
@@ -11,10 +13,12 @@ type TransactionDirection = Enums<"transaction_direction">;
 export function AddTransactionPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const addTransaction = useTransactionStore((state) => state.addTransaction);
+  const createTransactionMutation = useCreateTransaction();
   const { formatAmount } = useCurrency();
   const { showToast } = useToast();
   const { getCategoryById } = useCategoryStore();
+  const { t } = useTranslation();
+  const { getCategoryLabel } = useCategoryLabel();
 
   const initialType =
     (searchParams.get("type") as TransactionDirection) || "expense";
@@ -26,14 +30,13 @@ export function AddTransactionPage() {
       onSubmit={async (data) => {
         const category = getCategoryById(data.categoryId);
 
-        await addTransaction({
+        await createTransactionMutation.mutateAsync({
           amount: data.amount,
-          category_id: data.categoryId,
-          subcategory_id: data.subcategoryId || null,
-          occurred_at: data.date,
-          note: data.note,
-          direction: data.type,
-          currency_code: "USD",
+          categoryId: data.categoryId,
+          subcategoryId: data.subcategoryId ?? null,
+          date: data.date,
+          description: data.note,
+          type: data.type,
         });
 
         if (window.Telegram?.WebApp?.HapticFeedback) {
@@ -41,8 +44,9 @@ export function AddTransactionPage() {
         }
 
         showToast({
-          message: "Transaction Added",
-          category: category?.name || "Expense",
+          message: t("success.transactionAdded"),
+          category:
+            getCategoryLabel(category?.name) || t("transactions.expense"),
           amount: formatAmount(data.amount),
         });
 

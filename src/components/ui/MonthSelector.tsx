@@ -23,6 +23,7 @@ interface MonthSelectorProps {
   className?: string;
   onPrevMonth?: () => void;
   onNextMonth?: () => void;
+  onJumpToCurrentMonth?: () => void;
   totalExpenses?: React.ReactNode;
 }
 
@@ -46,6 +47,7 @@ export function MonthSelector({
   className,
   onPrevMonth,
   onNextMonth,
+  onJumpToCurrentMonth,
   totalExpenses,
 }: MonthSelectorProps) {
   const { selectedDate, setDate, nextMonth, prevMonth, canGoNext } = useDate();
@@ -64,7 +66,7 @@ export function MonthSelector({
   // Handler to jump to current month
   const handleMonthClick = () => {
     if (!isCurrentMonth) {
-      setDate(new Date());
+      onJumpToCurrentMonth ? onJumpToCurrentMonth() : setDate(new Date());
     }
   };
 

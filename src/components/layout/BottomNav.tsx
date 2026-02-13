@@ -2,6 +2,7 @@ import { useDate } from "@/context/DateContext";
 import { useTranslation } from "@/hooks/useTranslation";
 import { cn } from "@/lib/utils";
 import "@/pages/styles.css";
+import { useUIStore } from "@/stores/uiStore";
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import {
@@ -22,6 +23,7 @@ export function BottomNav() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { selectedDate } = useDate();
+  const { lastHomeSearch, lastStatisticsSearch } = useUIStore();
 
   const isHomeActive = location.pathname === "/home";
   const isStatsActive =
@@ -69,11 +71,16 @@ export function BottomNav() {
     }
   }, [navigate]);
 
-  const homeSearch = { month: getMonthKey(selectedDate) };
+  // Use persisted params when switching tabs; fallback to current date
+  const defaultMonth = getMonthKey(selectedDate);
+  const homeSearch = {
+    month: lastHomeSearch.month ?? defaultMonth,
+    mode: "month" as const, // In URL for future use; ignored on home for now
+  };
   const statsSearch = {
-    month: getMonthKey(selectedDate),
-    mode: "week" as const,
-    category: undefined as string | undefined,
+    month: lastStatisticsSearch.month ?? defaultMonth,
+    mode: (lastStatisticsSearch.mode ?? "week") as "day" | "week" | "month",
+    category: lastStatisticsSearch.category,
   };
   const navItems = [
     {

@@ -3,13 +3,22 @@ import {
   deleteTransaction,
   getMonthSummary,
   getSpendByCategory,
+  getTransactionById,
   listTransactions,
+  listTransactionsForHistory,
   listTransactionsWithCategories,
   updateTransaction,
 } from "@/lib/api";
 import type { Transaction, TransactionType } from "@/types";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { endOfMonth, format, startOfMonth } from "date-fns";
+
+const DEFAULT_STALE_TIME = 1000 * 60 * 5; // 5 minutes
 
 // Query keys
 export const transactionKeys = {
@@ -17,6 +26,9 @@ export const transactionKeys = {
   lists: () => [...transactionKeys.all, "list"] as const,
   list: (fromISO: string, toISO: string) =>
     [...transactionKeys.lists(), { fromISO, toISO }] as const,
+  detail: (id: string) => [...transactionKeys.all, "detail", id] as const,
+  history: (sortBy: string) =>
+    [...transactionKeys.all, "history", sortBy] as const,
   summary: (fromISO: string, toISO: string) =>
     [...transactionKeys.all, "summary", { fromISO, toISO }] as const,
   spendByCategory: (fromISO: string, toISO: string) =>
@@ -28,7 +40,7 @@ export function useTransactions(fromISO: string, toISO: string) {
   return useQuery({
     queryKey: transactionKeys.list(fromISO, toISO),
     queryFn: () => listTransactions(fromISO, toISO),
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: DEFAULT_STALE_TIME,
   });
 }
 
@@ -48,7 +60,7 @@ export function useMonthTransactionsWithCategories(date: Date) {
   return useQuery({
     queryKey: [...transactionKeys.list(fromISO, toISO), "with-categories"],
     queryFn: () => listTransactionsWithCategories(fromISO, toISO),
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: DEFAULT_STALE_TIME,
   });
 }
 
@@ -60,7 +72,7 @@ export function useMonthSummary(date: Date) {
   return useQuery({
     queryKey: transactionKeys.summary(fromISO, toISO),
     queryFn: () => getMonthSummary(fromISO, toISO),
-    staleTime: 1000 * 60 * 5,
+    staleTime: DEFAULT_STALE_TIME,
   });
 }
 
@@ -72,7 +84,7 @@ export function useSpendByCategory(date: Date) {
   return useQuery({
     queryKey: transactionKeys.spendByCategory(fromISO, toISO),
     queryFn: () => getSpendByCategory(fromISO, toISO),
-    staleTime: 1000 * 60 * 5,
+    staleTime: DEFAULT_STALE_TIME,
   });
 }
 
@@ -84,6 +96,7 @@ export function useCreateTransaction() {
     mutationFn: (payload: {
       amount: number;
       categoryId: string;
+      subcategoryId?: string | null;
       date: string;
       description?: string;
       type: TransactionType;
@@ -92,6 +105,33 @@ export function useCreateTransaction() {
       // Invalidate all transaction queries
       queryClient.invalidateQueries({ queryKey: transactionKeys.all });
     },
+  });
+}
+
+// Hook to fetch a single transaction by ID
+export function useTransactionById(id: string | undefined, enabled = true) {
+  return useQuery({
+    queryKey: transactionKeys.detail(id ?? ""),
+    queryFn: async () => {
+      if (!id) throw new Error("Transaction ID required");
+      return getTransactionById(id);
+    },
+    enabled: !!id && enabled,
+  });
+}
+
+// Hook for infinite history list
+export function useHistoryTransactions(
+  sortBy: "occurred_at" | "updated_at" = "occurred_at",
+  pageSize = 20
+) {
+  return useInfiniteQuery({
+    queryKey: transactionKeys.history(sortBy),
+    queryFn: ({ pageParam }) =>
+      listTransactionsForHistory(pageParam, pageSize, sortBy),
+    initialPageParam: 0,
+    getNextPageParam: (lastPage, allPages) =>
+      lastPage.hasMore ? allPages.length : undefined,
   });
 }
 

@@ -92,6 +92,7 @@ export const getSubcategories = async (
 export const createTransaction = async (payload: {
   amount: number;
   categoryId: string;
+  subcategoryId?: string | null;
   date: string; // ISO
   description?: string;
   type: TransactionType;
@@ -103,6 +104,7 @@ export const createTransaction = async (payload: {
     user_id: userData.user.id,
     amount: payload.amount,
     category_id: payload.categoryId,
+    subcategory_id: payload.subcategoryId ?? null,
     occurred_at: payload.date,
     note: payload.description || "",
     direction: payload.type,
@@ -180,6 +182,73 @@ export const listTransactionsWithCategories = async (
   if (error) throw error;
 
   return data || [];
+};
+
+// 4.2. Get Transaction By ID (with categories)
+export const getTransactionById = async (id: string) => {
+  const { data, error } = await supabase
+    .from("transactions")
+    .select(
+      `
+      *,
+      categories (
+        id,
+        name,
+        color,
+        icon
+      ),
+      subcategories (
+        id,
+        name,
+        icon
+      )
+    `
+    )
+    .eq("id", id)
+    .is("deleted_at", null)
+    .single();
+
+  if (error) throw error;
+  return data;
+};
+
+// 4.3. List Transactions For History (paginated)
+export const listTransactionsForHistory = async (
+  page: number,
+  pageSize: number,
+  sortBy: "occurred_at" | "updated_at" = "occurred_at"
+) => {
+  const start = page * pageSize;
+  const end = start + pageSize - 1;
+
+  const { data, error } = await supabase
+    .from("transactions")
+    .select(
+      `
+      *,
+      categories (
+        id,
+        name,
+        color,
+        icon
+      ),
+      subcategories (
+        id,
+        name,
+        icon
+      )
+    `
+    )
+    .is("deleted_at", null)
+    .order(sortBy, { ascending: false })
+    .range(start, end);
+
+  if (error) throw error;
+
+  const transactions = data || [];
+  const hasMore = transactions.length === pageSize;
+
+  return { transactions, hasMore };
 };
 
 // 5. Month Summary
@@ -261,6 +330,7 @@ export const updateTransaction = async (
   const dbPayload: {
     amount?: number;
     category_id?: string;
+    subcategory_id?: string | null;
     occurred_at?: string;
     note?: string;
     direction?: TransactionType;
@@ -268,6 +338,8 @@ export const updateTransaction = async (
   if (payload.amount !== undefined) dbPayload.amount = payload.amount;
   if (payload.categoryId !== undefined)
     dbPayload.category_id = payload.categoryId;
+  if (payload.subcategoryId !== undefined)
+    dbPayload.subcategory_id = payload.subcategoryId;
   if (payload.date !== undefined) dbPayload.occurred_at = payload.date;
   if (payload.note !== undefined) dbPayload.note = payload.note;
   if (payload.type !== undefined) dbPayload.direction = payload.type;

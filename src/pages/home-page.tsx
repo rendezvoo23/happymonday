@@ -5,11 +5,11 @@ import { PageShell } from "@/components/layout/PageShell";
 import { Spinner } from "@/components/spinner";
 import { MonthSelector } from "@/components/ui/MonthSelector";
 import { useDate } from "@/context/DateContext";
+import { useMonthTransactionsWithCategories } from "@/hooks/use-transactions-query";
 import { useCurrency } from "@/hooks/useCurrency";
 import { Route } from "@/routes/_authenticated/home";
 import { useCategoryStore } from "@/stores/categoryStore";
-import { useTransactionStore } from "@/stores/transactionStore";
-import type { Enums, Tables } from "@/types/supabase";
+import { useUIStore } from "@/stores/uiStore";
 import { useNavigate } from "@tanstack/react-router";
 import { addMonths, isSameMonth, subMonths } from "date-fns";
 import { motion } from "framer-motion";
@@ -18,32 +18,45 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import "./home.css";
 import "./styles.css";
 
-type TransactionDirection = Enums<"transaction_direction">;
-type TransactionWithCategory = Tables<"transactions"> & {
-  categories: Pick<
-    Tables<"categories">,
-    "id" | "name" | "color" | "icon"
-  > | null;
-  subcategories: Pick<Tables<"subcategories">, "id" | "name" | "icon"> | null;
-};
+type TransactionDirection = "expense" | "income";
 
 function parseMonthKey(monthKey: string): Date {
   const [year, month] = monthKey.split("-").map(Number);
   return new Date(year, month - 1, 1);
 }
 
+function getMonthKey(date: Date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+}
+
 export function HomePage() {
-  const { loadTransactions } = useTransactionStore();
   const { loadCategories } = useCategoryStore();
-  const { selectedDate, setDate, prevMonth, nextMonth, canGoNext } = useDate();
+  const { setDate } = useDate();
   const { formatAmount } = useCurrency();
   const navigate = useNavigate();
-  const { month: urlMonth } = Route.useSearch();
+  const { month: urlMonth, mode: urlMode } = Route.useSearch();
 
-  // Transaction drawer state
-  const [isTransactionDrawerOpen, setIsTransactionDrawerOpen] = useState(false);
-  const [transactionType, setTransactionType] =
-    useState<TransactionDirection>("expense");
+  // Selected date from URL (source of truth for home page)
+  const selectedDate = useMemo(() => {
+    if (urlMonth) {
+      return parseMonthKey(urlMonth);
+    }
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), 1);
+  }, [urlMonth]);
+
+  // canGoNext: allow swiping to next month only when viewing a past month
+  const canGoNext = useMemo(() => {
+    const today = new Date();
+    return !isSameMonth(selectedDate, today) && selectedDate < today;
+  }, [selectedDate]);
+
+  // UI store for drawer
+  const {
+    addTransactionDrawer,
+    openAddTransactionDrawer,
+    closeAddTransactionDrawer,
+  } = useUIStore();
 
   // Touch gesture state
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
@@ -55,158 +68,61 @@ export function HomePage() {
   const [clusterHeight, setClusterHeight] = useState<number>(300);
 
   useEffect(() => {
+    loadCategories();
+  }, [loadCategories]);
+
+  useEffect(() => {
     const windowHeight = window.innerHeight;
-
-    console.log("[HomePage] Window height:", {
-      windowHeight,
-      innerHeight: window.innerHeight,
-    });
-
     if (!windowHeight) return;
-
-    const clusterHeight = Math.max(windowHeight - (116 + 300), 350);
-    console.log("[HomePage] Cluster height:", { clusterHeight });
-
-    setClusterHeight(clusterHeight);
+    setClusterHeight(Math.max(windowHeight - (116 + 300), 350));
   }, []);
 
-  // Cache for all loaded months - key is "YYYY-MM" format
-  const [monthsCache, setMonthsCache] = useState<
-    Map<string, TransactionWithCategory[]>
-  >(new Map());
-  const monthsCacheRef = useRef(monthsCache);
-  const [isInitialLoading, setIsInitialLoading] = useState(true);
-
-  // Keep ref in sync with state
-  useEffect(() => {
-    monthsCacheRef.current = monthsCache;
-  }, [monthsCache]);
-
-  // Helper to generate month key
-  const getMonthKey = useCallback((date: Date) => {
-    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
-  }, []);
-
-  // Helper to load and cache a month's transactions
-  const loadAndCacheMonth = useCallback(
-    async (date: Date, forceReload = false, preserveIfEmpty = false) => {
-      const monthKey = getMonthKey(date);
-
-      const cached = monthsCacheRef.current.get(monthKey);
-      if (cached && !forceReload) {
-        return cached;
-      }
-
-      const txs = await loadTransactions(date);
-
-      setMonthsCache((prev) => {
-        const newCache = new Map(prev);
-        // Don't overwrite with empty when we just added a transaction (Supabase read-after-write lag)
-        const existing = prev.get(monthKey) || [];
-        const hasOptimistic = existing.some((t) => t.id.startsWith("temp-"));
-        if (
-          preserveIfEmpty &&
-          (txs?.length ?? 0) === 0 &&
-          existing.length > 0 &&
-          hasOptimistic
-        ) {
-          return prev;
-        }
-        newCache.set(monthKey, txs || []);
-        monthsCacheRef.current = newCache;
-        return newCache;
-      });
-
-      return txs || [];
-    },
-    [getMonthKey, loadTransactions]
-  );
-
-  // Function to reload transactions
-  const reloadTransactions = useCallback(
-    async (preserveIfEmpty = false) => {
-      console.log("[HomePage] Reloading current month and neighbors...");
-
-      await loadAndCacheMonth(selectedDate, true, preserveIfEmpty);
-
-      const prevDate = subMonths(selectedDate, 1);
-      if (monthsCacheRef.current.has(getMonthKey(prevDate))) {
-        loadAndCacheMonth(prevDate, true);
-      }
-
-      if (canGoNext) {
-        const nextDate = addMonths(selectedDate, 1);
-        if (monthsCacheRef.current.has(getMonthKey(nextDate))) {
-          loadAndCacheMonth(nextDate, true);
-        }
-      }
-    },
-    [selectedDate, getMonthKey, loadAndCacheMonth, canGoNext]
-  );
-
-  useEffect(() => {
-    const loadAllMonthsData = async () => {
-      setIsInitialLoading(true);
-      loadCategories();
-
-      await loadAndCacheMonth(selectedDate);
-      setIsInitialLoading(false);
-
-      const prevDate = subMonths(selectedDate, 1);
-      loadAndCacheMonth(prevDate);
-
-      if (canGoNext) {
-        const nextDate = new Date(
-          selectedDate.getFullYear(),
-          selectedDate.getMonth() + 1,
-          1
-        );
-        loadAndCacheMonth(nextDate);
-      }
-    };
-
-    loadAllMonthsData();
-  }, [selectedDate, loadCategories, canGoNext, loadAndCacheMonth]);
-
-  // Sync URL <-> selected month (for reload persistence)
-  const updateUrlMonth = useCallback(
-    (date: Date) => {
-      const monthKey = getMonthKey(date);
-      navigate({
-        to: "/home",
-        search: { month: monthKey },
-        replace: true,
-      });
-    },
-    [navigate, getMonthKey]
-  );
-
+  // Sync URL -> DateContext when URL changes (for MonthSelector, BubblesCluster)
   useEffect(() => {
     if (urlMonth) {
       const parsed = parseMonthKey(urlMonth);
-      if (!isSameMonth(selectedDate, parsed)) {
-        setDate(parsed);
-      }
-    } else {
-      updateUrlMonth(selectedDate);
+      setDate(parsed);
     }
-  }, [urlMonth]); // Only run when URL changes (e.g. initial load, back/forward)
+  }, [urlMonth, setDate]);
 
-  // Get transactions from cache
-  const currentMonthKey = getMonthKey(selectedDate);
-  const prevMonthKey = getMonthKey(subMonths(selectedDate, 1));
-  const nextMonthKey = getMonthKey(
-    new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 1)
+  // Ensure URL has month on initial load; preserve mode (ignored on home for now)
+  const updateUrlMonth = useCallback(
+    (date: Date) => {
+      navigate({
+        to: "/home",
+        search: {
+          month: getMonthKey(date),
+          mode: urlMode ?? "month",
+        },
+        replace: true,
+      });
+    },
+    [navigate, urlMode]
   );
 
-  const transactions = monthsCache.get(currentMonthKey) || [];
-  const prevMonthTransactions = monthsCache.get(prevMonthKey) || [];
-  const nextMonthTransactions = monthsCache.get(nextMonthKey) || [];
+  useEffect(() => {
+    if (!urlMonth) {
+      updateUrlMonth(selectedDate);
+    }
+  }, [urlMonth, selectedDate, updateUrlMonth]);
+
+  // TanStack Query: fetch current, prev, next month in parallel
+  const currentMonthQuery = useMonthTransactionsWithCategories(selectedDate);
+  const prevDate = subMonths(selectedDate, 1);
+  const nextDate = addMonths(selectedDate, 1);
+  const prevMonthQuery = useMonthTransactionsWithCategories(prevDate);
+  const nextMonthQuery = useMonthTransactionsWithCategories(nextDate);
+
+  const transactions = currentMonthQuery.data ?? [];
+  const prevMonthTransactions = prevMonthQuery.data ?? [];
+  const nextMonthTransactions = canGoNext ? (nextMonthQuery.data ?? []) : [];
+
+  const isInitialLoading =
+    currentMonthQuery.isLoading && !currentMonthQuery.data;
 
   const totalExpenses = useMemo(() => {
     const expenses = transactions.filter((t) => t.direction === "expense");
-    const total = expenses.reduce((sum, t) => sum + t.amount, 0);
-    return total;
+    return expenses.reduce((sum, t) => sum + t.amount, 0);
   }, [transactions]);
 
   // Touch event handlers
@@ -242,16 +158,13 @@ export function HomePage() {
     const diff = touchCurrentX - touchStartX;
     const screenWidth = screenWidthRef.current;
     const diffPercentage = diff / screenWidth;
-
     const threshold = 0.2;
 
     if (diffPercentage > threshold) {
       setIsTransitioning(true);
       setSwipeProgress(1);
-
       setTimeout(() => {
         const newDate = subMonths(selectedDate, 1);
-        prevMonth();
         updateUrlMonth(newDate);
         setSwipeProgress(0);
         setIsTransitioning(false);
@@ -261,10 +174,8 @@ export function HomePage() {
     } else if (diffPercentage < -threshold && canGoNext) {
       setIsTransitioning(true);
       setSwipeProgress(-1);
-
       setTimeout(() => {
         const newDate = addMonths(selectedDate, 1);
-        nextMonth();
         updateUrlMonth(newDate);
         setSwipeProgress(0);
         setIsTransitioning(false);
@@ -284,13 +195,10 @@ export function HomePage() {
 
   const handlePrevMonthClick = () => {
     if (isTransitioning) return;
-
     setIsTransitioning(true);
     setSwipeProgress(1);
-
     setTimeout(() => {
       const newDate = subMonths(selectedDate, 1);
-      prevMonth();
       updateUrlMonth(newDate);
       setSwipeProgress(0);
       setIsTransitioning(false);
@@ -299,13 +207,10 @@ export function HomePage() {
 
   const handleNextMonthClick = () => {
     if (isTransitioning || !canGoNext) return;
-
     setIsTransitioning(true);
     setSwipeProgress(-1);
-
     setTimeout(() => {
       const newDate = addMonths(selectedDate, 1);
-      nextMonth();
       updateUrlMonth(newDate);
       setSwipeProgress(0);
       setIsTransitioning(false);
@@ -316,64 +221,8 @@ export function HomePage() {
     if (window.Telegram?.WebApp?.HapticFeedback) {
       window.Telegram.WebApp.HapticFeedback.impactOccurred("heavy");
     }
-    setTransactionType(type);
-    setIsTransactionDrawerOpen(true);
+    openAddTransactionDrawer(type);
   };
-
-  // Optimistically add new transaction to cache so both BubblesClusters update immediately
-  const handleTransactionAdded = useCallback(
-    async (optimisticData?: {
-      amount: number;
-      categoryId: string;
-      subcategoryId?: string | null;
-      date: string;
-      type: TransactionDirection;
-    }) => {
-      if (optimisticData) {
-        const { getCategoryById } = useCategoryStore.getState();
-        const category = getCategoryById(optimisticData.categoryId);
-        const txDate = new Date(optimisticData.date);
-        const monthKey = getMonthKey(txDate);
-        const optimisticTx: TransactionWithCategory = {
-          id: `temp-${Date.now()}`,
-          amount: optimisticData.amount,
-          category_id: optimisticData.categoryId,
-          subcategory_id: optimisticData.subcategoryId ?? null,
-          occurred_at: optimisticData.date,
-          direction: optimisticData.type,
-          currency_code: "USD",
-          note: null,
-          user_id: "",
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          deleted_at: null,
-          categories: category
-            ? {
-                id: category.id,
-                name: category.name,
-                color: category.color,
-                icon: category.icon,
-              }
-            : null,
-          subcategories: null,
-        };
-        setMonthsCache((prev) => {
-          const newCache = new Map(prev);
-          const existing = newCache.get(monthKey) || [];
-          newCache.set(monthKey, [optimisticTx, ...existing]);
-          monthsCacheRef.current = newCache;
-          return newCache;
-        });
-      }
-      // Preserve optimistic data if Supabase returns empty (read-after-write lag)
-      await reloadTransactions(!!optimisticData);
-      // Retry after delay if we preserved (Supabase may need time to propagate)
-      if (optimisticData) {
-        setTimeout(() => reloadTransactions(false), 1500);
-      }
-    },
-    [getMonthKey, reloadTransactions]
-  );
 
   return (
     <motion.div
@@ -388,11 +237,16 @@ export function HomePage() {
             totalExpenses={formatAmount(totalExpenses)}
             onPrevMonth={handlePrevMonthClick}
             onNextMonth={handleNextMonthClick}
+            onJumpToCurrentMonth={() =>
+              updateUrlMonth(
+                new Date(new Date().getFullYear(), new Date().getMonth(), 1)
+              )
+            }
           />
         </Header>
         <main
           ref={containerRef}
-          className="flex flex-col items-center gap-2 touch-none" //
+          className="flex flex-col items-center gap-2 touch-none"
         >
           <div className="w-full flex justify-center relative overflow-hidden">
             {isInitialLoading ? (
@@ -415,9 +269,7 @@ export function HomePage() {
                 {/* Previous month bubbles */}
                 <div
                   className="absolute top-0 left-0 w-full"
-                  style={{
-                    transform: "translateX(-100%)",
-                  }}
+                  style={{ transform: "translateX(-100%)" }}
                 >
                   <BubblesCluster
                     transactions={prevMonthTransactions}
@@ -433,7 +285,7 @@ export function HomePage() {
                   <BubblesCluster
                     transactions={transactions}
                     mode="cluster"
-                    animateBubbles={!isTransactionDrawerOpen}
+                    animateBubbles={!addTransactionDrawer.isOpen}
                     height={clusterHeight}
                   />
                 </div>
@@ -442,9 +294,7 @@ export function HomePage() {
                 {canGoNext && (
                   <div
                     className="absolute top-0 right-0 w-full"
-                    style={{
-                      transform: "translateX(100%)",
-                    }}
+                    style={{ transform: "translateX(100%)" }}
                   >
                     <BubblesCluster
                       transactions={nextMonthTransactions}
@@ -487,10 +337,9 @@ export function HomePage() {
       </PageShell>
 
       <TransactionDrawer
-        isOpen={isTransactionDrawerOpen}
-        onClose={() => setIsTransactionDrawerOpen(false)}
-        initialType={transactionType}
-        onTransactionAdded={handleTransactionAdded}
+        isOpen={addTransactionDrawer.isOpen}
+        onClose={closeAddTransactionDrawer}
+        initialType={addTransactionDrawer.transactionType}
         showEditNote={false}
       />
     </motion.div>
