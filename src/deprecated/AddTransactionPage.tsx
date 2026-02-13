@@ -1,7 +1,7 @@
 import { TransactionForm } from "@/components/finance/TransactionForm";
 import { useToast } from "@/context/ToastContext";
-import { useCategoryLabel } from "@/hooks/useCategoryLabel";
 import { useCreateTransaction } from "@/hooks/use-transactions-query";
+import { useCategoryLabel } from "@/hooks/useCategoryLabel";
 import { useCurrency } from "@/hooks/useCurrency";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useCategoryStore } from "@/stores/categoryStore";
@@ -45,7 +45,8 @@ export function AddTransactionPage() {
 
         showToast({
           message: t("success.transactionAdded"),
-          category: getCategoryLabel(category?.name) || t("transactions.expense"),
+          category:
+            getCategoryLabel(category?.name) || t("transactions.expense"),
           amount: formatAmount(data.amount),
         });
 

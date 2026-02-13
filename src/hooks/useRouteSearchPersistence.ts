@@ -6,9 +6,7 @@ import { useEffect } from "react";
 const MODE_SCHEMA = ["day", "week", "month"] as const;
 
 function isValidMonth(month: unknown): month is string {
-  return (
-    typeof month === "string" && /^\d{4}-(0[1-9]|1[0-2])$/.test(month)
-  );
+  return typeof month === "string" && /^\d{4}-(0[1-9]|1[0-2])$/.test(month);
 }
 
 /**
@@ -57,5 +55,11 @@ export function useRouteSearchPersistence() {
           : undefined;
       setLastStatisticsSearch({ month, mode, category });
     }
-  }, [location.pathname, location.search, search, setLastHomeSearch, setLastStatisticsSearch]);
+  }, [
+    location.pathname,
+    location.search,
+    search,
+    setLastHomeSearch,
+    setLastStatisticsSearch,
+  ]);
 }
