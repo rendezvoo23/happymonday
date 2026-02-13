@@ -243,6 +243,10 @@ function RootComponent() {
           `${inset.top}px`
         );
         document.documentElement.style.setProperty(
+          "--tg-ui-top-margin",
+          `${inset.top}px`
+        );
+        document.documentElement.style.setProperty(
           "--tg-content-safe-area-inset-bottom",
           `${inset.bottom}px`
         );

@@ -1,4 +1,5 @@
 import { BottomNav } from "@/components/layout/BottomNav";
+import { useRouteSearchPersistence } from "@/hooks/useRouteSearchPersistence";
 import { Outlet, createFileRoute } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { Loader2 } from "lucide-react";
@@ -9,6 +10,8 @@ export const Route = createFileRoute("/_authenticated")({
 });
 
 function AuthenticatedLayout() {
+  useRouteSearchPersistence();
+
   return (
     <>
       <motion.div

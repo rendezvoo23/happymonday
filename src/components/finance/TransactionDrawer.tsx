@@ -1,5 +1,6 @@
 import { TransactionForm } from "@/components/finance/TransactionForm";
 import { useToast } from "@/context/ToastContext";
+import { useCategoryLabel } from "@/hooks/useCategoryLabel";
 import { useCreateTransaction } from "@/hooks/use-transactions-query";
 import { useCurrency } from "@/hooks/useCurrency";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -28,6 +29,7 @@ export function TransactionDrawer({
   const { showToast } = useToast();
   const { getCategoryById } = useCategoryStore();
   const { t } = useTranslation();
+  const { getCategoryLabel } = useCategoryLabel();
 
   const handleSubmit = async (data: {
     type: TransactionDirection;
@@ -54,7 +56,7 @@ export function TransactionDrawer({
 
     showToast({
       message: t("success.transactionAdded"),
-      category: category?.name || t("transactions.expense"),
+      category: getCategoryLabel(category?.name) || t("transactions.expense"),
       color:
         getCategoryColor(category?.color, category?.name) ||
         "var(--text-default)",

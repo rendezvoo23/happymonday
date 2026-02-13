@@ -1,7 +1,9 @@
 import { TransactionForm } from "@/components/finance/TransactionForm";
 import { useToast } from "@/context/ToastContext";
+import { useCategoryLabel } from "@/hooks/useCategoryLabel";
 import { useCreateTransaction } from "@/hooks/use-transactions-query";
 import { useCurrency } from "@/hooks/useCurrency";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useCategoryStore } from "@/stores/categoryStore";
 import type { Enums } from "@/types/supabase";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -15,6 +17,8 @@ export function AddTransactionPage() {
   const { formatAmount } = useCurrency();
   const { showToast } = useToast();
   const { getCategoryById } = useCategoryStore();
+  const { t } = useTranslation();
+  const { getCategoryLabel } = useCategoryLabel();
 
   const initialType =
     (searchParams.get("type") as TransactionDirection) || "expense";
@@ -40,8 +44,8 @@ export function AddTransactionPage() {
         }
 
         showToast({
-          message: "Transaction Added",
-          category: category?.name || "Expense",
+          message: t("success.transactionAdded"),
+          category: getCategoryLabel(category?.name) || t("transactions.expense"),
           amount: formatAmount(data.amount),
         });
 

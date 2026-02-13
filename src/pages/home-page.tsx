@@ -34,7 +34,7 @@ export function HomePage() {
   const { setDate } = useDate();
   const { formatAmount } = useCurrency();
   const navigate = useNavigate();
-  const { month: urlMonth } = Route.useSearch();
+  const { month: urlMonth, mode: urlMode } = Route.useSearch();
 
   // Selected date from URL (source of truth for home page)
   const selectedDate = useMemo(() => {
@@ -85,16 +85,19 @@ export function HomePage() {
     }
   }, [urlMonth, setDate]);
 
-  // Ensure URL has month on initial load
+  // Ensure URL has month on initial load; preserve mode (ignored on home for now)
   const updateUrlMonth = useCallback(
     (date: Date) => {
       navigate({
         to: "/home",
-        search: { month: getMonthKey(date) },
+        search: {
+          month: getMonthKey(date),
+          mode: urlMode ?? "month",
+        },
         replace: true,
       });
     },
-    [navigate]
+    [navigate, urlMode]
   );
 
   useEffect(() => {

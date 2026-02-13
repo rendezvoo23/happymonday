@@ -7,7 +7,7 @@ import type { Tables } from "@/types/supabase";
 import { packCircles } from "@/utils/circlePacking";
 import { useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { getIconComponent } from "../icons";
 
 type Transaction = Tables<"transactions">;
@@ -29,7 +29,17 @@ interface BubblesClusterProps {
   useGooeyFilter?: boolean;
 }
 
-export function BubblesCluster({
+function transactionsEqual(
+  a: TransactionWithCategory[],
+  b: TransactionWithCategory[]
+): boolean {
+  if (a === b) return true;
+  if (a.length !== b.length) return false;
+  if (a.length === 0) return true;
+  return a[0]?.id === b[0]?.id && a[a.length - 1]?.id === b[b.length - 1]?.id;
+}
+
+function BubblesClusterInner({
   transactions,
   mode = "cluster",
   height = 380,
@@ -407,6 +417,15 @@ export function BubblesCluster({
     </div>
   );
 }
+
+export const BubblesCluster = memo(BubblesClusterInner, (prev, next) => {
+  if (!transactionsEqual(prev.transactions, next.transactions)) return false;
+  if (prev.mode !== next.mode) return false;
+  if (prev.height !== next.height) return false;
+  if (prev.animateBubbles !== next.animateBubbles) return false;
+  if (prev.useGooeyFilter !== next.useGooeyFilter) return false;
+  return true;
+});
 
 function mapIconToLabel(
   label: string,
