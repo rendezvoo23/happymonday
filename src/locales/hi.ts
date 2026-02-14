@@ -156,6 +156,8 @@ export default {
     fromLastWeek: "पिछले सप्ताह से",
     fromLastMonth: "पिछले महीने से",
     totalThisMonth: "इस महीने कुल",
+    totalLastMonth: "पिछले महीने कुल",
+    totalForMonth: "{{month}} कुल",
     weekShort: "स{{number}}",
     weekLong: "सप्ताह {{number}}",
   },

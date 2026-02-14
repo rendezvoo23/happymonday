@@ -247,19 +247,24 @@ export function CategoryAverageChart({
     const isCurrent = isSameMonth(selectedDate, today);
 
     let line2: string;
+    let total: string;
     if (isCurrent) {
       line2 = t("date.thisMonth");
+      total = t("statistics.totalThisMonth");
     } else if (isSameMonth(selectedDate, subMonths(today, 1))) {
       line2 = t("date.lastMonth");
+      total = t("statistics.totalLastMonth");
     } else {
-      line2 = format(selectedDate, "MMMM yyyy", { locale: dateLocale });
+      const monthName = format(selectedDate, "MMMM yyyy", { locale: dateLocale });
+      line2 = monthName;
+      total = t("statistics.totalForMonth").replace("{{month}}", monthName);
     }
 
     return {
       line1: t("statistics.weeklyAverage"),
       line2,
       isCurrent,
-      total: t("statistics.totalThisMonth"),
+      total,
     };
   }, [selectedDate, t, dateLocale]);
 
@@ -805,11 +810,21 @@ export function CategoryAverageChart({
       <div className="pt-4 border-t border-border-subtle">
         <div className="flex justify-between items-center">
           <span className="text-sm text-gray-600 dark:text-gray-400">
-            {mode === "day"
-              ? dayLabels.total
-              : mode === "week"
-                ? weekLabels.total
-                : monthLabels.total}
+            <span
+              style={
+                (mode === "day" && dayLabels.isCurrent) ||
+                (mode === "week" && weekLabels.isCurrent) ||
+                (mode === "month" && monthLabels.isCurrent)
+                  ? { color: "var(--primary-color)" }
+                  : undefined
+              }
+            >
+              {mode === "day"
+                ? dayLabels.total
+                : mode === "week"
+                  ? weekLabels.total
+                  : monthLabels.total}
+            </span>
           </span>
           <span className="text-lg font-bold text-gray-900 dark:text-gray-100">
             {formatAmount(total)}

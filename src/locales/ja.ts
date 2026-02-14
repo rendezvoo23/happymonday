@@ -156,6 +156,8 @@ export default {
     fromLastWeek: "先週から",
     fromLastMonth: "先月から",
     totalThisMonth: "今月の合計",
+    totalLastMonth: "先月の合計",
+    totalForMonth: "{{month}}の合計",
     weekShort: "第{{number}}週",
     weekLong: "第{{number}}週",
   },

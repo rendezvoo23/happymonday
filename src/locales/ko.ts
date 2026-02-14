@@ -156,6 +156,8 @@ export default {
     fromLastWeek: "지난주 대비",
     fromLastMonth: "지난달 대비",
     totalThisMonth: "이번 달 합계",
+    totalLastMonth: "지난달 합계",
+    totalForMonth: "{{month}} 합계",
     weekShort: "{{number}}주",
     weekLong: "{{number}}주차",
   },

@@ -156,6 +156,8 @@ export default {
     fromLastWeek: "от прошлой недели",
     fromLastMonth: "от прошлого месяца",
     totalThisMonth: "Всего за этот месяц",
+    totalLastMonth: "Всего за прошлый месяц",
+    totalForMonth: "Всего за {{month}}",
     weekShort: "Н{{number}}",
     weekLong: "Неделя {{number}}",
   },

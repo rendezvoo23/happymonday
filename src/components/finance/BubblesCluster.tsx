@@ -259,7 +259,7 @@ function BubblesClusterInner({
         to: "/statistics",
         search: {
           month: getMonthKey(selectedDate),
-          mode: "week" as const,
+          mode: "month" as const,
           category: categoryId,
         },
       });

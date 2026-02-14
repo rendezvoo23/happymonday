@@ -4,11 +4,14 @@ import { useEffect } from "react";
 type BackButtonOptions = {
   to?: string;
   search?: Record<string, unknown>;
+  /** When true, uses history.back() to return to the previous page */
+  back?: boolean;
 };
 
 export function useTelegramBackButton({
   to = "..",
   search,
+  back = false,
 }: BackButtonOptions = {}) {
   const navigate = useNavigate();
 
@@ -24,7 +27,11 @@ export function useTelegramBackButton({
 
     // Set up the click handler
     const handleBackClick = () => {
-      navigate({ to, ...(search && { search }) });
+      if (back) {
+        window.history.back();
+      } else {
+        navigate({ to, ...(search && { search }) });
+      }
     };
 
     tg.BackButton.onClick(handleBackClick);
@@ -34,5 +41,5 @@ export function useTelegramBackButton({
       tg.BackButton.hide();
       tg.BackButton.offClick(handleBackClick);
     };
-  }, [navigate, to, search]);
+  }, [navigate, to, search, back]);
 }

@@ -2,7 +2,6 @@ import { TransactionEditForm } from "@/components/finance/TransactionEditForm";
 import { Header } from "@/components/layout/Header";
 import { PageShell } from "@/components/layout/PageShell";
 import { Spinner } from "@/components/spinner";
-import { useDate } from "@/context/DateContext";
 import {
   useTransactionById,
   useUpdateTransaction,
@@ -10,12 +9,7 @@ import {
 import { useTelegramBackButton } from "@/hooks/useTelegramBackButton";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { CategoryId, TransactionType } from "@/types";
-import { useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-
-function getMonthKey(date: Date) {
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
-}
 
 interface EditTransactionPageProps {
   transactionId: string;
@@ -24,8 +18,6 @@ interface EditTransactionPageProps {
 export function EditTransactionPage({
   transactionId,
 }: EditTransactionPageProps) {
-  const navigate = useNavigate();
-  const { selectedDate } = useDate();
   const {
     data: transaction,
     isLoading,
@@ -34,16 +26,7 @@ export function EditTransactionPage({
   const updateTransactionMutation = useUpdateTransaction();
   const { t } = useTranslation();
 
-  const statsSearch = {
-    month: getMonthKey(selectedDate),
-    mode: "week" as const,
-    category: undefined as string | undefined,
-  };
-
-  useTelegramBackButton({
-    to: "/statistics",
-    search: statsSearch,
-  });
+  useTelegramBackButton({ back: true });
 
   if (isLoading || !transaction) {
     return (
@@ -98,7 +81,7 @@ export function EditTransactionPage({
                   date: data.date,
                 },
               });
-              navigate({ to: "/statistics", search: statsSearch });
+              window.history.back();
             }}
           />
         </main>

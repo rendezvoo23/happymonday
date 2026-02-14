@@ -312,20 +312,6 @@ export function HomePage() {
             )}
           </div>
 
-          <div className="plus-button-container">
-            <div className="glassmorphic-plus-wrap">
-              <button
-                type="button"
-                title="Add expense"
-                className="glassmorphic-plus-button"
-                onClick={() => handleOpenAdd("expense")}
-              >
-                <Plus className="plus-icon" color="var(--primary-text-color)" />
-              </button>
-              <div className="glassmorphic-plus-shadow" />
-            </div>
-          </div>
-
           {transactions.length > 0 && (
             <div className="fixed bottom-0 left-0 z-[-1] w-full">
               <BubblesCluster
@@ -338,6 +324,33 @@ export function HomePage() {
           )}
         </main>
       </PageShell>
+
+      <div className="plus-button-container z-50">
+        <motion.div
+          initial={{ opacity: 0, scale: 0, rotate: -90 }}
+          animate={{ opacity: 1, scale: 1, rotate: 0 }}
+          exit={{ opacity: 0, scale: 0, rotate: -90 }}
+          transition={{
+            type: "spring",
+            delay: 0.2,
+            stiffness: 300,
+            damping: 10,
+            duration: 0.5,
+          }}
+          className="glassmorphic-plus-wrap"
+        >
+          <motion.button
+            type="button"
+            title="Add expense"
+            className="glassmorphic-plus-button"
+            onClick={() => handleOpenAdd("expense")}
+            whileTap={{ scale: 0.9 }}
+          >
+            <Plus className="plus-icon" color="var(--primary-text-color)" />
+          </motion.button>
+          <div className="glassmorphic-plus-shadow" />
+        </motion.div>
+      </div>
 
       <TransactionDrawer
         isOpen={addTransactionDrawer.isOpen}

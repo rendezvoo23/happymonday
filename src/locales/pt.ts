@@ -156,6 +156,8 @@ export default {
     fromLastWeek: "da semana passada",
     fromLastMonth: "do mês passado",
     totalThisMonth: "Total este mês",
+    totalLastMonth: "Total mês passado",
+    totalForMonth: "Total {{month}}",
     weekShort: "S{{number}}",
     weekLong: "Semana {{number}}",
   },

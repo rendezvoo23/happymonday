@@ -259,32 +259,57 @@ export function CategoryDoughnutChart({
                             .sort((a, b) => b.amount - a.amount)
                             .map((sub) => {
                               const SubIcon = getIconComponent(sub.icon);
+                              const subPercentage =
+                                cat.amount > 0
+                                  ? (sub.amount / cat.amount) * 100
+                                  : 0;
                               return (
                                 <div
                                   key={sub.id}
-                                  className="flex items-center gap-3 text-sm ml-2"
+                                  className="flex flex-col gap-1.5 text-sm ml-2"
                                 >
-                                  <div
-                                    className="w-5 h-5 rounded-full flex items-center justify-center text-white flex-shrink-0"
-                                    style={{ backgroundColor: cat.color }}
-                                  >
-                                    {SubIcon ? (
-                                      <div className="transform scale-[0.6]">
-                                        {SubIcon}
-                                      </div>
-                                    ) : (
-                                      <span className="text-[9px] font-bold">
-                                        {sub.label[0]}
-                                      </span>
-                                    )}
+                                  {/* Line 1: label + sum */}
+                                  <div className="flex items-center gap-3">
+                                    <div
+                                      className="w-5 h-5 rounded-full flex items-center justify-center text-white flex-shrink-0"
+                                      style={{ backgroundColor: cat.color }}
+                                    >
+                                      {SubIcon ? (
+                                        <div className="transform scale-[0.6]">
+                                          {SubIcon}
+                                        </div>
+                                      ) : (
+                                        <span className="text-[9px] font-bold">
+                                          {sub.label[0]}
+                                        </span>
+                                      )}
+                                    </div>
+                                    <span className="flex-1 text-gray-600 dark:text-gray-400 truncate">
+                                      {sub.label}
+                                    </span>
+                                    <span className="font-medium text-gray-900 dark:text-gray-100 opacity-80 pr-6">
+                                      {formatAmount(sub.amount)}
+                                    </span>
                                   </div>
 
-                                  <span className="flex-1 text-gray-600 dark:text-gray-400 truncate">
-                                    {sub.label}
-                                  </span>
-                                  <span className="font-medium text-gray-900 dark:text-gray-100 pr-6 opacity-80">
-                                    {formatAmount(sub.amount)}
-                                  </span>
+                                  {/* Line 2: progress bar + percent (same width as line 1) */}
+                                  <div className="flex items-center gap-3 pr-6">
+                                    <div className="w-5 flex-shrink-0" />
+                                    <div className="flex-1 min-w-0 flex items-center gap-2">
+                                      <div className="flex-1 h-1.5 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden">
+                                        <div
+                                          className="h-full rounded-full transition-all duration-300"
+                                          style={{
+                                            width: `${Math.min(subPercentage, 100)}%`,
+                                            backgroundColor: cat.color,
+                                          }}
+                                        />
+                                      </div>
+                                      <span className="text-xs text-gray-500 dark:text-gray-400 w-10 flex-shrink-0 text-right">
+                                        {subPercentage.toFixed(1)}%
+                                      </span>
+                                    </div>
+                                  </div>
                                 </div>
                               );
                             })}

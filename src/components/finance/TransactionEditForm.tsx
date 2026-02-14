@@ -7,7 +7,6 @@ import { type Subcategory, getSubcategories } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { useCategoryStore } from "@/stores/categoryStore";
 import type { CategoryId, TransactionType } from "@/types";
-import { CheckmarkIcon } from "../icons/checkmark";
 import { Spinner } from "../spinner";
 import { Button } from "../ui/Button";
 import { CategorySelector } from "./CategorySelector";
@@ -183,53 +182,37 @@ export function TransactionEditForm({
       onSubmit={handleSubmit}
       className={cn("space-y-6 px-2 relative mb-[100px]")}
     >
-      <div className="px-2">
+      <div className="px-2 mb-10">
         <div className="gap-3 flex justify-center flex-col items-center max-w-sm mx-auto py-4">
-          <label
-            htmlFor="amount-input"
-            className="text-[14px] font-medium text-gray-500 dark:text-gray-600"
-          >
-            {t("transactions.amount")}
-          </label>
           <input
             id="amount-input"
             type="number"
+            pattern="^\d*\.?\d{0,2}$"
+            inputMode="decimal"
             placeholder={t("transactions.amountPlaceholder")}
             value={amount}
-            className="bg-[var(--border-level-1)] px-3 py-2 rounded-lg outline-none w-full resize-none text-[28px] font-medium"
+            className="bg-[var(--card-bg-level-1)] px-3 py-2 rounded-lg outline-none w-full resize-none text-[28px] font-medium"
             onChange={(e) => setAmount(e.target.value)}
           />
         </div>
 
         <div className="gap-3 flex justify-center flex-col items-center max-w-sm mx-auto">
-          <label
-            htmlFor="note-input"
-            className="text-[14px] font-medium text-gray-500 dark:text-gray-600"
-          >
-            {t("transactions.note")}
-          </label>
           <textarea
             id="note-input"
             placeholder={t("transactions.notePlaceholder")}
             value={note}
-            className="bg-[var(--border-level-1)] px-3 py-2 rounded-lg outline-none w-full resize-none"
+            className="bg-[var(--card-bg-level-1)] px-3 py-2 rounded-lg outline-none w-full resize-none"
             onChange={(e) => setNote(e.target.value)}
           />
         </div>
 
-        <div className="flex gap-4 w-full justify-center flex-col items-center my-4">
-          <label
-            htmlFor="date-input"
-            className="text-[14px] font-medium text-gray-500 dark:text-gray-600"
-          >
-            {t("transactions.date")}
-          </label>
+        <div className="flex gap-4 w-full justify-center flex-col items-center my-4 max-w-sm mx-auto">
           <input
             ref={dateInputRef}
             type="datetime-local"
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            className="h-[30px] px-2 bg-[var(--background-level-2)] rounded-full"
+            className="h-[30px] px-2 bg-[var(--card-bg-level-1)] rounded-lg w-full"
             style={{ fontSize: "16px", fontWeight: "500" }}
             tabIndex={-1}
           />
@@ -238,12 +221,6 @@ export function TransactionEditForm({
           className="flex flex-col items-center gap-1 relative"
           style={{ margin: "8px -16px", marginTop: "12px" }}
         >
-          <label
-            htmlFor="category-scroll"
-            className="text-[14px] font-medium text-gray-500 dark:text-gray-600 py-2"
-          >
-            {t("transactions.category")}
-          </label>
           <div
             ref={categoryScrollRef}
             className="no-scrollbar"
@@ -356,7 +333,7 @@ export function TransactionEditForm({
         </div>
       </div>
 
-      <div className="flex justify-center items-center mb-[100px]">
+      <div className="flex justify-center items-center">
         <Button
           type="submit"
           size="lg"
@@ -366,7 +343,7 @@ export function TransactionEditForm({
             color: amount ? "#00f3ff" : "var(--border-default)",
           }}
         >
-          <CheckmarkIcon className="w-5 h-5 mr-2" /> {t("common.edit")}
+          {t("common.save")}
         </Button>
       </div>
     </form>

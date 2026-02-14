@@ -155,6 +155,8 @@ export default {
     fromLastWeek: "较上周",
     fromLastMonth: "较上月",
     totalThisMonth: "本月总计",
+    totalLastMonth: "上月总计",
+    totalForMonth: "{{month}}总计",
     weekShort: "第{{number}}周",
     weekLong: "第{{number}}周",
   },

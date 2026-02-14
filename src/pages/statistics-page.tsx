@@ -18,6 +18,7 @@ import { useCurrency } from "@/hooks/useCurrency";
 import { useTranslation } from "@/hooks/useTranslation";
 import { getCategoryColor, useCategoryStore } from "@/stores/categoryStore";
 import { useNavigate, useSearch } from "@tanstack/react-router";
+import type { Locale } from "date-fns";
 import {
   addMonths,
   endOfWeek,
@@ -29,7 +30,6 @@ import {
   startOfWeek,
   subMonths,
 } from "date-fns";
-import type { Locale } from "date-fns";
 import { de, enUS, es, fr, it, pt, ru, zhCN } from "date-fns/locale";
 import { motion } from "framer-motion";
 import { X } from "lucide-react";
@@ -85,7 +85,12 @@ export function StatisticsPage(props: StatisticsPageProps = {}) {
   const { t } = useTranslation();
   const { locale } = useLocale();
   const dateLocale = dateLocales[locale] ?? enUS;
-  const { getCategoryById } = useCategoryStore();
+  const { getCategoryById, loadCategories } = useCategoryStore();
+
+  // Preload categories so badge shows name instead of ID when category filter is in URL
+  useEffect(() => {
+    loadCategories();
+  }, [loadCategories]);
   const { getCategoryLabel } = useCategoryLabel();
   const deleteTransactionMutation = useDeleteTransaction();
 
@@ -350,14 +355,14 @@ export function StatisticsPage(props: StatisticsPageProps = {}) {
             <div id="average-chart" className="w-full scroll-mt-24 space-y-3">
               {/* Mode Toggle */}
               <div className="flex gap-2 justify-center items-center w-full">
-                <div className="flex items-center justify-center gap-0 bg-gray-200 dark:bg-gray-700 rounded-full">
+                <div className="flex items-center justify-center gap-0 bg-[var(--card-bg-level-1)] rounded-full">
                   <button
                     type="button"
                     onClick={() => handleChartModeChange("day")}
                     className={`px-4 py-1 rounded-full text-sm font-medium transition-colors ${
                       chartMode === "day"
                         ? "bg-blue-500 text-white"
-                        : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
+                        : "text-gray-700 dark:text-gray-300"
                     }`}
                   >
                     {t("statistics.day")}
@@ -368,7 +373,7 @@ export function StatisticsPage(props: StatisticsPageProps = {}) {
                     className={`px-4 py-1 rounded-full text-sm font-medium transition-colors ${
                       chartMode === "week"
                         ? "bg-blue-500 text-white"
-                        : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
+                        : "text-gray-700 dark:text-gray-300"
                     }`}
                   >
                     {t("statistics.week")}
@@ -379,7 +384,7 @@ export function StatisticsPage(props: StatisticsPageProps = {}) {
                     className={`px-4 py-1 rounded-full text-sm font-medium transition-colors ${
                       chartMode === "month"
                         ? "bg-blue-500 text-white"
-                        : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
+                        : "text-gray-700 dark:text-gray-300"
                     }`}
                   >
                     {t("statistics.month")}
@@ -430,8 +435,14 @@ export function StatisticsPage(props: StatisticsPageProps = {}) {
               {categoryParam &&
                 (() => {
                   const category = getCategoryById(categoryParam);
+                  const spendItem = spendByCategory.find(
+                    (c) => c.categoryId === categoryParam
+                  );
+                  const displayName =
+                    category?.name ?? spendItem?.label ?? categoryParam;
                   const categoryColor =
                     getCategoryColor(category?.color, category?.name) ??
+                    spendItem?.color ??
                     "#6B7280";
                   return (
                     <button
@@ -440,7 +451,7 @@ export function StatisticsPage(props: StatisticsPageProps = {}) {
                       className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-sm font-medium text-white transition-opacity hover:opacity-90"
                       style={{ backgroundColor: categoryColor }}
                     >
-                      {getCategoryLabel(category?.name ?? categoryParam)}
+                      {getCategoryLabel(displayName)}
                       <X className="w-3.5 h-3.5" />
                     </button>
                   );
