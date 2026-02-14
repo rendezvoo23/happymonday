@@ -427,22 +427,24 @@ export function StatisticsPage(props: StatisticsPageProps = {}) {
               <span className="text-sm text-gray-500 dark:text-gray-400">
                 {timeWindowLabel}
               </span>
-              {categoryParam && (() => {
-                const category = getCategoryById(categoryParam);
-                const categoryColor =
-                  getCategoryColor(category?.color, category?.name) ?? "#6B7280";
-                return (
-                  <button
-                    type="button"
-                    onClick={() => handleCategorySelect(null)}
-                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-sm font-medium text-white transition-opacity hover:opacity-90"
-                    style={{ backgroundColor: categoryColor }}
-                  >
-                    {getCategoryLabel(category?.name ?? categoryParam)}
-                    <X className="w-3.5 h-3.5" />
-                  </button>
-                );
-              })()}
+              {categoryParam &&
+                (() => {
+                  const category = getCategoryById(categoryParam);
+                  const categoryColor =
+                    getCategoryColor(category?.color, category?.name) ??
+                    "#6B7280";
+                  return (
+                    <button
+                      type="button"
+                      onClick={() => handleCategorySelect(null)}
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-sm font-medium text-white transition-opacity hover:opacity-90"
+                      style={{ backgroundColor: categoryColor }}
+                    >
+                      {getCategoryLabel(category?.name ?? categoryParam)}
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  );
+                })()}
             </div>
 
             {/* Recent Transactions List - grouped by day, filtered by period & category */}
