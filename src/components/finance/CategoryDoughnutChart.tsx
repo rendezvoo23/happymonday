@@ -1,7 +1,6 @@
 import { getIconComponent } from "@/components/icons";
 import { useCategoryLabel } from "@/hooks/useCategoryLabel";
 import { useCurrency } from "@/hooks/useCurrency";
-import { useTranslation } from "@/hooks/useTranslation";
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown, ChevronRight } from "lucide-react";
@@ -59,7 +58,6 @@ export function CategoryDoughnutChart({
   const [expandedId, setExpandedId] = useState<string | null>(
     initialExpandedCategory || null
   );
-  const { t } = useTranslation();
   const { getCategoryLabel } = useCategoryLabel();
 
   // Create refs for category elements to support auto-scrolling
