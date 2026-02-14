@@ -79,7 +79,7 @@ export function BottomNav() {
   };
   const statsSearch = {
     month: lastStatisticsSearch.month ?? defaultMonth,
-    mode: (lastStatisticsSearch.mode ?? "week") as "day" | "week" | "month",
+    mode: (lastStatisticsSearch.mode ?? "month") as "day" | "week" | "month",
     category: lastStatisticsSearch.category,
   };
   const navItems = [

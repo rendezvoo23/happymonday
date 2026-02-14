@@ -250,7 +250,10 @@ export function HomePage() {
         >
           <div className="w-full flex justify-center relative overflow-hidden">
             {isInitialLoading ? (
-              <div className="text-gray-500 dark:text-gray-400 flex items-center justify-center">
+              <div
+                className="text-gray-500 dark:text-gray-400 flex items-center justify-center"
+                style={{ height: clusterHeight }}
+              >
                 <Spinner size="lg" />
               </div>
             ) : (
