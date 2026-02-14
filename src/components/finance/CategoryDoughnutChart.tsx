@@ -135,15 +135,7 @@ export function CategoryDoughnutChart({
   };
 
   if (sortedCategories.length === 0) {
-    return (
-      <div className="w-full">
-        <div className="p-6 text-center mx-4 min-h-64 flex items-center justify-center">
-          <p className="text-gray-500 dark:text-gray-400">
-            {t("statistics.noData")}
-          </p>
-        </div>
-      </div>
-    );
+    return null;
   }
 
   return (

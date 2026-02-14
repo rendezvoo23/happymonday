@@ -16,7 +16,7 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import { endOfMonth, format, startOfMonth } from "date-fns";
+import { addMonths, startOfMonth } from "date-fns";
 
 const DEFAULT_STALE_TIME = 1000 * 60 * 5; // 5 minutes
 
@@ -46,16 +46,17 @@ export function useTransactions(fromISO: string, toISO: string) {
 
 // Hook to fetch transactions for a specific month
 export function useMonthTransactions(date: Date) {
-  const fromISO = format(startOfMonth(date), "yyyy-MM-dd'T'00:00:00");
-  const toISO = format(endOfMonth(date), "yyyy-MM-dd'T'23:59:59");
+  // Use start of next month as exclusive end - avoids timezone boundary issues
+  const fromISO = startOfMonth(date).toISOString();
+  const toISO = startOfMonth(addMonths(date, 1)).toISOString();
 
   return useTransactions(fromISO, toISO);
 }
 
 // Hook to fetch transactions with full category and subcategory data
 export function useMonthTransactionsWithCategories(date: Date) {
-  const fromISO = format(startOfMonth(date), "yyyy-MM-dd'T'00:00:00");
-  const toISO = format(endOfMonth(date), "yyyy-MM-dd'T'23:59:59");
+  const fromISO = startOfMonth(date).toISOString();
+  const toISO = startOfMonth(addMonths(date, 1)).toISOString();
 
   return useQuery({
     queryKey: [...transactionKeys.list(fromISO, toISO), "with-categories"],
@@ -66,8 +67,8 @@ export function useMonthTransactionsWithCategories(date: Date) {
 
 // Hook to fetch month summary
 export function useMonthSummary(date: Date) {
-  const fromISO = format(startOfMonth(date), "yyyy-MM-dd'T'00:00:00");
-  const toISO = format(endOfMonth(date), "yyyy-MM-dd'T'23:59:59");
+  const fromISO = startOfMonth(date).toISOString();
+  const toISO = startOfMonth(addMonths(date, 1)).toISOString();
 
   return useQuery({
     queryKey: transactionKeys.summary(fromISO, toISO),
@@ -78,8 +79,8 @@ export function useMonthSummary(date: Date) {
 
 // Hook to fetch spend by category
 export function useSpendByCategory(date: Date) {
-  const fromISO = format(startOfMonth(date), "yyyy-MM-dd'T'00:00:00");
-  const toISO = format(endOfMonth(date), "yyyy-MM-dd'T'23:59:59");
+  const fromISO = startOfMonth(date).toISOString();
+  const toISO = startOfMonth(addMonths(date, 1)).toISOString();
 
   return useQuery({
     queryKey: transactionKeys.spendByCategory(fromISO, toISO),

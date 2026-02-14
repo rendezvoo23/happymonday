@@ -2,7 +2,6 @@ import { format } from "date-fns";
 import { useEffect, useRef, useState } from "react";
 
 import { NumericKeyboard } from "@/components/ui/NumericKeyboard";
-import { useDate } from "@/context/DateContext";
 import { useCurrency } from "@/hooks/useCurrency";
 import { useTranslation } from "@/hooks/useTranslation";
 import { type Subcategory, getSubcategories } from "@/lib/api";
@@ -46,7 +45,6 @@ export function TransactionForm({
   showEditNote = true,
   onCancel,
 }: TransactionFormProps) {
-  const { selectedDate } = useDate();
   const { t } = useTranslation();
 
   const [type] = useState<TransactionType>(initialData?.type || initialType);
@@ -61,7 +59,7 @@ export function TransactionForm({
   const [date, setDate] = useState(
     initialData?.date
       ? format(new Date(initialData.date), "yyyy-MM-dd HH:mm")
-      : format(selectedDate, "yyyy-MM-dd HH:mm")
+      : format(new Date(), "yyyy-MM-dd HH:mm")
   );
 
   const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
