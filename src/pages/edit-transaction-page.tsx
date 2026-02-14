@@ -86,9 +86,6 @@ export function EditTransactionPage({
         <main className="px-3">
           <TransactionEditForm
             initialData={formData}
-            onCancel={() =>
-              navigate({ to: "/statistics", search: statsSearch })
-            }
             onSubmit={async (data) => {
               await updateTransactionMutation.mutateAsync({
                 id: transaction.id,

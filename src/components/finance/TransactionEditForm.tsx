@@ -2,7 +2,6 @@ import { format } from "date-fns";
 import { useEffect, useRef, useState } from "react";
 
 import { useDate } from "@/context/DateContext";
-import { useCurrency } from "@/hooks/useCurrency";
 import { useTranslation } from "@/hooks/useTranslation";
 import { type Subcategory, getSubcategories } from "@/lib/api";
 import { cn } from "@/lib/utils";
@@ -32,16 +31,12 @@ interface TransactionEditFormProps {
     date?: string;
   };
   initialType?: TransactionType;
-  onCancel: () => void;
-  showEditNote?: boolean;
 }
 
 export function TransactionEditForm({
   onSubmit,
   initialData,
   initialType = "expense",
-  showEditNote = true,
-  onCancel,
 }: TransactionEditFormProps) {
   const { selectedDate } = useDate();
   const { t } = useTranslation();
@@ -70,9 +65,7 @@ export function TransactionEditForm({
   const dateInputRef = useRef<HTMLInputElement>(null);
   const categoryScrollRef = useRef<HTMLDivElement>(null);
   const [activeCategoryPanel, setActiveCategoryPanel] = useState(0);
-  const [isKeyboardVisible, setIsKeyboardVisible] = useState(showEditNote);
 
-  const { formatAmount } = useCurrency();
   const {
     isLoading: categoriesLoading,
     loadCategories,
@@ -117,7 +110,6 @@ export function TransactionEditForm({
     previousCategoryIdRef.current = categoryId;
 
     if (categoryChanged) {
-      setIsKeyboardVisible(true);
       // scroll to subcategory panel (end)
       const el = categoryScrollRef.current;
       if (el) {
@@ -155,39 +147,6 @@ export function TransactionEditForm({
         setIsLoadingSubcategories(false);
       });
   }, [categoryId]);
-
-  const handleKeyPress = (key: string) => {
-    if (key === ".") {
-      // Only allow one decimal point
-      if (amount.includes(".")) return;
-      // If empty, start with "0."
-      if (amount === "") {
-        setAmount("0.");
-        return;
-      }
-    }
-
-    // Prevent multiple leading zeros
-    if (amount === "0" && key !== ".") {
-      setAmount(key);
-      return;
-    }
-
-    // Limit to 2 decimal places
-    if (amount.includes(".")) {
-      const [, decimals] = amount.split(".");
-      if (decimals && decimals.length >= 2) return;
-    }
-
-    // Limit total length
-    if (amount.length >= 10) return;
-
-    setAmount(amount + key);
-  };
-
-  const handleBackspace = () => {
-    setAmount(amount.slice(0, -1));
-  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

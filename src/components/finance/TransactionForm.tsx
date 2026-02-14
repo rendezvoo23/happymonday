@@ -421,7 +421,7 @@ export function TransactionForm({
           initial={{ opacity: 0, y: "100%" }}
           animate={{ opacity: 1, y: "0%" }}
           exit={{ opacity: 0, y: "100%" }}
-          transition={{ duration: 0.5 }}
+          transition={{ duration: 0.3, ease: "easeInOut" }}
           style={{ marginTop: 0 }}
           className="max-w-sm mx-auto"
         >

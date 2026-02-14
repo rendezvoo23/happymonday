@@ -1,3 +1,4 @@
+import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
 import type React from "react";
 import { createContext, useContext, useState } from "react";
@@ -34,18 +35,21 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       <div
         className="fixed left-0 right-0 z-[100] flex flex-col items-center pointer-events-none gap-2"
         style={{
-          top: "calc(var(--tg-ui-top-margin, 0px) + 32px)",
+          top: "calc(var(--tg-ui-top-margin, 0px) + 120px)",
         }}
       >
         <AnimatePresence>
           {toasts.map((toast) => (
             <motion.div
               key={toast.id}
-              initial={{ opacity: 0, scale: 0.8 }}
+              initial={{ opacity: 0, scale: 0.5 }}
               animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9, y: -10 }}
-              transition={{ duration: 0.2 }}
-              className="pointer-events-auto bg-[var(--liquid-background-color)] backdrop-blur-md px-4 py-3 rounded-full shadow-lg flex items-center gap-4 min-w-[260px] relative overflow-hidden"
+              exit={{ opacity: 0, scale: 0.5, y: -10 }}
+              transition={{ duration: 0.3, delay: 0.3 }}
+              className={cn(
+                "pointer-events-auto bg-[var(--liquid-background-color)] backdrop-blur-lg px-4 py-3 rounded-full shadow-lg flex items-center gap-4 min-w-[260px] relative overflow-hidden",
+                "border border-[var(--border-level-1)]"
+              )}
             >
               {/* Category circle - appears first, zooms from center to position */}
               <motion.div
