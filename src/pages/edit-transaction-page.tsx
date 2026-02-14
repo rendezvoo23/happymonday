@@ -1,4 +1,4 @@
-import { TransactionForm } from "@/components/finance/TransactionForm";
+import { TransactionEditForm } from "@/components/finance/TransactionEditForm";
 import { Header } from "@/components/layout/Header";
 import { PageShell } from "@/components/layout/PageShell";
 import { Spinner } from "@/components/spinner";
@@ -84,7 +84,7 @@ export function EditTransactionPage({
           </h1>
         </Header>
         <main className="px-3">
-          <TransactionForm
+          <TransactionEditForm
             initialData={formData}
             onCancel={() =>
               navigate({ to: "/statistics", search: statsSearch })

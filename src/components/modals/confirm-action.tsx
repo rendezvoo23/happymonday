@@ -1,5 +1,6 @@
 import alerStopIconSrc from "@/assets/alert-stop-icon.png";
 import alertIconSrc from "@/assets/alert.png";
+import { useTranslation } from "@/hooks/useTranslation";
 import { Button } from "../ui/Button";
 import {
   AlertDialog,
@@ -35,11 +36,17 @@ export function ConfirmAction({
   open,
   children,
   isDestructive = false,
-  confirmLabel = "OK",
-  cancelLabel = "Cancel",
+  confirmLabel,
+  cancelLabel,
   variant = isDestructive ? "danger" : "primary",
   useIcon = false,
 }: ConfirmActionProps) {
+  const { t } = useTranslation();
+  const resolvedCancelLabel = cancelLabel ?? t("common.cancel");
+  const resolvedConfirmLabel = isDestructive
+    ? t("common.delete")
+    : (confirmLabel ?? t("common.ok"));
+
   return (
     <AlertDialog open={open}>
       {trigger && <AlertDialogTrigger asChild>{trigger}</AlertDialogTrigger>}
@@ -63,18 +70,18 @@ export function ConfirmAction({
             </div>
           </AlertDialogTitle>
           <AlertDialogDescription asChild>
-            <p className="text-[20px] font-normal leading-[25px] text-secondary opacity-50">
+            <p className="text-[18px] font-normal leading-[25px] text-secondary opacity-50">
               {description}
             </p>
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <Button variant="secondary" size="lg" onClick={() => onClose?.()}>
-            {cancelLabel}
+          <Button variant="ghost" size="lg" onClick={() => onClose?.()}>
+            {resolvedCancelLabel}
           </Button>
 
           <Button variant={variant} size="lg" onClick={() => onAction()}>
-            {isDestructive ? "Delete" : confirmLabel}
+            {resolvedConfirmLabel}
           </Button>
         </AlertDialogFooter>
       </AlertDialogContent>
