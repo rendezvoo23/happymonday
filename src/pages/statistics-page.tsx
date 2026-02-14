@@ -16,7 +16,13 @@ import { useCurrency } from "@/hooks/useCurrency";
 import { useTranslation } from "@/hooks/useTranslation";
 import { getCategoryColor } from "@/stores/categoryStore";
 import { useNavigate, useSearch } from "@tanstack/react-router";
-import { addMonths, isSameMonth, subMonths } from "date-fns";
+import {
+  addMonths,
+  endOfWeek,
+  isSameMonth,
+  startOfWeek,
+  subMonths,
+} from "date-fns";
 import { motion } from "framer-motion";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -89,12 +95,16 @@ export function StatisticsPage(props: StatisticsPageProps = {}) {
   useEffect(() => {
     if (monthFromUrl) {
       const parsed = parseMonthKey(monthFromUrl);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      // When viewing current month, default to today so week/day mode shows current period
+      const initialDate = isSameMonth(parsed, today) ? today : parsed;
       if (!isSameMonth(selectedDate, parsed)) {
-        setDate(parsed);
+        setDate(initialDate);
       }
       // If we came from path param (propsMonth), normalize to search params
       if (propsMonth && !urlMonth) {
-        updateUrl(parsed, urlMode || chartMode, categoryParam);
+        updateUrl(initialDate, urlMode || chartMode, categoryParam);
       }
     } else {
       updateUrl(selectedDate, chartMode, categoryParam);
@@ -148,6 +158,38 @@ export function StatisticsPage(props: StatisticsPageProps = {}) {
   const transactions = useMemo(() => {
     return transactionsData;
   }, [transactionsData]);
+
+  // Filter transactions for the list by selected period (week/day) and category
+  const listTransactions = useMemo(() => {
+    let filtered = transactions;
+    const weekStartsOn = 1;
+
+    if (chartMode === "week") {
+      const weekStart = startOfWeek(selectedDate, { weekStartsOn });
+      const weekEnd = endOfWeek(selectedDate, { weekStartsOn });
+      filtered = filtered.filter((t) => {
+        if (!t.occurred_at) return false;
+        const txDate = new Date(t.occurred_at);
+        return txDate >= weekStart && txDate <= weekEnd;
+      });
+    } else if (chartMode === "day") {
+      const dayStart = new Date(selectedDate);
+      dayStart.setHours(0, 0, 0, 0);
+      const dayEnd = new Date(selectedDate);
+      dayEnd.setHours(23, 59, 59, 999);
+      filtered = filtered.filter((t) => {
+        if (!t.occurred_at) return false;
+        const txDate = new Date(t.occurred_at);
+        return txDate >= dayStart && txDate <= dayEnd;
+      });
+    }
+
+    if (categoryParam) {
+      filtered = filtered.filter((t) => t.category_id === categoryParam);
+    }
+
+    return filtered;
+  }, [transactions, chartMode, selectedDate, categoryParam]);
 
   // Calculate total expenses for the selected month
   const totalExpenses = useMemo(() => {
@@ -326,10 +368,10 @@ export function StatisticsPage(props: StatisticsPageProps = {}) {
             open={isDeleteModalOpen}
           />
 
-          {/* Recent Transactions List - grouped by day */}
+          {/* Recent Transactions List - grouped by day, filtered by period & category */}
           <div className="w-full space-y-4">
             <TransactionList
-              transactions={transactions}
+              transactions={listTransactions}
               onEdit={handleEdit}
               onDelete={handleDeleteRequest}
               limit={20}

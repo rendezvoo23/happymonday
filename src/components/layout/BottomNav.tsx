@@ -110,9 +110,18 @@ export function BottomNav() {
 
   // Get active item index for background position
   const activeIndex = navItems.findIndex((item) => item.isActive);
+  const isNavBarVisible = useUIStore((s) => s.isNavBarVisible);
 
   return (
-    <div className="navigation-container">
+    <div
+      className="navigation-container"
+      style={{
+        opacity: isNavBarVisible ? 1 : 0,
+        pointerEvents: isNavBarVisible ? undefined : "none",
+        transform: isNavBarVisible ? "translateY(0)" : "translateY(100%)",
+        transition: "opacity 0.2s ease, transform 0.2s ease",
+      }}
+    >
       {/* Liquid Glass Navigation */}
       <div className="liquid-glass-nav-wrap">
         <div className="liquid-glass-nav">
