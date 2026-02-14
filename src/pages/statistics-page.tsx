@@ -8,22 +8,31 @@ import { ConfirmAction } from "@/components/modals/confirm-action";
 import { Button } from "@/components/ui/Button";
 import { MonthSelector } from "@/components/ui/MonthSelector";
 import { useDate } from "@/context/DateContext";
+import { useLocale } from "@/context/LocaleContext";
 import {
   useDeleteTransaction,
   useMonthTransactionsWithCategories,
 } from "@/hooks/use-transactions-query";
+import { useCategoryLabel } from "@/hooks/useCategoryLabel";
 import { useCurrency } from "@/hooks/useCurrency";
 import { useTranslation } from "@/hooks/useTranslation";
-import { getCategoryColor } from "@/stores/categoryStore";
+import { getCategoryColor, useCategoryStore } from "@/stores/categoryStore";
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import {
   addMonths,
   endOfWeek,
+  format,
   isSameMonth,
+  isSameWeek,
+  isToday,
+  isYesterday,
   startOfWeek,
   subMonths,
 } from "date-fns";
+import type { Locale } from "date-fns";
+import { de, enUS, es, fr, it, pt, ru, zhCN } from "date-fns/locale";
 import { motion } from "framer-motion";
+import { X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 const MODE_SCHEMA = ["day", "week", "month"] as const;
@@ -36,6 +45,17 @@ function parseMonthKey(monthKey: string): Date {
 function getMonthKey(date: Date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
 }
+
+const dateLocales: Record<string, Locale> = {
+  en: enUS,
+  es,
+  fr,
+  de,
+  ru,
+  zh: zhCN,
+  pt,
+  it,
+};
 
 type ChartMode = "day" | "week" | "month";
 
@@ -63,6 +83,10 @@ export function StatisticsPage(props: StatisticsPageProps = {}) {
   const { selectedDate, setDate, prevMonth, nextMonth } = useDate();
   const { formatAmount } = useCurrency();
   const { t } = useTranslation();
+  const { locale } = useLocale();
+  const dateLocale = dateLocales[locale] ?? enUS;
+  const { getCategoryById } = useCategoryStore();
+  const { getCategoryLabel } = useCategoryLabel();
   const deleteTransactionMutation = useDeleteTransaction();
 
   // Fetch data with TanStack Query (includes full category and subcategory data)
@@ -256,6 +280,34 @@ export function StatisticsPage(props: StatisticsPageProps = {}) {
       .sort((a, b) => b.amount - a.amount);
   }, [transactions]);
 
+  // Localized time window label for transaction list description
+  const timeWindowLabel = useMemo(() => {
+    const today = new Date();
+    if (chartMode === "day") {
+      if (isToday(selectedDate)) return t("date.today");
+      if (isYesterday(selectedDate)) return t("date.yesterday");
+      return format(selectedDate, "d MMM yyyy", { locale: dateLocale });
+    }
+    if (chartMode === "week") {
+      const weekStart = startOfWeek(selectedDate, { weekStartsOn: 1 });
+      const weekEnd = endOfWeek(selectedDate, { weekStartsOn: 1 });
+      if (isSameWeek(selectedDate, today, { weekStartsOn: 1 })) {
+        return t("date.thisWeek");
+      }
+      return `${format(weekStart, "d MMM", { locale: dateLocale })} - ${format(weekEnd, "d MMM yyyy", { locale: dateLocale })}`;
+    }
+    // month
+    if (isSameMonth(selectedDate, today)) return t("date.thisMonth");
+    return format(selectedDate, "MMMM yyyy", { locale: dateLocale });
+  }, [chartMode, selectedDate, t, dateLocale]);
+
+  const handleCategorySelect = useCallback(
+    (categoryId: string | null) => {
+      updateUrl(selectedDate, chartMode, categoryId ?? undefined);
+    },
+    [selectedDate, chartMode, updateUrl]
+  );
+
   const handleEdit = (transaction: { id: string }) => {
     navigate({ to: "/edit/$id", params: { id: transaction.id } });
   };
@@ -349,6 +401,7 @@ export function StatisticsPage(props: StatisticsPageProps = {}) {
             <CategoryDoughnutChart
               spendByCategory={spendByCategory}
               initialExpandedCategory={categoryParam}
+              onCategorySelect={handleCategorySelect}
             />
           </div>
 
@@ -368,15 +421,36 @@ export function StatisticsPage(props: StatisticsPageProps = {}) {
             open={isDeleteModalOpen}
           />
 
-          {/* Recent Transactions List - grouped by day, filtered by period & category */}
-          <div className="w-full space-y-4">
-            <TransactionList
-              transactions={listTransactions}
-              onEdit={handleEdit}
-              onDelete={handleDeleteRequest}
-              limit={20}
-              groupByDay
-            />
+          {/* Recent Transactions List - time window + optional category filter badge */}
+          <div className="w-full space-y-3">
+            <div className="flex flex-wrap items-center gap-2 px-1">
+              <span className="text-sm text-gray-500 dark:text-gray-400">
+                {timeWindowLabel}
+              </span>
+              {categoryParam && (
+                <button
+                  type="button"
+                  onClick={() => handleCategorySelect(null)}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-sm font-medium bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                >
+                  {getCategoryLabel(
+                    getCategoryById(categoryParam)?.name ?? categoryParam
+                  )}
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+
+            {/* Recent Transactions List - grouped by day, filtered by period & category */}
+            <div className="w-full space-y-4">
+              <TransactionList
+                transactions={listTransactions}
+                onEdit={handleEdit}
+                onDelete={handleDeleteRequest}
+                limit={20}
+                groupByDay
+              />
+            </div>
           </div>
 
           <motion.div

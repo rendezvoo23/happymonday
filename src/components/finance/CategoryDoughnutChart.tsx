@@ -23,6 +23,7 @@ interface CategorySpend {
 interface CategoryDoughnutChartProps {
   spendByCategory: CategorySpend[];
   initialExpandedCategory?: string | null;
+  onCategorySelect?: (categoryId: string | null) => void;
 }
 
 // biome-ignore lint/suspicious/noExplicitAny: <explanation>
@@ -53,6 +54,7 @@ const renderActiveShape = (props: any) => {
 export function CategoryDoughnutChart({
   spendByCategory,
   initialExpandedCategory,
+  onCategorySelect,
 }: CategoryDoughnutChartProps) {
   const { formatAmount, formatCompactAmount } = useCurrency();
   const [expandedId, setExpandedId] = useState<string | null>(
@@ -68,30 +70,24 @@ export function CategoryDoughnutChart({
     return [...spendByCategory].sort((a, b) => b.amount - a.amount);
   }, [spendByCategory]);
 
-  // Auto-expand and scroll to category on mount if initialExpandedCategory is provided
+  // Sync expandedId when initialExpandedCategory changes (e.g. from URL or badge remove)
   useEffect(() => {
     if (initialExpandedCategory && sortedCategories.length > 0) {
-      // Check if the category exists in the sorted categories
       const categoryExists = sortedCategories.some(
         (cat) => cat.categoryId === initialExpandedCategory
       );
-
       if (categoryExists) {
         setExpandedId(initialExpandedCategory);
-
-        // // Scroll to the category after a delay to allow rendering
-        // setTimeout(() => {
-        //   categoryRefs.current[initialExpandedCategory]?.scrollIntoView({
-        //     behavior: "smooth",
-        //     block: "center",
-        //   });
-        // }, 500);
       }
+    } else {
+      setExpandedId(initialExpandedCategory || null);
     }
   }, [initialExpandedCategory, sortedCategories]);
 
   const toggleExpand = (id: string | null) => {
-    setExpandedId(expandedId === id ? null : id);
+    const newId = expandedId === id ? null : id;
+    setExpandedId(newId);
+    onCategorySelect?.(newId);
 
     // // Auto-scroll to selected category after a short delay for animation
     // if (id) {
@@ -128,7 +124,9 @@ export function CategoryDoughnutChart({
       if (window.Telegram?.WebApp?.HapticFeedback) {
         window.Telegram.WebApp.HapticFeedback.selectionChanged();
       }
-      toggleExpand(cat.categoryId);
+      const newId = expandedId === cat.categoryId ? null : cat.categoryId;
+      setExpandedId(newId);
+      onCategorySelect?.(newId);
     }
   };
 
