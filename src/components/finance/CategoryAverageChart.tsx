@@ -255,7 +255,9 @@ export function CategoryAverageChart({
       line2 = t("date.lastMonth");
       total = t("statistics.totalLastMonth");
     } else {
-      const monthName = format(selectedDate, "MMMM yyyy", { locale: dateLocale });
+      const monthName = format(selectedDate, "MMMM yyyy", {
+        locale: dateLocale,
+      });
       line2 = monthName;
       total = t("statistics.totalForMonth").replace("{{month}}", monthName);
     }
