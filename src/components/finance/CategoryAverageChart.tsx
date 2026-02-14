@@ -2,6 +2,7 @@ import { useLocale } from "@/context/LocaleContext";
 import { useCategoryLabel } from "@/hooks/useCategoryLabel";
 import { useCurrency } from "@/hooks/useCurrency";
 import { useTranslation } from "@/hooks/useTranslation";
+import { cn } from "@/lib/utils";
 import { getCategoryColor } from "@/stores/categoryStore";
 import type { Tables } from "@/types/supabase";
 import type { Locale } from "date-fns";
@@ -19,6 +20,7 @@ import {
   isYesterday,
   startOfMonth,
   startOfWeek,
+  subDays,
   subMonths,
   subWeeks,
 } from "date-fns";
@@ -37,8 +39,14 @@ import {
   zhCN,
 } from "date-fns/locale";
 import { motion } from "framer-motion";
-import { TrendingDown, TrendingUp } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  TrendingDown,
+  TrendingUp,
+} from "lucide-react";
 import { useMemo } from "react";
+import { Button } from "../ui/Button";
 
 const dateLocales: Record<string, Locale> = {
   en: enUS,
@@ -68,6 +76,7 @@ interface CategoryAverageChartProps {
   selectedDate: Date;
   mode?: "day" | "week" | "month";
   onPeriodClick?: (date: Date, mode: "day" | "week" | "month") => void;
+  onDateChange?: (date: Date) => void;
 }
 
 export function CategoryAverageChart({
@@ -75,6 +84,7 @@ export function CategoryAverageChart({
   selectedDate,
   mode = "week",
   onPeriodClick,
+  onDateChange,
 }: CategoryAverageChartProps) {
   const { formatCompactAmount, formatAmount } = useCurrency();
   const { t } = useTranslation();
@@ -83,6 +93,88 @@ export function CategoryAverageChart({
   const dateLocale = dateLocales[locale] ?? enUS;
 
   const weekStartsOn = 1 as const; // Monday
+
+  // Weeks in current month (for week-mode navigation within month)
+  const weeksInMonth = useMemo(() => {
+    const monthStart = startOfMonth(selectedDate);
+    const monthEnd = endOfMonth(selectedDate);
+    const weeks: Array<{ start: Date; end: Date }> = [];
+    let current = monthStart;
+    while (current <= monthEnd) {
+      const weekStart = startOfWeek(current, { weekStartsOn });
+      const weekEnd = endOfWeek(current, { weekStartsOn });
+      weeks.push({
+        start: weekStart < monthStart ? monthStart : weekStart,
+        end: weekEnd > monthEnd ? monthEnd : weekEnd,
+      });
+      current = addDays(weekEnd, 1);
+    }
+    return weeks;
+  }, [selectedDate]);
+
+  // Prev/next navigation: week mode = navigate weeks within month; day mode = navigate days within month
+  const { canGoPrev, canGoNext, handlePrevClick, handleNextClick } = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const monthStart = startOfMonth(selectedDate);
+    const monthEnd = endOfMonth(selectedDate);
+
+    if (mode === "week") {
+      const currentWeekIndex = weeksInMonth.findIndex((w) =>
+        isWithinInterval(selectedDate, { start: w.start, end: w.end })
+      );
+      const idx = currentWeekIndex >= 0 ? currentWeekIndex : 0;
+      return {
+        canGoPrev: idx > 0,
+        canGoNext: idx < weeksInMonth.length - 1 && idx >= 0,
+        handlePrevClick: () => {
+          if (idx > 0 && onDateChange) {
+            onDateChange(weeksInMonth[idx - 1].start);
+          }
+        },
+        handleNextClick: () => {
+          if (idx < weeksInMonth.length - 1 && onDateChange) {
+            onDateChange(weeksInMonth[idx + 1].start);
+          }
+        },
+      };
+    }
+
+    if (mode === "day") {
+      const dayStart = new Date(selectedDate);
+      dayStart.setHours(0, 0, 0, 0);
+      const isFirstDay = isSameDay(dayStart, monthStart);
+      const isLastDay = isSameDay(dayStart, monthEnd);
+      const isTodayDate = isSameDay(dayStart, today);
+      const isCurrentMonth = isSameMonth(selectedDate, today);
+
+      return {
+        canGoPrev: !isFirstDay,
+        canGoNext: !isLastDay && (!isCurrentMonth || !isTodayDate),
+        handlePrevClick: () => {
+          if (!isFirstDay && onDateChange) {
+            onDateChange(subDays(dayStart, 1));
+          }
+        },
+        handleNextClick: () => {
+          if (!isLastDay && (!isCurrentMonth || !isTodayDate) && onDateChange) {
+            onDateChange(addDays(dayStart, 1));
+          }
+        },
+      };
+    }
+
+    return {
+      canGoPrev: false,
+      canGoNext: false,
+      handlePrevClick: () => {},
+      handleNextClick: () => {},
+    };
+  }, [mode, selectedDate, weeksInMonth, onDateChange]);
+
+  const handleTouchEvent = (_e: React.TouchEvent) => {};
+
+  const showNavButtons = (mode === "week" || mode === "day") && onDateChange;
 
   // Day mode: header (two lines) and total labels
   const dayLabels = useMemo(() => {
@@ -483,6 +575,50 @@ export function CategoryAverageChart({
             </div>
           )}
         </div>
+        {showNavButtons && (
+          <div className="absolute right-[16px] top-[16px] flex items-center gap-0">
+            <Button
+              type="button"
+              onClick={handlePrevClick}
+              onTouchStart={handleTouchEvent}
+              onTouchMove={handleTouchEvent}
+              onTouchEnd={handleTouchEvent}
+              disabled={!canGoPrev}
+              aria-label="Previous"
+              variant="ghost"
+              size="icon"
+            >
+              <ChevronLeft
+                className={cn(
+                  "w-5 h-5",
+                  canGoPrev
+                    ? "text-[var(--accent-color)]"
+                    : "text-gray-300 dark:text-gray-800"
+                )}
+              />
+            </Button>
+            <Button
+              type="button"
+              onClick={handleNextClick}
+              onTouchStart={handleTouchEvent}
+              onTouchMove={handleTouchEvent}
+              onTouchEnd={handleTouchEvent}
+              disabled={!canGoNext}
+              aria-label="Next"
+              variant="ghost"
+              size="icon"
+            >
+              <ChevronRight
+                className={cn(
+                  "w-5 h-5",
+                  canGoNext
+                    ? "text-[var(--accent-color)]"
+                    : "text-gray-300 dark:text-gray-800"
+                )}
+              />
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Bar Chart */}

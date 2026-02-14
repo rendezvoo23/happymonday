@@ -135,6 +135,15 @@ export function StatisticsPage(props: StatisticsPageProps = {}) {
     updateUrl(date, mode, categoryParam);
   };
 
+  // Handle prev/next navigation within week or day mode (stays in current month)
+  const handleDateChange = useCallback(
+    (date: Date) => {
+      setDate(date);
+      updateUrl(date, chartMode, categoryParam);
+    },
+    [chartMode, categoryParam, setDate, updateUrl]
+  );
+
   // Data is already in the correct format with categories and subcategories joined
   const transactions = useMemo(() => {
     return transactionsData;
@@ -289,6 +298,7 @@ export function StatisticsPage(props: StatisticsPageProps = {}) {
                 selectedDate={selectedDate}
                 mode={chartMode}
                 onPeriodClick={handlePeriodClick}
+                onDateChange={handleDateChange}
               />
             </div>
           )}

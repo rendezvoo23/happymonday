@@ -21,9 +21,16 @@ export default defineConfig({
         type: "module",
       },
       includeAssets: [
-        "favicon.ico",
-        "favicon.svg",
+        "favicon.png",
+        "favicon-16x16.png",
+        "favicon-32x32.png",
+        "favicon-48x48.png",
         "apple-touch-icon.png",
+        "apple-touch-icon-152x152.png",
+        "apple-touch-icon-167x167.png",
+        "apple-touch-icon-180x180.png",
+        "android-chrome-192x192.png",
+        "android-chrome-512x512.png",
         "safari-pinned-tab.svg",
       ],
       manifest: {
