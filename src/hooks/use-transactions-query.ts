@@ -16,7 +16,7 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import { addMonths, startOfMonth } from "date-fns";
+import { addMonths, addYears, startOfMonth, startOfYear } from "date-fns";
 
 const DEFAULT_STALE_TIME = 1000 * 60 * 5; // 5 minutes
 
@@ -60,6 +60,19 @@ export function useMonthTransactionsWithCategories(date: Date) {
 
   return useQuery({
     queryKey: [...transactionKeys.list(fromISO, toISO), "with-categories"],
+    queryFn: () => listTransactionsWithCategories(fromISO, toISO),
+    staleTime: DEFAULT_STALE_TIME,
+  });
+}
+
+// Hook to fetch transactions for a full year with categories
+export function useYearTransactionsWithCategories(date: Date) {
+  const yearStart = startOfYear(date);
+  const fromISO = yearStart.toISOString();
+  const toISO = addYears(yearStart, 1).toISOString(); // exclusive end (Jan 1 next year)
+
+  return useQuery({
+    queryKey: [...transactionKeys.list(fromISO, toISO), "year", "with-categories"],
     queryFn: () => listTransactionsWithCategories(fromISO, toISO),
     staleTime: DEFAULT_STALE_TIME,
   });

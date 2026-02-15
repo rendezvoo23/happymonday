@@ -1,6 +1,6 @@
 import { createFileRoute, lazyRouteComponent } from "@tanstack/react-router";
 
-const modeSchema = ["day", "week", "month"] as const;
+const modeSchema = ["day", "week", "month", "year"] as const;
 type ChartMode = (typeof modeSchema)[number];
 
 export const Route = createFileRoute("/_authenticated/statistics/")({

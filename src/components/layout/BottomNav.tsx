@@ -88,7 +88,7 @@ export function BottomNav() {
       (isHomeActive ? lastHomeSearch.month : lastStatisticsSearch.month) ??
       defaultMonth,
     mode: ((isHomeActive ? lastHomeSearch.mode : lastStatisticsSearch.mode) ??
-      "month") as "day" | "week" | "month",
+      "month") as "day" | "week" | "month" | "year",
     category: lastStatisticsSearch.category,
   };
   const navItems = [

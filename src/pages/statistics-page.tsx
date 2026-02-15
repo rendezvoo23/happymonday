@@ -12,6 +12,7 @@ import { useLocale } from "@/context/LocaleContext";
 import {
   useDeleteTransaction,
   useMonthTransactionsWithCategories,
+  useYearTransactionsWithCategories,
 } from "@/hooks/use-transactions-query";
 import { useCategoryLabel } from "@/hooks/useCategoryLabel";
 import { useCurrency } from "@/hooks/useCurrency";
@@ -21,21 +22,24 @@ import { useNavigate, useSearch } from "@tanstack/react-router";
 import type { Locale } from "date-fns";
 import {
   addMonths,
+  addYears,
   endOfWeek,
   format,
   isSameMonth,
   isSameWeek,
+  isSameYear,
   isToday,
   isYesterday,
   startOfWeek,
   subMonths,
+  subYears,
 } from "date-fns";
 import { de, enUS, es, fr, it, pt, ru, zhCN } from "date-fns/locale";
 import { motion } from "framer-motion";
 import { X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-const MODE_SCHEMA = ["day", "week", "month"] as const;
+const MODE_SCHEMA = ["day", "week", "month", "year"] as const;
 
 function parseMonthKey(monthKey: string): Date {
   const [year, month] = monthKey.split("-").map(Number);
@@ -57,7 +61,7 @@ const dateLocales: Record<string, Locale> = {
   it,
 };
 
-type ChartMode = "day" | "week" | "month";
+type ChartMode = "day" | "week" | "month" | "year";
 
 interface StatisticsPageProps {
   selectedMonth?: string;
@@ -94,14 +98,17 @@ export function StatisticsPage(props: StatisticsPageProps = {}) {
   const { getCategoryLabel } = useCategoryLabel();
   const deleteTransactionMutation = useDeleteTransaction();
 
-  // Fetch data with TanStack Query (includes full category and subcategory data)
-  const { data: transactionsData = [], isLoading: isTransactionsLoading } =
-    useMonthTransactionsWithCategories(selectedDate);
-
   // Modals state
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
   const [chartMode, setChartMode] = useState<ChartMode>(urlMode || "month");
+
+  // Fetch data with TanStack Query (includes full category and subcategory data)
+  const isYearMode = chartMode === "year";
+  const monthQuery = useMonthTransactionsWithCategories(selectedDate);
+  const yearQuery = useYearTransactionsWithCategories(selectedDate);
+  const { data: transactionsData = [], isLoading: isTransactionsLoading } =
+    isYearMode ? yearQuery : monthQuery;
 
   // Sync URL <-> selected month & mode (for reload persistence)
   const updateUrl = useCallback(
@@ -159,6 +166,18 @@ export function StatisticsPage(props: StatisticsPageProps = {}) {
     updateUrl(newDate, chartMode, categoryParam);
   }, [selectedDate, chartMode, categoryParam, nextMonth, updateUrl]);
 
+  const handlePrevYear = useCallback(() => {
+    const newDate = subYears(selectedDate, 1);
+    setDate(newDate);
+    updateUrl(newDate, chartMode, categoryParam);
+  }, [selectedDate, chartMode, categoryParam, setDate, updateUrl]);
+
+  const handleNextYear = useCallback(() => {
+    const newDate = addYears(selectedDate, 1);
+    setDate(newDate);
+    updateUrl(newDate, chartMode, categoryParam);
+  }, [selectedDate, chartMode, categoryParam, setDate, updateUrl]);
+
   const handleChartModeChange = useCallback(
     (mode: ChartMode) => {
       setChartMode(mode);
@@ -188,7 +207,7 @@ export function StatisticsPage(props: StatisticsPageProps = {}) {
     return transactionsData;
   }, [transactionsData]);
 
-  // Filter transactions for the list by selected period (week/day) and category
+  // Filter transactions for the list by selected period (week/day/month/year) and category
   const listTransactions = useMemo(() => {
     let filtered = transactions;
     const weekStartsOn = 1;
@@ -212,6 +231,7 @@ export function StatisticsPage(props: StatisticsPageProps = {}) {
         return txDate >= dayStart && txDate <= dayEnd;
       });
     }
+    // month and year: transactions already filtered by the query (month or year range)
 
     if (categoryParam) {
       filtered = filtered.filter((t) => t.category_id === categoryParam);
@@ -227,7 +247,7 @@ export function StatisticsPage(props: StatisticsPageProps = {}) {
     return total;
   }, [transactions]);
 
-  // Filter transactions by selected period (day/week/month) for doughnut chart
+  // Filter transactions by selected period (day/week/month/year) for doughnut chart
   const periodFilteredTransactions = useMemo(() => {
     let filtered = transactions;
     const weekStartsOn = 1;
@@ -251,6 +271,7 @@ export function StatisticsPage(props: StatisticsPageProps = {}) {
         return txDate >= dayStart && txDate <= dayEnd;
       });
     }
+    // month and year: transactions already filtered by the query
 
     return filtered;
   }, [transactions, chartMode, selectedDate]);
@@ -331,6 +352,10 @@ export function StatisticsPage(props: StatisticsPageProps = {}) {
       }
       return `${format(weekStart, "d MMM", { locale: dateLocale })} - ${format(weekEnd, "d MMM yyyy", { locale: dateLocale })}`;
     }
+    if (chartMode === "year") {
+      if (isSameYear(selectedDate, today)) return t("date.thisYear");
+      return format(selectedDate, "yyyy", { locale: dateLocale });
+    }
     // month
     if (isSameMonth(selectedDate, today)) return t("date.thisMonth");
     return format(selectedDate, "MMMM yyyy", { locale: dateLocale });
@@ -370,9 +395,15 @@ export function StatisticsPage(props: StatisticsPageProps = {}) {
       <PageShell>
         <Header>
           <MonthSelector
+            variant={isYearMode ? "year" : "month"}
             totalExpenses={formatAmount(totalExpenses)}
-            onPrevMonth={handlePrevMonth}
-            onNextMonth={handleNextMonth}
+            onPrevMonth={isYearMode ? handlePrevYear : handlePrevMonth}
+            onNextMonth={isYearMode ? handleNextYear : handleNextMonth}
+            onJumpToCurrentMonth={() => {
+              const now = new Date();
+              setDate(now);
+              updateUrl(now, chartMode, categoryParam);
+            }}
           />
         </Header>
 
@@ -416,6 +447,17 @@ export function StatisticsPage(props: StatisticsPageProps = {}) {
                   }`}
                 >
                   {t("statistics.month")}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleChartModeChange("year")}
+                  className={`px-4 py-1 rounded-full text-sm font-medium transition-colors ${
+                    chartMode === "year"
+                      ? "bg-blue-500 text-white"
+                      : "text-gray-700 dark:text-gray-300"
+                  }`}
+                >
+                  {t("statistics.year")}
                 </button>
               </div>
             </div>

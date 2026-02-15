@@ -9,6 +9,7 @@ import type { Tables } from "@/types/supabase";
 import type { Locale } from "date-fns";
 import {
   addDays,
+  addMonths,
   eachDayOfInterval,
   endOfMonth,
   endOfWeek,
@@ -16,14 +17,17 @@ import {
   isSameDay,
   isSameMonth,
   isSameWeek,
+  isSameYear,
   isToday,
   isWithinInterval,
   isYesterday,
   startOfMonth,
   startOfWeek,
+  startOfYear,
   subDays,
   subMonths,
   subWeeks,
+  subYears,
 } from "date-fns";
 import {
   ar,
@@ -75,9 +79,9 @@ type Transaction = Tables<"transactions"> & {
 interface CategoryAverageChartProps {
   transactions: Transaction[];
   selectedDate: Date;
-  mode?: "day" | "week" | "month";
+  mode?: "day" | "week" | "month" | "year";
   isLoading?: boolean;
-  onPeriodClick?: (date: Date, mode: "day" | "week" | "month") => void;
+  onPeriodClick?: (date: Date, mode: "day" | "week" | "month" | "year") => void;
   onDateChange?: (date: Date) => void;
 }
 
@@ -275,6 +279,33 @@ export function CategoryAverageChart({
     };
   }, [selectedDate, t, dateLocale]);
 
+  // Year mode: header (two lines) and total labels
+  const yearLabels = useMemo(() => {
+    const today = new Date();
+    const isCurrent = isSameYear(selectedDate, today);
+
+    let line2: string;
+    let total: string;
+    if (isCurrent) {
+      line2 = t("date.thisYear");
+      total = t("statistics.totalThisYear");
+    } else if (isSameYear(selectedDate, subYears(today, 1))) {
+      line2 = t("date.lastYear");
+      total = t("statistics.totalLastYear");
+    } else {
+      const yearStr = format(selectedDate, "yyyy", { locale: dateLocale });
+      line2 = yearStr;
+      total = t("statistics.totalForYear").replace("{{year}}", yearStr);
+    }
+
+    return {
+      line1: t("statistics.monthlyAverage"),
+      line2,
+      isCurrent,
+      total,
+    };
+  }, [selectedDate, t, dateLocale]);
+
   // Filter only expenses
   const expenses = useMemo(() => {
     return transactions.filter((t) => t.direction === "expense");
@@ -384,6 +415,50 @@ export function CategoryAverageChart({
       });
     }
 
+    if (mode === "year") {
+      // Year mode: 12 months
+      const yearStart = startOfYear(selectedDate);
+      return Array.from({ length: 12 }, (_, i) => {
+        const monthStartCorrect = addMonths(yearStart, i);
+        const monthEnd = endOfMonth(monthStartCorrect);
+
+        const monthExpenses = expenses.filter((t) => {
+          if (!t.occurred_at) return false;
+          const date = new Date(t.occurred_at);
+          return date >= monthStartCorrect && date <= monthEnd;
+        });
+
+        const categoryTotals: Record<
+          string,
+          { amount: number; color: string; name: string }
+        > = {};
+        monthExpenses.forEach((t) => {
+          const catId = t.category_id || "unknown";
+          if (!categoryTotals[catId]) {
+            categoryTotals[catId] = {
+              amount: 0,
+              color: getCategoryColor(t.categories?.color, t.categories?.name),
+              name: t.categories?.name || "Unknown",
+            };
+          }
+          categoryTotals[catId].amount += t.amount;
+        });
+
+        const monthLabel = format(monthStartCorrect, "MMM", {
+          locale: dateLocale,
+        });
+        return {
+          label: monthLabel,
+          fullLabel: format(monthStartCorrect, "MMMM yyyy", {
+            locale: dateLocale,
+          }),
+          date: monthStartCorrect,
+          categories: categoryTotals,
+          total: monthExpenses.reduce((sum, t) => sum + t.amount, 0),
+        };
+      });
+    }
+
     // Month mode: show all weeks of the month
     const monthStart = startOfMonth(selectedDate);
     const monthEnd = endOfMonth(selectedDate);
@@ -436,13 +511,31 @@ export function CategoryAverageChart({
         total: weekExpenses.reduce((sum, t) => sum + t.amount, 0),
       };
     });
-  }, [expenses, selectedDate, mode, t]);
+  }, [expenses, selectedDate, mode, t, dateLocale]);
 
   // Calculate average
   const average = useMemo(() => {
     const total = chartData.reduce((sum, d) => sum + d.total, 0);
-    return chartData.length > 0 ? total / chartData.length : 0;
-  }, [chartData]);
+    if (chartData.length === 0) return 0;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    // For year mode + current year: divide only by months elapsed (Jan through current month)
+    if (mode === "year" && isSameYear(selectedDate, today)) {
+      const currentMonth = today.getMonth() + 1; // 1-12
+      return total / currentMonth;
+    }
+    // For month mode + current month: divide only by weeks elapsed (week 1 through current week)
+    if (mode === "month" && isSameMonth(selectedDate, today)) {
+      const weekIndex = chartData.findIndex((d) => {
+        const weekEnd = endOfWeek(d.date, { weekStartsOn: 1 });
+        return today >= d.date && today <= weekEnd;
+      });
+      if (weekIndex >= 0) {
+        return total / (weekIndex + 1);
+      }
+    }
+    return total / chartData.length;
+  }, [chartData, mode, selectedDate]);
 
   // Calculate total
   const total = useMemo(() => {
@@ -488,6 +581,32 @@ export function CategoryAverageChart({
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
+    // Year mode: compare full year with previous year
+    if (mode === "year") {
+      const yearStart = startOfYear(selectedDate);
+      const prevYearStart = subYears(yearStart, 1);
+      const prevYearEnd = endOfMonth(addMonths(prevYearStart, 11));
+
+      const currentTotal = expenses
+        .filter((t) => {
+          if (!t.occurred_at) return false;
+          const txDate = new Date(t.occurred_at);
+          return txDate >= yearStart && txDate <= endOfMonth(addMonths(yearStart, 11));
+        })
+        .reduce((sum, t) => sum + t.amount, 0);
+
+      const prevTotal = expenses
+        .filter((t) => {
+          if (!t.occurred_at) return false;
+          const txDate = new Date(t.occurred_at);
+          return txDate >= prevYearStart && txDate <= prevYearEnd;
+        })
+        .reduce((sum, t) => sum + t.amount, 0);
+
+      if (prevTotal === 0) return 0;
+      return ((currentTotal - prevTotal) / prevTotal) * 100;
+    }
+
     // Month mode: when current month is not ended, compare same number of days with prev month
     if (mode === "month") {
       const isCurrentMonth = isSameMonth(selectedDate, today);
@@ -529,7 +648,7 @@ export function CategoryAverageChart({
       }
     }
 
-    // Week mode or past month: split current period into halves
+    // Week mode or past month: split current period into halves (not used for year)
     const currentHalf = chartData.slice(Math.ceil(chartData.length / 2));
     const previousHalf = chartData.slice(0, Math.floor(chartData.length / 2));
 
@@ -541,6 +660,13 @@ export function CategoryAverageChart({
     if (previousAvg === 0) return 0;
     return ((currentAvg - previousAvg) / previousAvg) * 100;
   }, [chartData, mode, expenses, selectedDate]);
+
+  const fromLabel =
+    mode === "year"
+      ? t("statistics.fromLastYear")
+      : mode === "week"
+        ? t("statistics.fromLastWeek")
+        : t("statistics.fromLastMonth");
 
   return (
     <motion.div
@@ -594,6 +720,20 @@ export function CategoryAverageChart({
               </div>
             </>
           )}
+          {mode === "year" && (
+            <>
+              <div>{yearLabels.line1}</div>
+              <div
+                style={
+                  yearLabels.isCurrent
+                    ? { color: "var(--primary-color)" }
+                    : undefined
+                }
+              >
+                {yearLabels.line2}
+              </div>
+            </>
+          )}
         </h3>
         <div className="flex items-end gap-3">
           <span className="text-4xl font-bold text-gray-900 dark:text-gray-100">
@@ -607,20 +747,14 @@ export function CategoryAverageChart({
                 <>
                   <TrendingUp className="w-4 h-4 text-red-500" />
                   <span className="text-red-500">
-                    {Math.abs(percentageChange).toFixed(0)}%{" "}
-                    {mode === "week"
-                      ? t("statistics.fromLastWeek")
-                      : t("statistics.fromLastMonth")}
+                    {Math.abs(percentageChange).toFixed(0)}% {fromLabel}
                   </span>
                 </>
               ) : (
                 <>
                   <TrendingDown className="w-4 h-4 text-green-500" />
                   <span className="text-green-500">
-                    {Math.abs(percentageChange).toFixed(0)}%{" "}
-                    {mode === "week"
-                      ? t("statistics.fromLastWeek")
-                      : t("statistics.fromLastMonth")}
+                    {Math.abs(percentageChange).toFixed(0)}% {fromLabel}
                   </span>
                 </>
               )}
@@ -674,7 +808,11 @@ export function CategoryAverageChart({
       </div>
 
       {/* Bar Chart */}
-      <div className={`relative mb-6 ${mode === "day" ? "h-52 pb-6" : "h-48"}`}>
+      <div
+        className={`relative mb-6 ${
+          mode === "day" ? "h-52 pb-6" : mode === "year" ? "h-48" : "h-48"
+        }`}
+      >
         <div className="absolute left-0 right-8 bottom-[29px] border-b border-[var(--border-level-1)]" />
         {/* Average line */}
         {mode !== "day" && (
@@ -721,10 +859,13 @@ export function CategoryAverageChart({
                   day.date.getHours() === today.getHours()
                 : mode === "week"
                   ? isSameDay(day.date, today)
-                  : isWithinInterval(today, {
-                      start: day.date,
-                      end: endOfWeek(day.date, { weekStartsOn: 1 }),
-                    });
+                  : mode === "year"
+                    ? isSameMonth(day.date, today) &&
+                      isSameYear(day.date, today)
+                    : isWithinInterval(today, {
+                        start: day.date,
+                        end: endOfWeek(day.date, { weekStartsOn: 1 }),
+                      });
 
             return (
               <motion.div
@@ -741,7 +882,8 @@ export function CategoryAverageChart({
                 >
                   <div
                     className={`w-full rounded-t-lg overflow-hidden flex flex-col-reverse ${
-                      (mode === "month" || mode === "week") && onPeriodClick
+                      (mode === "month" || mode === "week" || mode === "year") &&
+                      onPeriodClick
                         ? "cursor-pointer hover:opacity-80 transition-opacity"
                         : ""
                     }${isTodayBar ? " now" : ""}`}
@@ -752,6 +894,9 @@ export function CategoryAverageChart({
                       }
                       if (mode === "week" && onPeriodClick) {
                         onPeriodClick(day.date, "day");
+                      }
+                      if (mode === "year" && onPeriodClick) {
+                        onPeriodClick(day.date, "month");
                       }
                     }}
                     onKeyDown={(e) => {
@@ -767,15 +912,21 @@ export function CategoryAverageChart({
                           e.preventDefault();
                           onPeriodClick(day.date, "day");
                         }
+                        if (mode === "year") {
+                          e.preventDefault();
+                          onPeriodClick(day.date, "month");
+                        }
                       }
                     }}
                     role={
-                      (mode === "month" || mode === "week") && onPeriodClick
+                      (mode === "month" || mode === "week" || mode === "year") &&
+                      onPeriodClick
                         ? "button"
                         : undefined
                     }
                     tabIndex={
-                      (mode === "month" || mode === "week") && onPeriodClick
+                      (mode === "month" || mode === "week" || mode === "year") &&
+                      onPeriodClick
                         ? 0
                         : undefined
                     }
@@ -862,7 +1013,8 @@ export function CategoryAverageChart({
                 style={
                   (mode === "day" && dayLabels.isCurrent) ||
                   (mode === "week" && weekLabels.isCurrent) ||
-                  (mode === "month" && monthLabels.isCurrent)
+                  (mode === "month" && monthLabels.isCurrent) ||
+                  (mode === "year" && yearLabels.isCurrent)
                     ? { color: "var(--primary-color)" }
                     : undefined
                 }
@@ -871,7 +1023,9 @@ export function CategoryAverageChart({
                   ? dayLabels.total
                   : mode === "week"
                     ? weekLabels.total
-                    : monthLabels.total}
+                    : mode === "year"
+                      ? yearLabels.total
+                      : monthLabels.total}
               </span>
             </span>
             <span className="text-lg font-bold text-gray-900 dark:text-gray-100">

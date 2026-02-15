@@ -3,7 +3,7 @@ import { create } from "zustand";
 
 type TransactionDirection = Enums<"transaction_direction">;
 
-export type ChartMode = "day" | "week" | "month";
+export type ChartMode = "day" | "week" | "month" | "year";
 
 interface AddTransactionDrawerState {
   isOpen: boolean;

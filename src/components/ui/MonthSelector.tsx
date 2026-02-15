@@ -1,7 +1,7 @@
 import { useDate } from "@/context/DateContext";
 import { useTranslation } from "@/hooks/useTranslation";
 import { cn } from "@/lib/utils";
-import { format, isSameMonth } from "date-fns";
+import { format, isSameMonth, isSameYear } from "date-fns";
 import {
   ar,
   de,
@@ -21,6 +21,7 @@ import { LiquidButton } from "./button/button";
 
 interface MonthSelectorProps {
   className?: string;
+  variant?: "month" | "year";
   onPrevMonth?: () => void;
   onNextMonth?: () => void;
   onJumpToCurrentMonth?: () => void;
@@ -45,6 +46,7 @@ const dateLocales = {
 
 export function MonthSelector({
   className,
+  variant = "month",
   onPrevMonth,
   onNextMonth,
   onJumpToCurrentMonth,
@@ -56,16 +58,25 @@ export function MonthSelector({
   // Get the date-fns locale based on current language
   const dateLocale = dateLocales[locale as keyof typeof dateLocales] || enUS;
 
-  // Check if the selected date is the current month
-  const isCurrentMonth = isSameMonth(selectedDate, new Date());
+  const isYearMode = variant === "year";
+  const today = new Date();
+
+  // Check if the selected date is the current month/year
+  const isCurrent =
+    isYearMode ? isSameYear(selectedDate, today) : isSameMonth(selectedDate, today);
+
+  // For year mode: can go next only if viewing a past year
+  const canGoNextResolved = isYearMode
+    ? selectedDate.getFullYear() < today.getFullYear()
+    : canGoNext;
 
   // Use custom handlers if provided, otherwise use default from context
   const handlePrevClick = onPrevMonth || prevMonth;
   const handleNextClick = onNextMonth || nextMonth;
 
-  // Handler to jump to current month
-  const handleMonthClick = () => {
-    if (!isCurrentMonth) {
+  // Handler to jump to current month/year
+  const handlePeriodClick = () => {
+    if (!isCurrent) {
       onJumpToCurrentMonth ? onJumpToCurrentMonth() : setDate(new Date());
     }
   };
@@ -93,11 +104,10 @@ export function MonthSelector({
 
       <button
         type="button"
-        onClick={handleMonthClick}
+        onClick={handlePeriodClick}
         className={cn(
           "text-lg font-semibold text-gray-900 dark:text-gray-100 min-w-[140px] text-center",
-          !isCurrentMonth &&
-            "cursor-pointer hover:opacity-80 transition-opacity"
+          !isCurrent && "cursor-pointer hover:opacity-80 transition-opacity"
         )}
       >
         {totalExpenses && (
@@ -113,10 +123,12 @@ export function MonthSelector({
         <span
           className={cn(
             "text-lg font-semibold",
-            isCurrentMonth ? "text-[var(--primary-color)]" : "opacity-50"
+            isCurrent ? "text-[var(--primary-color)]" : "opacity-50"
           )}
         >
-          {format(selectedDate, "MMM yyyy", { locale: dateLocale })}
+          {isYearMode
+            ? format(selectedDate, "yyyy", { locale: dateLocale })
+            : format(selectedDate, "MMM yyyy", { locale: dateLocale })}
         </span>
       </button>
 
@@ -126,7 +138,7 @@ export function MonthSelector({
         onTouchStart={handleTouchEvent}
         onTouchMove={handleTouchEvent}
         onTouchEnd={handleTouchEvent}
-        disabled={!canGoNext}
+        disabled={!canGoNextResolved}
         aria-label="Next month"
         variant="ghost"
         size="icon-lg"
@@ -135,7 +147,7 @@ export function MonthSelector({
         <ChevronRight
           className={cn(
             "w-5 h-5",
-            canGoNext
+            canGoNextResolved
               ? "text-[var(--accent-color)]"
               : "text-gray-300 dark:text-gray-800"
           )}

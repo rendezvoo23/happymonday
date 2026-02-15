@@ -1,6 +1,6 @@
 import { createFileRoute, lazyRouteComponent } from "@tanstack/react-router";
 
-const modeSchema = ["day", "week", "month"] as const;
+const modeSchema = ["day", "week", "month", "year"] as const;
 
 export const Route = createFileRoute("/_authenticated/home")({
   validateSearch: (search: Record<string, unknown>) => {

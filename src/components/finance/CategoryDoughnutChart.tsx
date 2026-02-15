@@ -10,11 +10,13 @@ import {
   format,
   isSameMonth,
   isSameWeek,
+  isSameYear,
   isToday,
   isYesterday,
   startOfWeek,
   subMonths,
   subWeeks,
+  subYears,
 } from "date-fns";
 import { de, enUS, es, fr, it, pt, ru, zhCN } from "date-fns/locale";
 import { AnimatePresence, motion } from "framer-motion";
@@ -50,7 +52,7 @@ interface CategorySpend {
 interface CategoryDoughnutChartProps {
   spendByCategory: CategorySpend[];
   selectedDate: Date;
-  mode?: "day" | "week" | "month";
+  mode?: "day" | "week" | "month" | "year";
   initialExpandedCategory?: string | null;
   onCategorySelect?: (categoryId: string | null) => void;
   isLoading?: boolean;
@@ -158,6 +160,24 @@ export function CategoryDoughnutChart({
     return { isCurrent, total };
   }, [selectedDate, t, dateLocale]);
 
+  // Year mode: total labels
+  const yearLabels = useMemo(() => {
+    const today = new Date();
+    const isCurrent = isSameYear(selectedDate, today);
+
+    let total: string;
+    if (isCurrent) {
+      total = t("statistics.totalThisYear");
+    } else if (isSameYear(selectedDate, subYears(today, 1))) {
+      total = t("statistics.totalLastYear");
+    } else {
+      const yearStr = format(selectedDate, "yyyy", { locale: dateLocale });
+      total = t("statistics.totalForYear").replace("{{year}}", yearStr);
+    }
+
+    return { isCurrent, total };
+  }, [selectedDate, t, dateLocale]);
+
   // Create refs for category elements to support auto-scrolling
   const categoryRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
@@ -233,21 +253,24 @@ export function CategoryDoughnutChart({
         <div className="pb-4 border-b border-border-subtle mx-2">
           <div className="flex justify-between items-center">
             <span className="text-sm text-gray-600 dark:text-gray-400">
-              <span
-                style={
-                  (mode === "day" && dayLabels.isCurrent) ||
+            <span
+              style={
+                (mode === "day" && dayLabels.isCurrent) ||
                   (mode === "week" && weekLabels.isCurrent) ||
-                  (mode === "month" && monthLabels.isCurrent)
+                  (mode === "month" && monthLabels.isCurrent) ||
+                  (mode === "year" && yearLabels.isCurrent)
                     ? { color: "var(--primary-color)" }
                     : undefined
-                }
-              >
-                {mode === "day"
-                  ? dayLabels.total
-                  : mode === "week"
-                    ? weekLabels.total
+              }
+            >
+              {mode === "day"
+                ? dayLabels.total
+                : mode === "week"
+                  ? weekLabels.total
+                  : mode === "year"
+                    ? yearLabels.total
                     : monthLabels.total}
-              </span>
+            </span>
             </span>
             <span className="text-lg font-bold text-gray-900 dark:text-gray-100">
               {formatAmount(totalExpenses)}
