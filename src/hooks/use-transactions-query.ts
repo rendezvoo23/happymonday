@@ -72,7 +72,11 @@ export function useYearTransactionsWithCategories(date: Date) {
   const toISO = addYears(yearStart, 1).toISOString(); // exclusive end (Jan 1 next year)
 
   return useQuery({
-    queryKey: [...transactionKeys.list(fromISO, toISO), "year", "with-categories"],
+    queryKey: [
+      ...transactionKeys.list(fromISO, toISO),
+      "year",
+      "with-categories",
+    ],
     queryFn: () => listTransactionsWithCategories(fromISO, toISO),
     staleTime: DEFAULT_STALE_TIME,
   });

@@ -591,7 +591,10 @@ export function CategoryAverageChart({
         .filter((t) => {
           if (!t.occurred_at) return false;
           const txDate = new Date(t.occurred_at);
-          return txDate >= yearStart && txDate <= endOfMonth(addMonths(yearStart, 11));
+          return (
+            txDate >= yearStart &&
+            txDate <= endOfMonth(addMonths(yearStart, 11))
+          );
         })
         .reduce((sum, t) => sum + t.amount, 0);
 
@@ -882,8 +885,9 @@ export function CategoryAverageChart({
                 >
                   <div
                     className={`w-full rounded-t-lg overflow-hidden flex flex-col-reverse ${
-                      (mode === "month" || mode === "week" || mode === "year") &&
-                      onPeriodClick
+                      (
+                        mode === "month" || mode === "week" || mode === "year"
+                      ) && onPeriodClick
                         ? "cursor-pointer hover:opacity-80 transition-opacity"
                         : ""
                     }${isTodayBar ? " now" : ""}`}
@@ -919,13 +923,17 @@ export function CategoryAverageChart({
                       }
                     }}
                     role={
-                      (mode === "month" || mode === "week" || mode === "year") &&
+                      (mode === "month" ||
+                        mode === "week" ||
+                        mode === "year") &&
                       onPeriodClick
                         ? "button"
                         : undefined
                     }
                     tabIndex={
-                      (mode === "month" || mode === "week" || mode === "year") &&
+                      (mode === "month" ||
+                        mode === "week" ||
+                        mode === "year") &&
                       onPeriodClick
                         ? 0
                         : undefined

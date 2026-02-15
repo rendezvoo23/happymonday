@@ -62,8 +62,9 @@ export function MonthSelector({
   const today = new Date();
 
   // Check if the selected date is the current month/year
-  const isCurrent =
-    isYearMode ? isSameYear(selectedDate, today) : isSameMonth(selectedDate, today);
+  const isCurrent = isYearMode
+    ? isSameYear(selectedDate, today)
+    : isSameMonth(selectedDate, today);
 
   // For year mode: can go next only if viewing a past year
   const canGoNextResolved = isYearMode

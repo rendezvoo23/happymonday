@@ -253,24 +253,24 @@ export function CategoryDoughnutChart({
         <div className="pb-4 border-b border-border-subtle mx-2">
           <div className="flex justify-between items-center">
             <span className="text-sm text-gray-600 dark:text-gray-400">
-            <span
-              style={
-                (mode === "day" && dayLabels.isCurrent) ||
+              <span
+                style={
+                  (mode === "day" && dayLabels.isCurrent) ||
                   (mode === "week" && weekLabels.isCurrent) ||
                   (mode === "month" && monthLabels.isCurrent) ||
                   (mode === "year" && yearLabels.isCurrent)
                     ? { color: "var(--primary-color)" }
                     : undefined
-              }
-            >
-              {mode === "day"
-                ? dayLabels.total
-                : mode === "week"
-                  ? weekLabels.total
-                  : mode === "year"
-                    ? yearLabels.total
-                    : monthLabels.total}
-            </span>
+                }
+              >
+                {mode === "day"
+                  ? dayLabels.total
+                  : mode === "week"
+                    ? weekLabels.total
+                    : mode === "year"
+                      ? yearLabels.total
+                      : monthLabels.total}
+              </span>
             </span>
             <span className="text-lg font-bold text-gray-900 dark:text-gray-100">
               {formatAmount(totalExpenses)}
