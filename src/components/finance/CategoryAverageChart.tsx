@@ -1106,10 +1106,8 @@ export function CategoryAverageChart({
                         day.total > 0 ? (catData.amount / day.total) * 100 : 0;
                       const nextCat = categories[catIndex + 1];
                       const hasNextCat = nextCat !== undefined;
-                      const isTopSegment =
-                        catIndex === categories.length - 1;
-                      const showRoundedTop =
-                        selectedCategoryId && isTopSegment;
+                      const isTopSegment = catIndex === categories.length - 1;
+                      const showRoundedTop = selectedCategoryId && isTopSegment;
 
                       return (
                         <div
