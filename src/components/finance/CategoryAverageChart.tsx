@@ -574,6 +574,41 @@ export function CategoryAverageChart({
     return Math.max(...chartData.map((d) => d.total), average);
   }, [chartData, average]);
 
+  // Human-readable grid line values: round max, split by 3, round each to 250-step
+  const gridLineValues = useMemo(() => {
+    if (maxAmount <= 0) return [];
+    // Round max to nice number (e.g. 72.54K → 73K)
+    const roundedMax = Math.ceil(maxAmount / 1000) * 1000;
+    // Split by 3, round each to nearest 250 (scaled: 250, 2500, 25000 for larger values)
+    const third = roundedMax / 3;
+    const magnitude = 10 ** Math.floor(Math.log10(third));
+    const step = magnitude >= 1000 ? 2500 * (magnitude / 1000) : 250;
+    const roundToStep = (v: number) => Math.round(v / step) * step;
+    return [roundToStep(third), roundToStep((2 * roundedMax) / 3)];
+  }, [maxAmount]);
+
+  // X-axis grid line positions (vertical lines) - align with bar/label starts
+  const xGridPositions = useMemo(() => {
+    if (mode === "day") {
+      // 24h split into 4 parts (6h each): 0:00, 6:00, 12:00, 18:00
+      return [0, 6 / 24, 12 / 24, 18 / 24];
+    }
+    if (mode === "week") {
+      // 7 lines at start of each day
+      return Array.from({ length: 7 }, (_, i) => i / 7);
+    }
+    if (mode === "month") {
+      // Lines at start of each week (W1, W2, ...)
+      const n = chartData.length;
+      return Array.from({ length: n }, (_, i) => i / n);
+    }
+    if (mode === "year") {
+      // 4 lines at start of spring (Mar), summer (Jun), fall (Sep), winter (Dec)
+      return [2 / 12, 5 / 12, 8 / 12, 11 / 12];
+    }
+    return [];
+  }, [mode, chartData.length]);
+
   // Calculate percentage change from previous period (skip for day mode)
   const percentageChange = useMemo(() => {
     if (mode === "day" || chartData.length < 2) return 0;
@@ -817,17 +852,49 @@ export function CategoryAverageChart({
         }`}
       >
         <div className="absolute left-0 right-8 bottom-[29px] border-b border-[var(--border-level-1)]" />
+        {/* Grid: 2 horizontal lines with rounded amount legend (hide if 0 or < 1) */}
+        {maxAmount > 0 &&
+          gridLineValues
+            .filter((value) => value > 0)
+            .map((value) => (
+              <div
+                key={`h-${value}`}
+                className="absolute left-0 right-8 top-0 bottom-[29px] pointer-events-none border-t border-dashed border-[var(--border-level-1)]"
+                style={{ top: `${85 * (1 - value / maxAmount)}%` }}
+                aria-hidden
+              >
+                <span
+                  style={{ transform: "translateX(100%)" }}
+                  className="absolute -right-[0px] -top-[10px] pl-1  text-gray-400 font-light text-[10px]"
+                >
+                  {formatCompactAmount(value)}
+                </span>
+              </div>
+            ))}
+        {/* X-axis line */}
+        <div
+          className="absolute left-0 right-8 top-0 bottom-[29px] pointer-events-none"
+          aria-hidden
+        >
+          {xGridPositions.map((pos) => (
+            <div
+              key={`v-${pos}`}
+              className="absolute top-0 bottom-0 border-l border-dashed border-[var(--border-level-1)]"
+              style={{ left: `${pos * 100}%` }}
+            />
+          ))}
+        </div>
         {/* Average line */}
-        {mode !== "day" && (
+        {mode !== "day" && maxAmount > 0 && (
           <div
             className="absolute left-0 right-8 border-t border-dashed border-green-500 z-10"
             style={{
-              top: `${100 - (average / maxAmount) * 80}%`,
+              top: `${85 * (1 - average / maxAmount)}%`,
             }}
           >
             <span
               style={{ transform: "translateX(100%)" }}
-              className="absolute -right-[0px] -top-[10px] pl-1 text-xs text-green-500 font-light"
+              className="absolute -right-[2px] -top-[10px] pl-1 text-xs text-green-500 font-medium"
             >
               {t("statistics.average")}
             </span>
@@ -835,14 +902,18 @@ export function CategoryAverageChart({
         )}
 
         {/* Y-axis labels */}
-        <div className="absolute right-[-8px] top-0 text-xs text-gray-400">
+        <div className="absolute right-[-15px] top-0 text-xs text-gray-400">
           <span>{formatCompactAmount(maxAmount)}</span>
         </div>
 
         {/* Bars */}
         <div
-          className={`absolute inset-0 right-8 flex items-end ${
-            mode === "day" ? "justify-around gap-0.5" : "justify-around gap-1"
+          className={`absolute inset-0 right-8 flex items-end overflow-hidden ${
+            mode === "day"
+              ? "justify-around gap-0.5"
+              : mode === "year"
+                ? "justify-between gap-px"
+                : "justify-around gap-1"
           }`}
         >
           {isLoading && (
@@ -873,7 +944,7 @@ export function CategoryAverageChart({
             return (
               <motion.div
                 key={`${day.date.toISOString()}-${index}`}
-                className={`flex-1 flex flex-col items-center gap-2${isTodayBar ? " now" : ""}`}
+                className={`flex-1 min-w-0 flex flex-col items-center gap-2${isTodayBar ? " now" : ""}`}
                 initial={{ height: 0 }}
                 animate={{ height: "100%" }}
                 transition={{ delay: index * 0.05, duration: 0.3 }}
@@ -966,9 +1037,10 @@ export function CategoryAverageChart({
                   <span
                     className={`text-xs font-medium ${
                       isTodayBar
-                        ? "text-blue-500 dark:text-blue-400 font-semibold"
+                        ? "text-blue-500 dark:text-blue-400 font-light"
                         : "text-gray-500 dark:text-gray-400"
                     }`}
+                    style={mode === "year" ? { fontSize: "9px" } : undefined}
                   >
                     {day.label}
                   </span>
@@ -978,13 +1050,13 @@ export function CategoryAverageChart({
           })}
         </div>
 
-        {/* X-axis for day mode: 0:00, 6:00, 12:00, 24:00 */}
+        {/* X-axis for day mode: 24h split into 4 parts */}
         {mode === "day" && (
           <div className="absolute bottom-0 left-0 right-8 flex justify-between text-xs text-gray-500 dark:text-gray-400">
             <span>0:00</span>
             <span>6:00</span>
             <span>12:00</span>
-            <span>24:00</span>
+            <span>18:00</span>
           </div>
         )}
       </div>
