@@ -1,3 +1,4 @@
+import { Spinner } from "@/components/spinner";
 import { useLocale } from "@/context/LocaleContext";
 import { useCategoryLabel } from "@/hooks/useCategoryLabel";
 import { useCurrency } from "@/hooks/useCurrency";
@@ -75,14 +76,18 @@ interface CategoryAverageChartProps {
   transactions: Transaction[];
   selectedDate: Date;
   mode?: "day" | "week" | "month";
+  isLoading?: boolean;
   onPeriodClick?: (date: Date, mode: "day" | "week" | "month") => void;
   onDateChange?: (date: Date) => void;
 }
+
+const SHOW_TOTAL_SECTION = false;
 
 export function CategoryAverageChart({
   transactions,
   selectedDate,
   mode = "week",
+  isLoading = false,
   onPeriodClick,
   onDateChange,
 }: CategoryAverageChartProps) {
@@ -480,6 +485,51 @@ export function CategoryAverageChart({
   const percentageChange = useMemo(() => {
     if (mode === "day" || chartData.length < 2) return 0;
 
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Month mode: when current month is not ended, compare same number of days with prev month
+    if (mode === "month") {
+      const isCurrentMonth = isSameMonth(selectedDate, today);
+      if (isCurrentMonth) {
+        const dayOfMonth = today.getDate();
+        const monthStart = startOfMonth(selectedDate);
+        const prevMonthStart = startOfMonth(subMonths(selectedDate, 1));
+        const prevMonthEnd = endOfMonth(prevMonthStart);
+        const prevMonthDays = prevMonthEnd.getDate();
+
+        const numDaysToCompare = Math.min(dayOfMonth, prevMonthDays);
+
+        const currentPeriodEnd = new Date(monthStart);
+        currentPeriodEnd.setDate(numDaysToCompare);
+        currentPeriodEnd.setHours(23, 59, 59, 999);
+
+        const prevPeriodEnd = new Date(prevMonthStart);
+        prevPeriodEnd.setDate(numDaysToCompare);
+        prevPeriodEnd.setHours(23, 59, 59, 999);
+
+        const currentTotal = expenses
+          .filter((t) => {
+            if (!t.occurred_at) return false;
+            const txDate = new Date(t.occurred_at);
+            return txDate >= monthStart && txDate <= currentPeriodEnd;
+          })
+          .reduce((sum, t) => sum + t.amount, 0);
+
+        const prevTotal = expenses
+          .filter((t) => {
+            if (!t.occurred_at) return false;
+            const txDate = new Date(t.occurred_at);
+            return txDate >= prevMonthStart && txDate <= prevPeriodEnd;
+          })
+          .reduce((sum, t) => sum + t.amount, 0);
+
+        if (prevTotal === 0) return 0;
+        return ((currentTotal - prevTotal) / prevTotal) * 100;
+      }
+    }
+
+    // Week mode or past month: split current period into halves
     const currentHalf = chartData.slice(Math.ceil(chartData.length / 2));
     const previousHalf = chartData.slice(0, Math.floor(chartData.length / 2));
 
@@ -490,17 +540,7 @@ export function CategoryAverageChart({
 
     if (previousAvg === 0) return 0;
     return ((currentAvg - previousAvg) / previousAvg) * 100;
-  }, [chartData, mode]);
-
-  if (expenses.length === 0) {
-    return (
-      <div className="card-level-1 rounded-[2rem] p-6">
-        <p className="text-center text-gray-500 dark:text-gray-400">
-          {t("statistics.noData")}
-        </p>
-      </div>
-    );
-  }
+  }, [chartData, mode, expenses, selectedDate]);
 
   return (
     <motion.div
@@ -664,6 +704,11 @@ export function CategoryAverageChart({
             mode === "day" ? "justify-around gap-0.5" : "justify-around gap-1"
           }`}
         >
+          {isLoading && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <Spinner size="sm" />
+            </div>
+          )}
           {chartData.map((day, index) => {
             const heightPercent =
               maxAmount > 0 ? (day.total / maxAmount) * 100 : 0;
@@ -809,30 +854,32 @@ export function CategoryAverageChart({
       </div>
 
       {/* Total */}
-      <div className="pt-4 border-t border-border-subtle">
-        <div className="flex justify-between items-center">
-          <span className="text-sm text-gray-600 dark:text-gray-400">
-            <span
-              style={
-                (mode === "day" && dayLabels.isCurrent) ||
-                (mode === "week" && weekLabels.isCurrent) ||
-                (mode === "month" && monthLabels.isCurrent)
-                  ? { color: "var(--primary-color)" }
-                  : undefined
-              }
-            >
-              {mode === "day"
-                ? dayLabels.total
-                : mode === "week"
-                  ? weekLabels.total
-                  : monthLabels.total}
+      {SHOW_TOTAL_SECTION && (
+        <div className="pt-4 border-t border-border-subtle">
+          <div className="flex justify-between items-center">
+            <span className="text-sm text-gray-600 dark:text-gray-400">
+              <span
+                style={
+                  (mode === "day" && dayLabels.isCurrent) ||
+                  (mode === "week" && weekLabels.isCurrent) ||
+                  (mode === "month" && monthLabels.isCurrent)
+                    ? { color: "var(--primary-color)" }
+                    : undefined
+                }
+              >
+                {mode === "day"
+                  ? dayLabels.total
+                  : mode === "week"
+                    ? weekLabels.total
+                    : monthLabels.total}
+              </span>
             </span>
-          </span>
-          <span className="text-lg font-bold text-gray-900 dark:text-gray-100">
-            {formatAmount(total)}
-          </span>
+            <span className="text-lg font-bold text-gray-900 dark:text-gray-100">
+              {formatAmount(total)}
+            </span>
+          </div>
         </div>
-      </div>
+      )}
     </motion.div>
   );
 }

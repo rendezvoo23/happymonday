@@ -95,7 +95,7 @@ export function StatisticsPage(props: StatisticsPageProps = {}) {
   const deleteTransactionMutation = useDeleteTransaction();
 
   // Fetch data with TanStack Query (includes full category and subcategory data)
-  const { data: transactionsData = [] } =
+  const { data: transactionsData = [], isLoading: isTransactionsLoading } =
     useMonthTransactionsWithCategories(selectedDate);
 
   // Modals state
@@ -227,9 +227,39 @@ export function StatisticsPage(props: StatisticsPageProps = {}) {
     return total;
   }, [transactions]);
 
-  // Derived reactive spend by category data
+  // Filter transactions by selected period (day/week/month) for doughnut chart
+  const periodFilteredTransactions = useMemo(() => {
+    let filtered = transactions;
+    const weekStartsOn = 1;
+
+    if (chartMode === "week") {
+      const weekStart = startOfWeek(selectedDate, { weekStartsOn });
+      const weekEnd = endOfWeek(selectedDate, { weekStartsOn });
+      filtered = filtered.filter((t) => {
+        if (!t.occurred_at) return false;
+        const txDate = new Date(t.occurred_at);
+        return txDate >= weekStart && txDate <= weekEnd;
+      });
+    } else if (chartMode === "day") {
+      const dayStart = new Date(selectedDate);
+      dayStart.setHours(0, 0, 0, 0);
+      const dayEnd = new Date(selectedDate);
+      dayEnd.setHours(23, 59, 59, 999);
+      filtered = filtered.filter((t) => {
+        if (!t.occurred_at) return false;
+        const txDate = new Date(t.occurred_at);
+        return txDate >= dayStart && txDate <= dayEnd;
+      });
+    }
+
+    return filtered;
+  }, [transactions, chartMode, selectedDate]);
+
+  // Derived reactive spend by category data (filtered by selected period)
   const spendByCategory = useMemo(() => {
-    const expenses = transactions.filter((t) => t.direction === "expense");
+    const expenses = periodFilteredTransactions.filter(
+      (t) => t.direction === "expense"
+    );
     const grouped: Record<
       string,
       {
@@ -283,7 +313,7 @@ export function StatisticsPage(props: StatisticsPageProps = {}) {
         ),
       }))
       .sort((a, b) => b.amount - a.amount);
-  }, [transactions]);
+  }, [periodFilteredTransactions]);
 
   // Localized time window label for transaction list description
   const timeWindowLabel = useMemo(() => {
@@ -350,62 +380,63 @@ export function StatisticsPage(props: StatisticsPageProps = {}) {
           className="flex flex-col items-center gap-4 pb-32 px-4"
           style={{ overflowX: "hidden" }}
         >
-          {/* Average Expenses Chart */}
-          {transactions.length > 0 && (
-            <div id="average-chart" className="w-full scroll-mt-24 space-y-3">
-              {/* Mode Toggle */}
-              <div className="flex gap-2 justify-center items-center w-full">
-                <div className="flex items-center justify-center gap-0 bg-[var(--card-bg-level-1)] rounded-full">
-                  <button
-                    type="button"
-                    onClick={() => handleChartModeChange("day")}
-                    className={`px-4 py-1 rounded-full text-sm font-medium transition-colors ${
-                      chartMode === "day"
-                        ? "bg-blue-500 text-white"
-                        : "text-gray-700 dark:text-gray-300"
-                    }`}
-                  >
-                    {t("statistics.day")}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleChartModeChange("week")}
-                    className={`px-4 py-1 rounded-full text-sm font-medium transition-colors ${
-                      chartMode === "week"
-                        ? "bg-blue-500 text-white"
-                        : "text-gray-700 dark:text-gray-300"
-                    }`}
-                  >
-                    {t("statistics.week")}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleChartModeChange("month")}
-                    className={`px-4 py-1 rounded-full text-sm font-medium transition-colors ${
-                      chartMode === "month"
-                        ? "bg-blue-500 text-white"
-                        : "text-gray-700 dark:text-gray-300"
-                    }`}
-                  >
-                    {t("statistics.month")}
-                  </button>
-                </div>
+          <div id="average-chart" className="w-full scroll-mt-24 space-y-3">
+            {/* Mode Toggle */}
+            <div className="flex gap-2 justify-center items-center w-full">
+              <div className="flex items-center justify-center gap-0 bg-[var(--card-bg-level-1)] rounded-full">
+                <button
+                  type="button"
+                  onClick={() => handleChartModeChange("day")}
+                  className={`px-4 py-1 rounded-full text-sm font-medium transition-colors ${
+                    chartMode === "day"
+                      ? "bg-blue-500 text-white"
+                      : "text-gray-700 dark:text-gray-300"
+                  }`}
+                >
+                  {t("statistics.day")}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleChartModeChange("week")}
+                  className={`px-4 py-1 rounded-full text-sm font-medium transition-colors ${
+                    chartMode === "week"
+                      ? "bg-blue-500 text-white"
+                      : "text-gray-700 dark:text-gray-300"
+                  }`}
+                >
+                  {t("statistics.week")}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleChartModeChange("month")}
+                  className={`px-4 py-1 rounded-full text-sm font-medium transition-colors ${
+                    chartMode === "month"
+                      ? "bg-blue-500 text-white"
+                      : "text-gray-700 dark:text-gray-300"
+                  }`}
+                >
+                  {t("statistics.month")}
+                </button>
               </div>
-
-              <CategoryAverageChart
-                transactions={transactions}
-                selectedDate={selectedDate}
-                mode={chartMode}
-                onPeriodClick={handlePeriodClick}
-                onDateChange={handleDateChange}
-              />
             </div>
-          )}
+
+            <CategoryAverageChart
+              transactions={transactions}
+              selectedDate={selectedDate}
+              mode={chartMode}
+              isLoading={isTransactionsLoading}
+              onPeriodClick={handlePeriodClick}
+              onDateChange={handleDateChange}
+            />
+          </div>
 
           <div id="doughnut" className="w-full scroll-mt-24">
             <CategoryDoughnutChart
               spendByCategory={spendByCategory}
+              selectedDate={selectedDate}
+              mode={chartMode}
               initialExpandedCategory={categoryParam}
+              isLoading={isTransactionsLoading}
               onCategorySelect={handleCategorySelect}
             />
           </div>

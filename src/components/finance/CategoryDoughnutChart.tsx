@@ -1,11 +1,38 @@
 import { getIconComponent } from "@/components/icons";
+import { useLocale } from "@/context/LocaleContext";
 import { useCategoryLabel } from "@/hooks/useCategoryLabel";
 import { useCurrency } from "@/hooks/useCurrency";
+import { useTranslation } from "@/hooks/useTranslation";
 import { cn } from "@/lib/utils";
+import type { Locale } from "date-fns";
+import {
+  endOfWeek,
+  format,
+  isSameMonth,
+  isSameWeek,
+  isToday,
+  isYesterday,
+  startOfWeek,
+  subMonths,
+  subWeeks,
+} from "date-fns";
+import { de, enUS, es, fr, it, pt, ru, zhCN } from "date-fns/locale";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Cell, Pie, PieChart, ResponsiveContainer, Sector } from "recharts";
+import { Spinner } from "../spinner";
+
+const dateLocales: Record<string, Locale> = {
+  en: enUS,
+  es,
+  fr,
+  de,
+  ru,
+  zh: zhCN,
+  pt,
+  it,
+};
 
 interface CategorySpend {
   categoryId: string;
@@ -22,8 +49,11 @@ interface CategorySpend {
 
 interface CategoryDoughnutChartProps {
   spendByCategory: CategorySpend[];
+  selectedDate: Date;
+  mode?: "day" | "week" | "month";
   initialExpandedCategory?: string | null;
   onCategorySelect?: (categoryId: string | null) => void;
+  isLoading?: boolean;
 }
 
 // biome-ignore lint/suspicious/noExplicitAny: <explanation>
@@ -53,14 +83,80 @@ const renderActiveShape = (props: any) => {
 
 export function CategoryDoughnutChart({
   spendByCategory,
+  selectedDate,
+  mode = "month",
   initialExpandedCategory,
   onCategorySelect,
+  isLoading,
 }: CategoryDoughnutChartProps) {
   const { formatAmount, formatCompactAmount } = useCurrency();
+  const { t } = useTranslation();
+  const { locale } = useLocale();
+  const dateLocale = dateLocales[locale] ?? enUS;
   const [expandedId, setExpandedId] = useState<string | null>(
     initialExpandedCategory || null
   );
   const { getCategoryLabel } = useCategoryLabel();
+
+  const weekStartsOn = 1 as const;
+
+  // Day mode: total labels
+  const dayLabels = useMemo(() => {
+    const date = new Date(selectedDate);
+    date.setHours(0, 0, 0, 0);
+    const isCurrent = isToday(date);
+    return {
+      isCurrent,
+      total: isCurrent
+        ? t("statistics.totalToday")
+        : isYesterday(date)
+          ? t("statistics.totalYesterday")
+          : t("statistics.totalOnDate").replace(
+              "{{date}}",
+              format(date, "d MMM yyyy", { locale: dateLocale })
+            ),
+    };
+  }, [selectedDate, t, dateLocale]);
+
+  // Week mode: total labels
+  const weekLabels = useMemo(() => {
+    const today = new Date();
+    const weekStart = startOfWeek(selectedDate, { weekStartsOn });
+    const weekEnd = endOfWeek(selectedDate, { weekStartsOn });
+
+    if (isSameWeek(selectedDate, today, { weekStartsOn })) {
+      return { isCurrent: true, total: t("statistics.totalThisWeek") };
+    }
+    const lastWeekStart = subWeeks(today, 1);
+    if (isSameWeek(selectedDate, lastWeekStart, { weekStartsOn })) {
+      return { isCurrent: false, total: t("statistics.totalLastWeek") };
+    }
+    const range = `${format(weekStart, "d MMM, EEE", { locale: dateLocale })} - ${format(weekEnd, "d MMM, EEE", { locale: dateLocale })}`;
+    return {
+      isCurrent: false,
+      total: t("statistics.totalWeekRange").replace("{{range}}", range),
+    };
+  }, [selectedDate, t, dateLocale]);
+
+  // Month mode: total labels
+  const monthLabels = useMemo(() => {
+    const today = new Date();
+    const isCurrent = isSameMonth(selectedDate, today);
+
+    let total: string;
+    if (isCurrent) {
+      total = t("statistics.totalThisMonth");
+    } else if (isSameMonth(selectedDate, subMonths(today, 1))) {
+      total = t("statistics.totalLastMonth");
+    } else {
+      const monthName = format(selectedDate, "MMMM yyyy", {
+        locale: dateLocale,
+      });
+      total = t("statistics.totalForMonth").replace("{{month}}", monthName);
+    }
+
+    return { isCurrent, total };
+  }, [selectedDate, t, dateLocale]);
 
   // Create refs for category elements to support auto-scrolling
   const categoryRefs = useRef<Record<string, HTMLDivElement | null>>({});
@@ -130,13 +226,35 @@ export function CategoryDoughnutChart({
     }
   };
 
-  if (sortedCategories.length === 0) {
-    return null;
-  }
-
   return (
     <div className="w-full">
       <div className="card-level-1 rounded-[2rem] p-4 transition-all duration-300">
+        {/* Total - same as CategoryAverageChart */}
+        <div className="pb-4 border-b border-border-subtle mx-2">
+          <div className="flex justify-between items-center">
+            <span className="text-sm text-gray-600 dark:text-gray-400">
+              <span
+                style={
+                  (mode === "day" && dayLabels.isCurrent) ||
+                  (mode === "week" && weekLabels.isCurrent) ||
+                  (mode === "month" && monthLabels.isCurrent)
+                    ? { color: "var(--primary-color)" }
+                    : undefined
+                }
+              >
+                {mode === "day"
+                  ? dayLabels.total
+                  : mode === "week"
+                    ? weekLabels.total
+                    : monthLabels.total}
+              </span>
+            </span>
+            <span className="text-lg font-bold text-gray-900 dark:text-gray-100">
+              {formatAmount(totalExpenses)}
+            </span>
+          </div>
+        </div>
+
         {/* Doughnut Chart */}
         <div className="h-64 relative">
           <ResponsiveContainer width="100%" height="100%">
@@ -172,7 +290,15 @@ export function CategoryDoughnutChart({
           </ResponsiveContainer>
           <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none px-4">
             <div className="text-xl font-bold text-gray-900 dark:text-gray-100 text-center leading-tight break-words max-w-full">
-              {formatCompactAmount(totalExpenses)}
+              {isLoading ? (
+                <Spinner size="md" />
+              ) : totalExpenses === 0 ? (
+                <div className="text-sm opacity-50 font-medium">
+                  {t("transactions.noTransactions")}
+                </div>
+              ) : (
+                formatCompactAmount(totalExpenses)
+              )}
             </div>
           </div>
         </div>

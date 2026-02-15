@@ -2,7 +2,6 @@ import { format } from "date-fns";
 import { useEffect, useRef, useState } from "react";
 
 import { NumericKeyboard } from "@/components/ui/NumericKeyboard";
-import { useCurrency } from "@/hooks/useCurrency";
 import { useTranslation } from "@/hooks/useTranslation";
 import { type Subcategory, getSubcategories } from "@/lib/api";
 import { cn } from "@/lib/utils";
@@ -73,7 +72,6 @@ export function TransactionForm({
   const [activeCategoryPanel, setActiveCategoryPanel] = useState(0);
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(showEditNote);
 
-  const { formatAmount } = useCurrency();
   const {
     isLoading: categoriesLoading,
     loadCategories,
@@ -181,7 +179,7 @@ export function TransactionForm({
     }
 
     // Limit total length
-    if (amount.length >= 10) return;
+    if (amount.length >= 12) return;
 
     setAmount(amount + key);
   };
@@ -255,17 +253,7 @@ export function TransactionForm({
                   : "text-[32px]"
               )}
             >
-              <span className={amount ? "" : "opacity-75"}>
-                {amount
-                  ? isKeyboardVisible && amount.includes(".")
-                    ? amount
-                    : formatAmount(Number.parseFloat(amount ?? "0"), {
-                        hideFractions: false,
-                        forceDecimal: amount.includes("."),
-                        showCurrencyCode: false,
-                      })
-                  : null}
-              </span>
+              <span className={amount ? "" : "opacity-75"}>{amount}</span>
               {isKeyboardVisible && <BlinkCursor />}
             </div>
           </div>
@@ -469,6 +457,6 @@ export function TransactionForm({
 
 function BlinkCursor() {
   return (
-    <div className="w-[2.5px] h-[27px] bg-[var(--text-default)] animate-cursor-blink ml-[6px]" />
+    <div className="w-[2.5px] h-[27px] bg-[var(--text-default)] animate-cursor-blink ml-[1px]" />
   );
 }

@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { Delete } from "lucide-react";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 
 interface NumericKeyboardProps {
   onKeyPress: (key: string) => void;
@@ -34,6 +34,31 @@ export function NumericKeyboard({
   className,
 }: NumericKeyboardProps) {
   const touchUsedRef = useRef(false);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      const isTextInput =
+        target.tagName === "INPUT" ||
+        target.tagName === "TEXTAREA" ||
+        target.isContentEditable;
+      if (isTextInput) return;
+
+      if (e.key >= "0" && e.key <= "9") {
+        e.preventDefault();
+        onKeyPress(e.key);
+      } else if (e.key === "." || e.key === ",") {
+        e.preventDefault();
+        onKeyPress(".");
+      } else if (e.key === "Backspace" || e.key === "Delete") {
+        e.preventDefault();
+        onBackspace();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onKeyPress, onBackspace]);
 
   const handleKeyPress = (key: string) => {
     if (window.Telegram?.WebApp?.HapticFeedback) {

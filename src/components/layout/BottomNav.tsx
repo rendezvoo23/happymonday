@@ -71,15 +71,26 @@ export function BottomNav() {
     }
   }, [navigate]);
 
-  // Use persisted params when switching tabs; fallback to current date
+  // Use persisted params when switching tabs; fallback to current date.
+  // When on statistics → home: carry over statistics month/mode to home URL.
+  // When on home → statistics: carry over home month/mode to statistics URL.
   const defaultMonth = getMonthKey(selectedDate);
   const homeSearch = {
-    month: lastHomeSearch.month ?? defaultMonth,
-    mode: "month" as const, // In URL for future use; ignored on home for now
+    month:
+      (isStatsActive ? lastStatisticsSearch.month : lastHomeSearch.month) ??
+      defaultMonth,
+    mode:
+      (isStatsActive ? lastStatisticsSearch.mode : lastHomeSearch.mode) ??
+      ("month" as const),
   };
   const statsSearch = {
-    month: lastStatisticsSearch.month ?? defaultMonth,
-    mode: (lastStatisticsSearch.mode ?? "month") as "day" | "week" | "month",
+    month:
+      (isHomeActive ? lastHomeSearch.month : lastStatisticsSearch.month) ??
+      defaultMonth,
+    mode: (
+      (isHomeActive ? lastHomeSearch.mode : lastStatisticsSearch.mode) ??
+      "month"
+    ) as "day" | "week" | "month",
     category: lastStatisticsSearch.category,
   };
   const navItems = [

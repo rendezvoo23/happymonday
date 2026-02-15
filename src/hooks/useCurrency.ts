@@ -54,7 +54,6 @@ export function useCurrency() {
         maximumFractionDigits: 2,
       });
     } catch (e) {
-      console.error("Failed to create Intl.NumberFormat", e);
       return new Intl.NumberFormat("en-US", {
         style: "currency",
         currency: "USD",
@@ -146,7 +145,7 @@ export function useCurrency() {
           ...(showCurrencyCode
             ? { style: "currency" as const, currency: currency.code }
             : { style: "decimal" as const }),
-          minimumFractionDigits: 2,
+          minimumFractionDigits: 1,
           maximumFractionDigits: 2,
           signDisplay: showSign ? "always" : "auto",
         });
@@ -177,9 +176,7 @@ export function useCurrency() {
 
     // Format the amount and replace comma decimal separator with dot
     const formatted = fmt.format(amount);
-    // Replace decimal comma with dot (e.g., "100,50 ₽" -> "100.50 ₽")
-    // This regex ensures we only replace the decimal comma, not thousand separators
-    return formatted.replace(/(\d),(\d)/g, "$1.$2");
+    return formatted;
   };
 
   const formatCompactAmount = (amount: number) => {
