@@ -1159,7 +1159,7 @@ export function CategoryAverageChart({
 
       {/* All Categories - scrollable, click to filter bars */}
       <div
-        className="overflow-x-auto overflow-y-hidden no-scrollbar p-1 snap-x snap-mandatory scroll-pl-[26px]"
+        className="overflow-x-auto overflow-y-hidden no-scrollbar p-1 snap-x  scroll-pl-[26px]" /** snap-mandatory */
         style={{
           WebkitOverflowScrolling: "touch",
           paddingBottom: 26,
@@ -1180,11 +1180,14 @@ export function CategoryAverageChart({
                 onClick={() => setSelectedCategoryId(isActive ? null : cat.id)}
                 style={
                   isActive
-                    ? { border: `1px solid ${cat.color}` }
+                    ? {
+                        // border: `1px solid ${cat.color}`,
+                        boxShadow: `inset 0px 0px 1px 2px ${cat.color}`,
+                      }
                     : { border: "1px solid transparent" }
                 }
                 className={cn(
-                  "cursor-pointer rounded-[16px] p-2 transition-colors text-left w-full min-w-[40%] max-w-[40%] shrink-0 snap-always snap-start",
+                  "cursor-pointer rounded-[16px] p-2 transition-colors text-left w-full min-w-[45%] max-w-[45%] shrink-0 snap-always snap-start",
                   isActive
                     ? "bg-[var(--card-bg-level-3)]"
                     : "bg-[var(--card-bg-level-2)]"

@@ -24,14 +24,14 @@ interface TransactionFormProps {
     note: string;
     date: string;
   }) => void;
-  initialData?: {
+  initialData?: Partial<{
     type: TransactionType;
     amount: number;
     categoryId: CategoryId;
     subcategoryId?: string | null;
     note: string;
-    date?: string;
-  };
+    date: string;
+  }>;
   initialType?: TransactionType;
   onCancel: () => void;
   showEditNote?: boolean;

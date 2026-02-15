@@ -15,6 +15,7 @@ interface TransactionDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   initialType?: TransactionDirection;
+  initialDate?: string;
   showEditNote?: boolean;
 }
 
@@ -22,6 +23,7 @@ export function TransactionDrawer({
   isOpen,
   onClose,
   initialType = "expense",
+  initialDate,
   showEditNote = true,
 }: TransactionDrawerProps) {
   const createTransactionMutation = useCreateTransaction();
@@ -86,7 +88,9 @@ export function TransactionDrawer({
             data-vaul-no-drag
           >
             <TransactionForm
+              key={initialDate}
               initialType={initialType}
+              initialData={initialDate ? { date: initialDate } : undefined}
               onCancel={onClose}
               onSubmit={handleSubmit}
               showEditNote={showEditNote}

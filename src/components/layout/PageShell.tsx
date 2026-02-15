@@ -19,8 +19,11 @@ export function PageShell({
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.4, ease: [0.32, 0.72, 0, 1] }}
+      style={
+        allowScroll ? undefined : { minHeight: "100vh", maxHeight: "100vh" }
+      }
       className={cn(
-        "mx-auto relative z-10 h-[var(--tg-viewport-stable-height, 100%)]",
+        "mx-auto relative z-1 h-[var(--tg-viewport-stable-height, 100%)]",
         allowScroll ? undefined : "overflow-hidden",
         "safe-area-bottom safe-area-left safe-area-right",
         className

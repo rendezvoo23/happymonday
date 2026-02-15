@@ -11,7 +11,13 @@ import { Route } from "@/routes/_authenticated/home";
 import { useCategoryStore } from "@/stores/categoryStore";
 import { useUIStore } from "@/stores/uiStore";
 import { useNavigate } from "@tanstack/react-router";
-import { addMonths, isSameMonth, subMonths } from "date-fns";
+import {
+  addMonths,
+  endOfMonth,
+  format,
+  isSameMonth,
+  subMonths,
+} from "date-fns";
 import { motion } from "framer-motion";
 import { Plus } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -28,6 +34,8 @@ function parseMonthKey(monthKey: string): Date {
 function getMonthKey(date: Date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
 }
+
+const HEADER_HEIGHT = 116;
 
 export function HomePage() {
   const { loadCategories } = useCategoryStore();
@@ -65,17 +73,31 @@ export function HomePage() {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const screenWidthRef = useRef(0);
-  const [clusterHeight, setClusterHeight] = useState<number>(300);
+  const windowHeight = window.innerHeight;
+  const [clusterHeight, setClusterHeight] = useState<number>(windowHeight);
 
   useEffect(() => {
     loadCategories();
   }, [loadCategories]);
 
-  useEffect(() => {
-    const windowHeight = window.innerHeight;
-    if (!windowHeight) return;
-    setClusterHeight(Math.max(windowHeight - (116 + 300), 350));
+  const updateClusterHeight = useCallback(() => {
+    const h = window.innerHeight;
+    if (!h) return;
+
+    const h1 = h - HEADER_HEIGHT;
+    const newHeight = h1 < 300 ? h : h1;
+    setClusterHeight(newHeight);
   }, []);
+
+  useEffect(() => {
+    updateClusterHeight();
+    window.addEventListener("resize", updateClusterHeight);
+    window.addEventListener("orientationchange", updateClusterHeight);
+    return () => {
+      window.removeEventListener("resize", updateClusterHeight);
+      window.removeEventListener("orientationchange", updateClusterHeight);
+    };
+  }, [updateClusterHeight]);
 
   // Sync URL -> DateContext when URL changes (for MonthSelector, BubblesCluster)
   useEffect(() => {
@@ -224,6 +246,27 @@ export function HomePage() {
     openAddTransactionDrawer(type);
   };
 
+  // Initial date for new transaction: same day as today in selected month, clamp to last day if needed
+  const initialTransactionDate = useMemo(() => {
+    const today = new Date();
+    if (isSameMonth(selectedDate, today)) {
+      return format(today, "yyyy-MM-dd HH:mm");
+    }
+    const targetYear = selectedDate.getFullYear();
+    const targetMonth = selectedDate.getMonth();
+    const todayDay = today.getDate();
+    const lastDay = endOfMonth(selectedDate).getDate();
+    const day = Math.min(todayDay, lastDay);
+    const date = new Date(
+      targetYear,
+      targetMonth,
+      day,
+      today.getHours(),
+      today.getMinutes()
+    );
+    return format(date, "yyyy-MM-dd HH:mm");
+  }, [selectedDate]);
+
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
@@ -231,8 +274,8 @@ export function HomePage() {
       exit={{ opacity: 0, scale: 0.95 }}
       transition={{ duration: 0.3 }}
     >
-      <PageShell allowScroll={true}>
-        <Header>
+      <PageShell allowScroll={false}>
+        <Header useFixedPosition={true}>
           <MonthSelector
             totalExpenses={formatAmount(totalExpenses)}
             onPrevMonth={handlePrevMonthClick}
@@ -327,9 +370,14 @@ export function HomePage() {
 
       <div className="plus-button-container z-50">
         <motion.div
-          initial={{ opacity: 0, scale: 0, rotate: -90 }}
-          animate={{ opacity: 1, scale: 1, rotate: 0 }}
-          exit={{ opacity: 0, scale: 0, rotate: -90 }}
+          initial={{
+            opacity: 0,
+            scale: 0,
+            rotate: -25,
+            y: "calc(100% + 10px)",
+          }}
+          animate={{ opacity: 1, scale: 1, rotate: 0, y: 0 }}
+          exit={{ opacity: 0, scale: 0, rotate: -25, y: "calc(100% + 10px)" }}
           transition={{
             type: "spring",
             delay: 0.2,
@@ -356,6 +404,7 @@ export function HomePage() {
         isOpen={addTransactionDrawer.isOpen}
         onClose={closeAddTransactionDrawer}
         initialType={addTransactionDrawer.transactionType}
+        initialDate={initialTransactionDate}
         showEditNote={false}
       />
     </motion.div>

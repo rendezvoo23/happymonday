@@ -2,16 +2,19 @@ import type { ReactNode } from "react";
 
 interface HeaderProps {
   children: ReactNode;
+  useFixedPosition?: boolean;
 }
 
-export function Header({ children }: HeaderProps) {
+export function Header({ children, useFixedPosition = false }: HeaderProps) {
   return (
     <header
       className="flex flex-col items-center pb-5 mt-2"
       style={{
         zIndex: 1,
-        position: "sticky",
+        position: useFixedPosition ? "fixed" : "sticky",
         top: "0",
+        left: useFixedPosition ? "0" : undefined,
+        right: useFixedPosition ? "0" : undefined,
         paddingTop:
           "calc(max(env(safe-area-inset-top), var(--tg-safe-area-inset-top, 0px)) + 8px)",
       }}

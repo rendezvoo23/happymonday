@@ -76,7 +76,7 @@ export function ConfirmAction({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <Button variant="ghost" size="lg" onClick={() => onClose?.()}>
+          <Button variant="secondary" size="lg" onClick={() => onClose?.()}>
             {resolvedCancelLabel}
           </Button>
 
