@@ -50,7 +50,7 @@ import {
   TrendingDown,
   TrendingUp,
 } from "lucide-react";
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "../ui/Button";
 
 const dateLocales: Record<string, Locale> = {
@@ -83,6 +83,8 @@ interface CategoryAverageChartProps {
   isLoading?: boolean;
   onPeriodClick?: (date: Date, mode: "day" | "week" | "month" | "year") => void;
   onDateChange?: (date: Date) => void;
+  selectedCategoryId?: string | null;
+  onCategorySelect?: (categoryId: string | null) => void;
 }
 
 const SHOW_TOTAL_SECTION = false;
@@ -94,6 +96,8 @@ export function CategoryAverageChart({
   isLoading = false,
   onPeriodClick,
   onDateChange,
+  selectedCategoryId: selectedCategoryIdProp,
+  onCategorySelect,
 }: CategoryAverageChartProps) {
   const { formatCompactAmount, formatAmount } = useCurrency();
   const { t } = useTranslation();
@@ -542,14 +546,13 @@ export function CategoryAverageChart({
     return chartData.reduce((sum, day) => sum + day.total, 0);
   }, [chartData]);
 
-  // Get top 3 categories by total spending (from current period only)
-  const topCategories = useMemo(() => {
+  // All categories by total spending (from current period only)
+  const allCategories = useMemo(() => {
     const categoryTotals: Record<
       string,
       { amount: number; color: string; name: string }
     > = {};
 
-    // Aggregate categories from chartData (current period)
     chartData.forEach((day) => {
       Object.entries(day.categories).forEach(([catId, catData]) => {
         if (!categoryTotals[catId]) {
@@ -565,26 +568,83 @@ export function CategoryAverageChart({
 
     return Object.entries(categoryTotals)
       .map(([id, data]) => ({ id, ...data }))
-      .sort((a, b) => b.amount - a.amount)
-      .slice(0, 3);
+      .sort((a, b) => b.amount - a.amount);
   }, [chartData]);
 
-  // Calculate max for chart scaling
-  const maxAmount = useMemo(() => {
-    return Math.max(...chartData.map((d) => d.total), average);
-  }, [chartData, average]);
+  const [internalCategoryId, setInternalCategoryId] = useState<string | null>(
+    null
+  );
+  const selectedCategoryId =
+    onCategorySelect != null
+      ? (selectedCategoryIdProp ?? null)
+      : internalCategoryId;
+  const setSelectedCategoryId = (id: string | null) => {
+    if (onCategorySelect) {
+      onCategorySelect(id);
+    } else {
+      setInternalCategoryId(id);
+    }
+  };
 
-  // Human-readable grid line values: round max, split by 3, round each to 250-step
+  const categoryRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+
+  // Scroll active category into view when selected (e.g. from URL)
+  useEffect(() => {
+    if (!selectedCategoryId) return;
+    const el = categoryRefs.current[selectedCategoryId];
+    if (el) {
+      requestAnimationFrame(() => {
+        el.scrollIntoView({
+          behavior: "smooth",
+          block: "nearest",
+          inline: "center",
+        });
+      });
+    }
+  }, [selectedCategoryId, allCategories]);
+
+  // Display average (selected category's average when filtering)
+  const displayAverage = useMemo(() => {
+    if (selectedCategoryId) {
+      const selectedTotal = chartData.reduce(
+        (sum, d) => sum + (d.categories[selectedCategoryId]?.amount ?? 0),
+        0
+      );
+      return chartData.length > 0 ? selectedTotal / chartData.length : 0;
+    }
+    return average;
+  }, [chartData, selectedCategoryId, average]);
+
+  // Calculate max for chart scaling (when category selected: max of that category only)
+  const maxAmount = useMemo(() => {
+    if (selectedCategoryId) {
+      const amounts = chartData.map(
+        (d) => d.categories[selectedCategoryId]?.amount ?? 0
+      );
+      const selectedTotal = amounts.reduce((a, b) => a + b, 0);
+      const selectedAvg =
+        chartData.length > 0 ? selectedTotal / chartData.length : 0;
+      return Math.max(...amounts, selectedAvg);
+    }
+    return Math.max(...chartData.map((d) => d.total), average);
+  }, [chartData, average, selectedCategoryId]);
+
+  // Human-readable grid line values: split by 3, round each to nice steps (100, 150, 200, 250... 1000, 1250, 1500... 2500)
   const gridLineValues = useMemo(() => {
     if (maxAmount <= 0) return [];
-    // Round max to nice number (e.g. 72.54K → 73K)
-    const roundedMax = Math.ceil(maxAmount / 1000) * 1000;
-    // Split by 3, round each to nearest 250 (scaled: 250, 2500, 25000 for larger values)
-    const third = roundedMax / 3;
-    const magnitude = 10 ** Math.floor(Math.log10(third));
-    const step = magnitude >= 1000 ? 2500 * (magnitude / 1000) : 250;
-    const roundToStep = (v: number) => Math.round(v / step) * step;
-    return [roundToStep(third), roundToStep((2 * roundedMax) / 3)];
+    const baseSteps = [1, 1.25, 1.5, 2, 2.5, 3, 4, 5, 6, 7.5, 10];
+    const roundToNice = (v: number) => {
+      if (v <= 0) return 0;
+      const magnitude = 10 ** Math.floor(Math.log10(v));
+      const normalized = v / magnitude;
+      const nearestBase = baseSteps.reduce((prev, curr) =>
+        Math.abs(curr - normalized) < Math.abs(prev - normalized) ? curr : prev
+      );
+      return nearestBase * magnitude;
+    };
+    const third = maxAmount / 3;
+    const twoThirds = (2 * maxAmount) / 3;
+    return [roundToNice(third), roundToNice(twoThirds)];
   }, [maxAmount]);
 
   // X-axis grid line positions (vertical lines) - align with bar/label starts
@@ -711,11 +771,11 @@ export function CategoryAverageChart({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="card-level-1 rounded-[2rem] p-6"
+      className="card-level-1 rounded-[2rem] pt-4"
     >
       {/* Header */}
-      <div className="mb-6">
-        <h3 className="text-sm text-gray-500 dark:text-gray-400 mb-2">
+      <div className="mb-4 px-6">
+        <h3 className="text-md mb-2">
           {mode === "day" && (
             <>
               <div>{dayLabels.line1}</div>
@@ -776,11 +836,19 @@ export function CategoryAverageChart({
         <div className="flex items-end gap-3">
           <span className="text-4xl font-bold text-gray-900 dark:text-gray-100">
             {mode === "day"
-              ? formatCompactAmount(total)
-              : formatCompactAmount(average)}
+              ? formatCompactAmount(
+                  selectedCategoryId
+                    ? chartData.reduce(
+                        (s, d) =>
+                          s + (d.categories[selectedCategoryId]?.amount ?? 0),
+                        0
+                      )
+                    : total
+                )
+              : formatCompactAmount(displayAverage)}
           </span>
           {percentageChange !== 0 && (
-            <div className="flex items-center gap-1 text-sm mb-1">
+            <div className="flex items-center gap-1 text-sm mb-1 leading-none">
               {percentageChange > 0 ? (
                 <>
                   <TrendingUp className="w-4 h-4 text-red-500" />
@@ -847,11 +915,11 @@ export function CategoryAverageChart({
 
       {/* Bar Chart */}
       <div
-        className={`relative mb-6 ${
+        className={`relative mb-6 mx-6 ${
           mode === "day" ? "h-52 pb-6" : mode === "year" ? "h-48" : "h-48"
         }`}
       >
-        <div className="absolute left-0 right-8 bottom-[29px] border-b border-[var(--border-level-1)]" />
+        <div className="absolute left-0 right-8 bottom-[29px] border-b border-[var(--border-level-2)]" />
         {/* Grid: 2 horizontal lines with rounded amount legend (hide if 0 or < 1) */}
         {maxAmount > 0 &&
           gridLineValues
@@ -859,13 +927,13 @@ export function CategoryAverageChart({
             .map((value) => (
               <div
                 key={`h-${value}`}
-                className="absolute left-0 right-8 top-0 bottom-[29px] pointer-events-none border-t border-dashed border-[var(--border-level-1)]"
+                className="absolute left-0 right-8 top-0 bottom-[29px] pointer-events-none border-t border-solid border-[var(--border-level-1)]"
                 style={{ top: `${85 * (1 - value / maxAmount)}%` }}
                 aria-hidden
               >
                 <span
                   style={{ transform: "translateX(100%)" }}
-                  className="absolute -right-[0px] -top-[10px] pl-1  text-gray-400 font-light text-[10px]"
+                  className="absolute -right-[0px] -top-[10px] pl-1 opacity-30 font-light text-xs"
                 >
                   {formatCompactAmount(value)}
                 </span>
@@ -879,24 +947,24 @@ export function CategoryAverageChart({
           {xGridPositions.map((pos) => (
             <div
               key={`v-${pos}`}
-              className="absolute top-0 bottom-0 border-l border-dashed border-[var(--border-level-1)]"
+              className="absolute top-0 bottom-0 border-l border-dotted border-[var(--border-level-1)]"
               style={{ left: `${pos * 100}%` }}
             />
           ))}
         </div>
         {/* Average line */}
-        {mode !== "day" && maxAmount > 0 && (
+        {mode !== "day" && maxAmount > 0 && displayAverage > 0 && (
           <div
             className="absolute left-0 right-8 border-t border-dashed border-green-500 z-10"
             style={{
-              top: `${85 * (1 - average / maxAmount)}%`,
+              top: `${85 * (1 - displayAverage / maxAmount)}%`,
             }}
           >
             <span
               style={{ transform: "translateX(100%)" }}
-              className="absolute -right-[2px] -top-[10px] pl-1 text-xs text-green-500 font-medium"
+              className="absolute -right-[0px] -top-[10px] pl-1 text-xs text-green-500 font-medium"
             >
-              {t("statistics.average")}
+              {formatCompactAmount(displayAverage)}
             </span>
           </div>
         )}
@@ -922,9 +990,32 @@ export function CategoryAverageChart({
             </div>
           )}
           {chartData.map((day, index) => {
+            const barValue = selectedCategoryId
+              ? (day.categories[selectedCategoryId]?.amount ?? 0)
+              : day.total;
             const heightPercent =
-              maxAmount > 0 ? (day.total / maxAmount) * 100 : 0;
-            const categories = Object.entries(day.categories);
+              maxAmount > 0 ? (barValue / maxAmount) * 100 : 0;
+            const categories = selectedCategoryId
+              ? (() => {
+                  const catData = day.categories[selectedCategoryId];
+                  const allCat = allCategories.find(
+                    (c) => c.id === selectedCategoryId
+                  );
+                  return [
+                    [
+                      selectedCategoryId,
+                      catData ?? {
+                        amount: 0,
+                        color: allCat?.color ?? "#999",
+                        name: allCat?.name ?? "",
+                      },
+                    ] as [
+                      string,
+                      { amount: number; color: string; name: string },
+                    ],
+                  ];
+                })()
+              : Object.entries(day.categories);
 
             const today = new Date();
             const isTodayBar =
@@ -1015,11 +1106,18 @@ export function CategoryAverageChart({
                         day.total > 0 ? (catData.amount / day.total) * 100 : 0;
                       const nextCat = categories[catIndex + 1];
                       const hasNextCat = nextCat !== undefined;
+                      const isTopSegment =
+                        catIndex === categories.length - 1;
+                      const showRoundedTop =
+                        selectedCategoryId && isTopSegment;
 
                       return (
                         <div
                           key={catId}
-                          className="transition-all duration-300"
+                          className={cn(
+                            "transition-all duration-300",
+                            showRoundedTop && "rounded-t-lg"
+                          )}
                           style={{
                             height: `${catHeightPercent}%`,
                             background: hasNextCat
@@ -1061,27 +1159,61 @@ export function CategoryAverageChart({
         )}
       </div>
 
-      {/* Top Categories */}
-      <div className="grid grid-cols-3 gap-4 mb-4">
-        {topCategories.map((cat) => (
-          <div key={cat.id}>
-            <div
-              className="text-xs font-medium mb-1"
-              style={{ color: cat.color }}
-            >
-              <div className="flex items-center gap-1 whitespace-nowrap overflow-hidden">
+      {/* All Categories - scrollable, click to filter bars */}
+      <div
+        className="overflow-x-auto overflow-y-hidden no-scrollbar p-1 snap-x snap-mandatory scroll-pl-[26px]"
+        style={{
+          WebkitOverflowScrolling: "touch",
+          paddingBottom: 26,
+          paddingLeft: 26,
+          paddingRight: 26,
+        }}
+      >
+        <div className="flex flex-nowrap gap-1">
+          {allCategories.map((cat) => {
+            const isActive = selectedCategoryId === cat.id;
+            return (
+              <button
+                key={cat.id}
+                ref={(el) => {
+                  categoryRefs.current[cat.id] = el;
+                }}
+                type="button"
+                onClick={() => setSelectedCategoryId(isActive ? null : cat.id)}
+                style={
+                  isActive
+                    ? { border: `1px solid ${cat.color}` }
+                    : { border: "1px solid transparent" }
+                }
+                className={cn(
+                  "cursor-pointer rounded-[16px] p-2 transition-colors text-left w-full min-w-[40%] max-w-[40%] shrink-0 snap-always snap-start",
+                  isActive
+                    ? "bg-[var(--card-bg-level-3)]"
+                    : "bg-[var(--card-bg-level-2)]"
+                )}
+              >
                 <div
-                  className="w-2 h-2 rounded-full flex-shrink-0"
-                  style={{ background: cat.color }}
-                />
-                <span className="truncate">{getCategoryLabel(cat.name)}</span>
-              </div>
-            </div>
-            <div className="text-sm font-bold text-gray-900 dark:text-gray-100">
-              {formatCompactAmount(cat.amount)}
-            </div>
-          </div>
-        ))}
+                  className="text-xs font-medium mb-1"
+                  style={{ color: cat.color }}
+                >
+                  <div className="flex items-center gap-2 whitespace-nowrap overflow-hidden">
+                    <div
+                      className="w-3 h-3 rounded-full flex-shrink-0"
+                      style={{ background: cat.color }}
+                    />
+                    <span className="truncate">
+                      {getCategoryLabel(cat.name)}
+                    </span>
+                  </div>
+                </div>
+                <div className="text-sm font-bold text-gray-900 dark:text-gray-100">
+                  {formatCompactAmount(cat.amount)}
+                </div>
+              </button>
+            );
+          })}
+          <div className="w-3 h-10 bg-transparent shrink-0" />
+        </div>
       </div>
 
       {/* Total */}

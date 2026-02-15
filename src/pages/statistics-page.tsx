@@ -413,7 +413,7 @@ export function StatisticsPage(props: StatisticsPageProps = {}) {
         >
           <div id="average-chart" className="w-full scroll-mt-24 space-y-3">
             {/* Mode Toggle */}
-            <div className="flex gap-2 justify-center items-center w-full">
+            <div className="flex gap-2 justify-center items-center w-full mb-6">
               <div className="flex items-center justify-center gap-0 bg-[var(--card-bg-level-1)] rounded-full">
                 <button
                   type="button"
@@ -469,6 +469,8 @@ export function StatisticsPage(props: StatisticsPageProps = {}) {
               isLoading={isTransactionsLoading}
               onPeriodClick={handlePeriodClick}
               onDateChange={handleDateChange}
+              selectedCategoryId={categoryParam ?? null}
+              onCategorySelect={handleCategorySelect}
             />
           </div>
 
