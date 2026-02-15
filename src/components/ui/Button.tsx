@@ -4,7 +4,7 @@ import * as React from "react";
 
 interface ButtonProps extends HTMLMotionProps<"button"> {
   variant?: "primary" | "secondary" | "ghost" | "danger";
-  size?: "sm" | "md" | "lg" | "icon";
+  size?: "sm" | "md" | "lg" | "icon" | "icon-sm";
   fullWidth?: boolean;
 }
 
@@ -34,6 +34,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       md: "h-10 px-4 text-base rounded-full",
       lg: "h-14 px-8 text-lg rounded-full",
       icon: "h-10 w-10 p-0 rounded-full flex items-center justify-center",
+      "icon-sm": "h-8 w-8 p-0 rounded-full flex items-center justify-center",
     };
 
     return (
@@ -59,6 +60,5 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     );
   }
 );
-Button.displayName = "Button";
 
 export { Button };

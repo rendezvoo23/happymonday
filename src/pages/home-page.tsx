@@ -356,7 +356,7 @@ export function HomePage() {
           </div>
 
           {transactions.length > 0 && (
-            <div className="fixed bottom-0 left-0 z-[-1] w-full">
+            <div className="fixed bottom-0 left-0 z-[1] w-full">
               <BubblesCluster
                 transactions={transactions}
                 mode="blurred"

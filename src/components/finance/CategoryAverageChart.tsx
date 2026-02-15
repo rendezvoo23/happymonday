@@ -4,7 +4,7 @@ import { useCategoryLabel } from "@/hooks/useCategoryLabel";
 import { useCurrency } from "@/hooks/useCurrency";
 import { useTranslation } from "@/hooks/useTranslation";
 import { cn } from "@/lib/utils";
-import { getCategoryColor } from "@/stores/categoryStore";
+import { getCategoryColor, useCategoryStore } from "@/stores/categoryStore";
 import type { Tables } from "@/types/supabase";
 import type { Locale } from "date-fns";
 import {
@@ -49,6 +49,7 @@ import {
   ChevronRight,
   TrendingDown,
   TrendingUp,
+  X,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "../ui/Button";
@@ -102,6 +103,7 @@ export function CategoryAverageChart({
   const { formatCompactAmount, formatAmount } = useCurrency();
   const { t } = useTranslation();
   const { getCategoryLabel } = useCategoryLabel();
+  const { getCategoryById } = useCategoryStore();
   const { locale } = useLocale();
   const dateLocale = dateLocales[locale] ?? enUS;
 
@@ -775,66 +777,97 @@ export function CategoryAverageChart({
     >
       {/* Header */}
       <div className="mb-4 px-6">
-        <h3 className="text-md mb-2">
-          {mode === "day" && (
-            <>
-              <div>{dayLabels.line1}</div>
-              <div
-                style={
-                  dayLabels.isCurrent
-                    ? { color: "var(--primary-color)" }
-                    : undefined
-                }
-              >
-                {dayLabels.line2}
-              </div>
-            </>
-          )}
-          {mode === "week" && (
-            <>
-              <div>{weekLabels.line1}</div>
-              <div
-                style={
-                  weekLabels.isCurrent
-                    ? { color: "var(--primary-color)" }
-                    : undefined
-                }
-              >
-                {weekLabels.line2}
-              </div>
-            </>
-          )}
-          {mode === "month" && (
-            <>
-              <div>{monthLabels.line1}</div>
-              <div
-                style={
-                  monthLabels.isCurrent
-                    ? { color: "var(--primary-color)" }
-                    : undefined
-                }
-              >
-                {monthLabels.line2}
-              </div>
-            </>
-          )}
-          {mode === "year" && (
-            <>
-              <div>{yearLabels.line1}</div>
-              <div
-                style={
-                  yearLabels.isCurrent
-                    ? { color: "var(--primary-color)" }
-                    : undefined
-                }
-              >
-                {yearLabels.line2}
-              </div>
-            </>
-          )}
-        </h3>
+        <div className="flex items-start justify-between gap-1">
+          <h3 className="text-lg font-medium mb-2 leading-[1.2]">
+            {mode === "day" && (
+              <>
+                <div className="opacity-70">{dayLabels.line1}</div>
+                <div
+                  style={
+                    dayLabels.isCurrent
+                      ? { color: "var(--primary-color)" }
+                      : undefined
+                  }
+                >
+                  {dayLabels.line2}
+                </div>
+              </>
+            )}
+            {mode === "week" && (
+              <>
+                <div className="opacity-70">{weekLabels.line1}</div>
+                <div
+                  style={
+                    weekLabels.isCurrent
+                      ? { color: "var(--primary-color)" }
+                      : undefined
+                  }
+                >
+                  {weekLabels.line2}
+                </div>
+              </>
+            )}
+            {mode === "month" && (
+              <>
+                <div className="opacity-70">{monthLabels.line1}</div>
+                <div
+                  style={
+                    monthLabels.isCurrent
+                      ? { color: "var(--primary-color)" }
+                      : undefined
+                  }
+                >
+                  {monthLabels.line2}
+                </div>
+              </>
+            )}
+            {mode === "year" && (
+              <>
+                <div className="opacity-70">{yearLabels.line1}</div>
+                <div
+                  style={
+                    yearLabels.isCurrent
+                      ? { color: "var(--primary-color)" }
+                      : undefined
+                  }
+                >
+                  {yearLabels.line2}
+                </div>
+              </>
+            )}
+          </h3>
+          {/* Selected category badge */}
+          <div className="flex items-center gap-1 flex-shrink-0">
+            {selectedCategoryId &&
+              (() => {
+                const chartCategory = allCategories.find(
+                  (c) => c.id === selectedCategoryId
+                );
+                const storeCategory = getCategoryById(selectedCategoryId);
+                const displayName =
+                  chartCategory?.name ??
+                  storeCategory?.name ??
+                  selectedCategoryId;
+                const categoryColor =
+                  chartCategory?.color ??
+                  getCategoryColor(storeCategory?.color, storeCategory?.name) ??
+                  "#6B7280";
+                return (
+                  <button
+                    type="button"
+                    onClick={() => setSelectedCategoryId(null)}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-sm font-medium text-white transition-opacity hover:opacity-90"
+                    style={{ backgroundColor: categoryColor }}
+                  >
+                    {getCategoryLabel(displayName)}
+                    <X className="w-3.5 h-3.5 shrink-0" />
+                  </button>
+                );
+              })()}
+          </div>
+        </div>
         <div className="flex items-end gap-3">
-          <span className="text-4xl font-bold text-gray-900 dark:text-gray-100">
+          <span className="text-4xl font-bold text-gray-900 dark:text-gray-100 flex-1">
             {mode === "day"
               ? formatCompactAmount(
                   selectedCategoryId
@@ -848,17 +881,17 @@ export function CategoryAverageChart({
               : formatCompactAmount(displayAverage)}
           </span>
           {percentageChange !== 0 && (
-            <div className="flex items-center gap-1 text-sm mb-1 leading-none">
+            <div className="flex items-center gap-1 text-sm mb-1 leading-none flex-1">
               {percentageChange > 0 ? (
                 <>
-                  <TrendingUp className="w-4 h-4 text-red-500" />
+                  <TrendingUp className="w-4 h-4 text-red-500 shrink-0" />
                   <span className="text-red-500">
                     {Math.abs(percentageChange).toFixed(0)}% {fromLabel}
                   </span>
                 </>
               ) : (
                 <>
-                  <TrendingDown className="w-4 h-4 text-green-500" />
+                  <TrendingDown className="w-4 h-4 text-green-500 shrink-0" />
                   <span className="text-green-500">
                     {Math.abs(percentageChange).toFixed(0)}% {fromLabel}
                   </span>
@@ -866,51 +899,51 @@ export function CategoryAverageChart({
               )}
             </div>
           )}
+          {showNavButtons && (
+            <div className="flex items-center gap-0">
+              <Button
+                type="button"
+                onClick={handlePrevClick}
+                onTouchStart={handleTouchEvent}
+                onTouchMove={handleTouchEvent}
+                onTouchEnd={handleTouchEvent}
+                disabled={!canGoPrev}
+                aria-label="Previous"
+                variant="ghost"
+                size="icon-sm"
+              >
+                <ChevronLeft
+                  className={cn(
+                    "w-5 h-5",
+                    canGoPrev
+                      ? "text-[var(--accent-color)]"
+                      : "text-gray-300 dark:text-gray-800"
+                  )}
+                />
+              </Button>
+              <Button
+                type="button"
+                onClick={handleNextClick}
+                onTouchStart={handleTouchEvent}
+                onTouchMove={handleTouchEvent}
+                onTouchEnd={handleTouchEvent}
+                disabled={!canGoNext}
+                aria-label="Next"
+                variant="ghost"
+                size="icon-sm"
+              >
+                <ChevronRight
+                  className={cn(
+                    "w-5 h-5",
+                    canGoNext
+                      ? "text-[var(--accent-color)]"
+                      : "text-gray-300 dark:text-gray-800"
+                  )}
+                />
+              </Button>
+            </div>
+          )}
         </div>
-        {showNavButtons && (
-          <div className="absolute right-[16px] top-[16px] flex items-center gap-0">
-            <Button
-              type="button"
-              onClick={handlePrevClick}
-              onTouchStart={handleTouchEvent}
-              onTouchMove={handleTouchEvent}
-              onTouchEnd={handleTouchEvent}
-              disabled={!canGoPrev}
-              aria-label="Previous"
-              variant="ghost"
-              size="icon"
-            >
-              <ChevronLeft
-                className={cn(
-                  "w-5 h-5",
-                  canGoPrev
-                    ? "text-[var(--accent-color)]"
-                    : "text-gray-300 dark:text-gray-800"
-                )}
-              />
-            </Button>
-            <Button
-              type="button"
-              onClick={handleNextClick}
-              onTouchStart={handleTouchEvent}
-              onTouchMove={handleTouchEvent}
-              onTouchEnd={handleTouchEvent}
-              disabled={!canGoNext}
-              aria-label="Next"
-              variant="ghost"
-              size="icon"
-            >
-              <ChevronRight
-                className={cn(
-                  "w-5 h-5",
-                  canGoNext
-                    ? "text-[var(--accent-color)]"
-                    : "text-gray-300 dark:text-gray-800"
-                )}
-              />
-            </Button>
-          </div>
-        )}
       </div>
 
       {/* Bar Chart */}
@@ -1159,7 +1192,7 @@ export function CategoryAverageChart({
 
       {/* All Categories - scrollable, click to filter bars */}
       <div
-        className="overflow-x-auto overflow-y-hidden no-scrollbar p-1 snap-x  scroll-pl-[26px]" /** snap-mandatory */
+        className="overflow-x-auto overflow-y-hidden no-scrollbar p-1 scroll-pl-[26px]" /** snap-x  snap-mandatory */
         style={{
           WebkitOverflowScrolling: "touch",
           paddingBottom: 26,
