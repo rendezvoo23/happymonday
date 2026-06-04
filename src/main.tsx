@@ -20,6 +20,11 @@ const updateSW = registerSW({
   },
 });
 
+// Remove private API responses cached by older service worker versions.
+window.caches?.delete("supabase-api-cache").catch((error) => {
+  console.warn("Failed to remove legacy Supabase API cache", error);
+});
+
 const rootElement = document.getElementById("root");
 if (!rootElement) {
   throw new Error("Root element not found");

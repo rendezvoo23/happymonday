@@ -23,7 +23,7 @@ interface TransactionFormProps {
     subcategoryId?: string | null;
     note: string;
     date: string;
-  }) => void;
+  }) => Promise<void> | void;
   initialData?: Partial<{
     type: TransactionType;
     amount: number;
@@ -71,6 +71,8 @@ export function TransactionForm({
   const categoryScrollRef = useRef<HTMLDivElement>(null);
   const [activeCategoryPanel, setActiveCategoryPanel] = useState(0);
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(showEditNote);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const isSubmittingRef = useRef(false);
 
   const {
     isLoading: categoriesLoading,
@@ -188,9 +190,9 @@ export function TransactionForm({
     setAmount(amount.slice(0, -1));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!amount || !categoryId) return;
+    if (!amount || !categoryId || isSubmittingRef.current) return;
 
     // Convert local date string back to ISO for submission
     // We append the time from the original date if possible, or just start of day
@@ -205,14 +207,24 @@ export function TransactionForm({
       );
     }
 
-    onSubmit({
-      type,
-      amount: Number.parseFloat(amount),
-      categoryId,
-      subcategoryId: subcategoryId || null,
-      note,
-      date: submissionDate.toISOString(),
-    });
+    isSubmittingRef.current = true;
+    setIsSubmitting(true);
+
+    try {
+      await onSubmit({
+        type,
+        amount: Number.parseFloat(amount),
+        categoryId,
+        subcategoryId: subcategoryId || null,
+        note,
+        date: submissionDate.toISOString(),
+      });
+    } catch (error) {
+      console.error("Failed to create transaction", error);
+    } finally {
+      isSubmittingRef.current = false;
+      setIsSubmitting(false);
+    }
   };
 
   // Get the selected category to pass its color to SubcategorySelector
@@ -439,7 +451,7 @@ export function TransactionForm({
         type="submit"
         variant={amount ? "primary" : "outline"}
         size="icon-lg"
-        disabled={!amount}
+        disabled={!amount || !categoryId || isSubmitting}
         style={{
           backgroundColor: amount ? "var(--accent-color)" : undefined,
           color: amount ? "#00f3ff" : "var(--border-default)",
@@ -449,7 +461,7 @@ export function TransactionForm({
           zIndex: 1,
         }}
       >
-        <CheckmarkIcon />
+        {isSubmitting ? <Spinner size="md" /> : <CheckmarkIcon />}
       </LiquidButton>
     </form>
   );

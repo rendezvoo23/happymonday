@@ -90,26 +90,49 @@ export const getSubcategories = async (
 
 // 3. Create Transaction
 export const createTransaction = async (payload: {
+  requestId: string;
   amount: number;
   categoryId: string;
   subcategoryId?: string | null;
   date: string; // ISO
   description?: string;
   type: TransactionType;
+  currencyCode?: string;
 }) => {
   const { data: userData, error: userError } = await supabase.auth.getUser();
   if (userError) throw userError;
 
-  const { error } = await supabase.from("transactions").insert({
-    user_id: userData.user.id,
-    amount: payload.amount,
-    category_id: payload.categoryId,
-    subcategory_id: payload.subcategoryId ?? null,
-    occurred_at: payload.date,
-    note: payload.description || "",
-    direction: payload.type,
-    currency_code: "USD", // Defaulting to USD as per context constraints or lack thereof
-  });
+  let currencyCode = payload.currencyCode;
+  if (!currencyCode) {
+    const { data: settings, error: settingsError } = await supabase
+      .from("user_settings")
+      .select("default_currency")
+      .eq("user_id", userData.user.id)
+      .single();
+
+    if (settingsError) throw settingsError;
+    currencyCode = settings.default_currency;
+  }
+
+  // Reusing the client-generated ID makes retries safe when the first response
+  // is lost after the insert reached the database.
+  const { error } = await supabase.from("transactions").upsert(
+    {
+      id: payload.requestId,
+      user_id: userData.user.id,
+      amount: payload.amount,
+      category_id: payload.categoryId,
+      subcategory_id: payload.subcategoryId ?? null,
+      occurred_at: payload.date,
+      note: payload.description || "",
+      direction: payload.type,
+      currency_code: currencyCode,
+    },
+    {
+      onConflict: "id",
+      ignoreDuplicates: true,
+    }
+  );
 
   if (error) throw error;
 };
@@ -317,7 +340,8 @@ export const deleteTransaction = async (id: string) => {
   const { error } = await supabase
     .from("transactions")
     .update({ deleted_at: new Date().toISOString() })
-    .eq("id", id);
+    .eq("id", id)
+    .is("deleted_at", null);
 
   if (error) throw error;
 };
@@ -347,7 +371,8 @@ export const updateTransaction = async (
   const { error } = await supabase
     .from("transactions")
     .update(dbPayload)
-    .eq("id", id);
+    .eq("id", id)
+    .is("deleted_at", null);
 
   if (error) throw error;
 };

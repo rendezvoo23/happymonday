@@ -1,6 +1,8 @@
 import alerStopIconSrc from "@/assets/alert-stop-icon.png";
 import alertIconSrc from "@/assets/alert.png";
+import { Spinner } from "@/components/spinner";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useRef, useState } from "react";
 import { Button } from "../ui/Button";
 import {
   AlertDialog,
@@ -18,7 +20,7 @@ type ConfirmActionProps = {
   trigger?: React.ReactNode;
   open?: boolean;
   onClose?: () => void;
-  onAction: () => void;
+  onAction: () => Promise<void> | void;
   children?: React.ReactNode;
   isDestructive?: boolean;
   confirmLabel?: string;
@@ -46,6 +48,23 @@ export function ConfirmAction({
   const resolvedConfirmLabel = isDestructive
     ? t("common.delete")
     : (confirmLabel ?? t("common.ok"));
+  const [isProcessing, setIsProcessing] = useState(false);
+  const isProcessingRef = useRef(false);
+
+  const handleAction = async () => {
+    if (isProcessingRef.current) return;
+
+    isProcessingRef.current = true;
+    setIsProcessing(true);
+    try {
+      await onAction();
+    } catch (error) {
+      console.error("Failed to complete confirmed action", error);
+    } finally {
+      isProcessingRef.current = false;
+      setIsProcessing(false);
+    }
+  };
 
   return (
     <AlertDialog open={open}>
@@ -76,12 +95,22 @@ export function ConfirmAction({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <Button variant="secondary" size="lg" onClick={() => onClose?.()}>
+          <Button
+            variant="secondary"
+            size="lg"
+            disabled={isProcessing}
+            onClick={() => onClose?.()}
+          >
             {resolvedCancelLabel}
           </Button>
 
-          <Button variant={variant} size="lg" onClick={() => onAction()}>
-            {resolvedConfirmLabel}
+          <Button
+            variant={variant}
+            size="lg"
+            disabled={isProcessing}
+            onClick={handleAction}
+          >
+            {isProcessing ? <Spinner size="md" /> : resolvedConfirmLabel}
           </Button>
         </AlertDialogFooter>
       </AlertDialogContent>

@@ -112,12 +112,14 @@ export function useCreateTransaction() {
 
   return useMutation({
     mutationFn: (payload: {
+      requestId: string;
       amount: number;
       categoryId: string;
       subcategoryId?: string | null;
       date: string;
       description?: string;
       type: TransactionType;
+      currencyCode?: string;
     }) => createTransaction(payload),
     onSuccess: () => {
       // Invalidate all transaction queries

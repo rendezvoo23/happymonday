@@ -5,7 +5,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { Star } from "lucide-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 const BASE_DONATE_URL = "https://t.me/WhySpentBot?start=donate";
 
@@ -19,6 +19,7 @@ function DonateSettingsPage() {
   const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
   const [customAmount, setCustomAmount] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
+  const isProcessingRef = useRef(false);
   useTelegramBackButton();
 
   // Predefined donation amounts in Telegram Stars
@@ -32,8 +33,9 @@ function DonateSettingsPage() {
   ];
 
   const handleDonate = async (amount: number) => {
-    if (isProcessing || amount <= 0) return;
+    if (isProcessingRef.current || amount <= 0) return;
 
+    isProcessingRef.current = true;
     setIsProcessing(true);
 
     try {
@@ -97,6 +99,7 @@ function DonateSettingsPage() {
             }
           }
 
+          isProcessingRef.current = false;
           setIsProcessing(false);
         });
       } else {
@@ -108,6 +111,7 @@ function DonateSettingsPage() {
         } else {
           window.open(fallbackUrl, "_blank");
         }
+        isProcessingRef.current = false;
         setIsProcessing(false);
         navigate({ to: "/settings/main" });
       }
@@ -116,6 +120,7 @@ function DonateSettingsPage() {
       if (window.Telegram?.WebApp?.HapticFeedback) {
         window.Telegram.WebApp.HapticFeedback.notificationOccurred("error");
       }
+      isProcessingRef.current = false;
       setIsProcessing(false);
     }
   };

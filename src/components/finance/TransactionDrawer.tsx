@@ -7,6 +7,8 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { cn } from "@/lib/utils";
 import { getCategoryColor, useCategoryStore } from "@/stores/categoryStore";
 import type { Enums } from "@/types/supabase";
+import { useRef } from "react";
+import { v4 as uuidv4 } from "uuid";
 import { Drawer } from "vaul";
 
 type TransactionDirection = Enums<"transaction_direction">;
@@ -27,11 +29,19 @@ export function TransactionDrawer({
   showEditNote = true,
 }: TransactionDrawerProps) {
   const createTransactionMutation = useCreateTransaction();
-  const { formatAmount } = useCurrency();
+  const { code: currencyCode, formatAmount } = useCurrency();
   const { showToast } = useToast();
   const { getCategoryById } = useCategoryStore();
   const { t } = useTranslation();
   const { getCategoryLabel } = useCategoryLabel();
+  const requestIdRef = useRef(uuidv4());
+
+  const handleClose = () => {
+    if (!createTransactionMutation.isPending) {
+      requestIdRef.current = uuidv4();
+      onClose();
+    }
+  };
 
   const handleSubmit = async (data: {
     type: TransactionDirection;
@@ -44,13 +54,16 @@ export function TransactionDrawer({
     const category = getCategoryById(data.categoryId);
 
     await createTransactionMutation.mutateAsync({
+      requestId: requestIdRef.current,
       amount: data.amount,
       categoryId: data.categoryId,
       subcategoryId: data.subcategoryId ?? null,
       date: data.date,
       description: data.note,
       type: data.type,
+      currencyCode,
     });
+    requestIdRef.current = uuidv4();
 
     if (window.Telegram?.WebApp?.HapticFeedback) {
       window.Telegram.WebApp.HapticFeedback.notificationOccurred("success");
@@ -71,7 +84,7 @@ export function TransactionDrawer({
   return (
     <Drawer.Root
       open={isOpen}
-      onOpenChange={(open) => !open && onClose()}
+      onOpenChange={(open) => !open && handleClose()}
       shouldScaleBackground={false}
     >
       <Drawer.Portal>
@@ -91,7 +104,7 @@ export function TransactionDrawer({
               key={initialDate}
               initialType={initialType}
               initialData={initialDate ? { date: initialDate } : undefined}
-              onCancel={onClose}
+              onCancel={handleClose}
               onSubmit={handleSubmit}
               showEditNote={showEditNote}
             />

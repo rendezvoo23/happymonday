@@ -1,10 +1,10 @@
 // auth-telegram Edge Function for Supabase (Deno)
-// Validates Telegram WebApp initData (hash) and returns a REAL Supabase session
-// using: auth.admin.createUser() + custom JWT generation for immediate session.
+// Validates Telegram WebApp initData and returns a real Supabase Auth session.
 //
 // REQUIRED SECRETS (Edge Functions -> Secrets):
 // - TELEGRAM_BOT_TOKEN
-// - JWT_SECRET  <-- ADD THIS (found in Project Settings -> API -> JWT Secret)
+// - JWT_SECRET (used only to derive the technical account password)
+// - ALLOW_DEV_AUTH=true (optional; never enable in production)
 //
 // NOTE: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, and SUPABASE_ANON_KEY are
 // automatically available as system environment variables in Edge Functions
@@ -15,8 +15,6 @@
 // - Make sure Email provider is enabled in Supabase Auth (we won't actually send emails)
 // @ts-expect-error: Deno edge function types are provided by the runtime
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-// @ts-expect-error: Deno edge function types are provided by the runtime
-import { create } from "https://deno.land/x/djwt@v3.0.1/mod.ts";
 
 const ALLOWED_ORIGIN = "*";
 
@@ -51,13 +49,6 @@ function timingSafeEqualHex(a: string, b: string): boolean {
   let r = 0;
   for (let i = 0; i < a.length; i++) r |= a.charCodeAt(i) ^ b.charCodeAt(i);
   return r === 0;
-}
-function cryptoRandomString(length = 32): string {
-  const bytes = new Uint8Array(length);
-  crypto.getRandomValues(bytes);
-  return Array.from(bytes)
-    .map((b) => (b % 36).toString(36))
-    .join("");
 }
 function buildDataCheckString(params: URLSearchParams): string {
   const pairs: string[] = [];
@@ -142,7 +133,7 @@ async function validateTelegramInitData(
   // Replay protection (recommended)
   const authDate = Number(params.get("auth_date") || "0");
   const now = Math.floor(Date.now() / 1000);
-  if (!authDate || now - authDate > 60 * 60) {
+  if (!authDate || now - authDate > 60 * 60 || authDate > now + 60) {
     return {
       ok: false,
       error: "initData is too old",
@@ -220,66 +211,36 @@ function parseTelegramUser(params: URLSearchParams): {
   }
 }
 
-/**
- * Generates JWT tokens for Supabase session
- */
-async function generateSupabaseTokens(
-  userId: string,
-  email: string,
-  jwtSecret: string
-): Promise<{ access_token: string; refresh_token: string; expires_in: number }> {
+async function deriveTechnicalPassword(
+  jwtSecret: string,
+  telegramId: number
+): Promise<string> {
   const encoder = new TextEncoder();
-  const keyData = encoder.encode(jwtSecret);
-  const key = await crypto.subtle.importKey(
-    "raw",
-    keyData,
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["sign"]
+  const digest = await hmacSha256Hex(
+    encoder.encode(jwtSecret),
+    encoder.encode(`telegram:${telegramId}`)
   );
+  return `${digest}_Aa1!`;
+}
 
-  const now = Math.floor(Date.now() / 1000);
-  const expiresIn = 3600; // 1 hour
-  const exp = now + expiresIn;
+async function findAuthUserByEmail(
+  supabaseAdmin: ReturnType<typeof createClient>,
+  email: string
+) {
+  const perPage = 1000;
 
-  // Access token
-  const accessToken = await create(
-    { alg: "HS256", typ: "JWT" },
-    {
-      aud: "authenticated",
-      exp,
-      iat: now,
-      iss: "supabase",
-      sub: userId,
-      email,
-      phone: "",
-      app_metadata: {},
-      user_metadata: {},
-      role: "authenticated",
-      aal: "aal1",
-      amr: [{ method: "oauth", timestamp: now }],
-    },
-    key
-  );
+  for (let page = 1; ; page += 1) {
+    const {
+      data: { users },
+      error,
+    } = await supabaseAdmin.auth.admin.listUsers({ page, perPage });
 
-  // Refresh token (valid for 30 days)
-  const refreshToken = await create(
-    { alg: "HS256", typ: "JWT" },
-    {
-      aud: "authenticated",
-      exp: now + 30 * 24 * 60 * 60,
-      iat: now,
-      iss: "supabase",
-      sub: userId,
-    },
-    key
-  );
+    if (error) throw error;
 
-  return {
-    access_token: accessToken,
-    refresh_token: refreshToken,
-    expires_in: expiresIn,
-  };
+    const user = users.find((candidate) => candidate.email === email);
+    if (user) return user;
+    if (users.length < perPage) return null;
+  }
 }
 
 // @ts-expect-error: Deno.serve is provided by the Deno runtime
@@ -309,7 +270,6 @@ Deno.serve(async (req: Request): Promise<Response> => {
     }
     const body = (await req.json().catch(() => null)) as {
       initData?: string;
-      isDev?: boolean;
     } | null;
     if (!body || typeof body.initData !== "string") {
       return json(
@@ -319,23 +279,26 @@ Deno.serve(async (req: Request): Promise<Response> => {
         400
       );
     }
-    const isDev = body.isDev === true;
-
     // @ts-expect-error: Deno.env is provided by the Deno runtime
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
     // @ts-expect-error: Deno.env is provided by the Deno runtime
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     // @ts-expect-error: Deno.env is provided by the Deno runtime
+    const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY");
+    // @ts-expect-error: Deno.env is provided by the Deno runtime
     const SUPABASE_JWT_SECRET = Deno.env.get("JWT_SECRET");
     // @ts-expect-error: Deno.env is provided by the Deno runtime
     const TELEGRAM_BOT_TOKEN = Deno.env.get("TELEGRAM_BOT_TOKEN");
+    // @ts-expect-error: Deno.env is provided by the Deno runtime
+    const allowDevAuth = Deno.env.get("ALLOW_DEV_AUTH") === "true";
 
     // Validate required environment variables
     if (
       !SUPABASE_URL ||
       !SUPABASE_SERVICE_ROLE_KEY ||
+      !SUPABASE_ANON_KEY ||
       !SUPABASE_JWT_SECRET ||
-      (!isDev && !TELEGRAM_BOT_TOKEN)
+      (!allowDevAuth && !TELEGRAM_BOT_TOKEN)
     ) {
       return json(
         {
@@ -343,8 +306,9 @@ Deno.serve(async (req: Request): Promise<Response> => {
           missing: {
             SUPABASE_URL: !SUPABASE_URL,
             SUPABASE_SERVICE_ROLE_KEY: !SUPABASE_SERVICE_ROLE_KEY,
+            SUPABASE_ANON_KEY: !SUPABASE_ANON_KEY,
             SUPABASE_JWT_SECRET: !SUPABASE_JWT_SECRET,
-            TELEGRAM_BOT_TOKEN: !isDev && !TELEGRAM_BOT_TOKEN,
+            TELEGRAM_BOT_TOKEN: !allowDevAuth && !TELEGRAM_BOT_TOKEN,
           },
         },
         500
@@ -355,7 +319,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
     const v = await validateTelegramInitData(
       body.initData,
       TELEGRAM_BOT_TOKEN ?? null,
-      isDev
+      allowDevAuth
     );
     if (!v.ok) {
       return json(
@@ -404,6 +368,10 @@ Deno.serve(async (req: Request): Promise<Response> => {
     
     // 4) Find/create auth user + profile
     const technicalEmail = `telegram_${telegram_id}@telegram.local`;
+    const technicalPassword = await deriveTechnicalPassword(
+      SUPABASE_JWT_SECRET,
+      telegram_id
+    );
     
     // 4.1 find profile by telegram_id
     const { data: existingProfiles, error: profileErr } = await supabaseAdmin
@@ -422,28 +390,37 @@ Deno.serve(async (req: Request): Promise<Response> => {
       );
       
     let userId = existingProfiles?.[0]?.id ?? null;
-    
-    // 4.2 create auth user if missing
+
+    // 4.2 create or recover auth user if profile creation previously failed
     if (!userId) {
       const { data: createdUser, error: createErr } =
         await supabaseAdmin.auth.admin.createUser({
           email: technicalEmail,
-          password: cryptoRandomString(40),
+          password: technicalPassword,
           email_confirm: true,
           user_metadata: {
             telegram_id,
           },
         });
       if (createErr || !createdUser?.user?.id) {
-        return json(
-          {
-            error: "Failed creating auth user",
-            details: createErr?.message,
-          },
-          500
+        // Recover an orphaned or concurrently created auth account.
+        const existingAuthUser = await findAuthUserByEmail(
+          supabaseAdmin,
+          technicalEmail
         );
+        if (!existingAuthUser) {
+          return json(
+            {
+              error: "Failed creating auth user",
+              details: createErr?.message,
+            },
+            500
+          );
+        }
+        userId = existingAuthUser.id;
+      } else {
+        userId = createdUser.user.id;
       }
-      userId = createdUser.user.id;
     }
     
     if (!userId)
@@ -453,7 +430,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
         },
         500
       );
-      
+
     // 4.3 upsert profile (id must equal auth.users.id)
     const { error: upsertErr } = await supabaseAdmin.from("profiles").upsert(
       {
@@ -478,50 +455,107 @@ Deno.serve(async (req: Request): Promise<Response> => {
         },
         500
       );
-      
-    // 4.4 ensure user_settings exists
-    const { data: settingsRow, error: settingsErr } = await supabaseAdmin
-      .from("user_settings")
-      .select("user_id")
-      .eq("user_id", userId)
-      .maybeSingle();
-      
-    if (settingsErr)
+
+    // 4.4 ensure user_settings exists without overwriting existing choices
+    const { data: currencies, error: currenciesError } = await supabaseAdmin
+      .from("currencies")
+      .select("code")
+      .eq("is_active", true)
+      .order("code");
+
+    if (currenciesError || !currencies?.length) {
       return json(
         {
-          error: "Failed querying user_settings",
-          details: settingsErr.message,
+          error: "No active currency is configured",
+          details: currenciesError?.message,
         },
         500
       );
-      
-    if (!settingsRow) {
-      const { error: insSetErr } = await supabaseAdmin
-        .from("user_settings")
-        .insert({
+    }
+
+    const defaultCurrency =
+      currencies.find((currency) => currency.code.trim() === "RUB")?.code ??
+      currencies[0].code;
+
+    const { error: settingsError } = await supabaseAdmin
+      .from("user_settings")
+      .upsert(
+        {
           user_id: userId,
-          default_currency: "RUB",
+          default_currency: defaultCurrency,
+        },
+        {
+          onConflict: "user_id",
+          ignoreDuplicates: true,
+        }
+      );
+
+    if (settingsError)
+      return json(
+        {
+          error: "Failed creating user_settings",
+          details: settingsError.message,
+        },
+        500
+      );
+
+    // 5) Sign in normally so Supabase issues a refreshable session.
+    const supabaseAuth = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+      },
+    });
+    let authResult = await supabaseAuth.auth.signInWithPassword({
+      email: technicalEmail,
+      password: technicalPassword,
+    });
+
+    // Existing accounts created by the previous implementation have a random
+    // password. Migrate them once, then keep future sessions stable.
+    if (authResult.error) {
+      const { error: updateAuthUserError } =
+        await supabaseAdmin.auth.admin.updateUserById(userId, {
+          password: technicalPassword,
+          email_confirm: true,
+          user_metadata: {
+            telegram_id,
+          },
         });
-      if (insSetErr)
+
+      if (updateAuthUserError) {
         return json(
           {
-            error: "Failed creating user_settings",
-            details: insSetErr.message,
+            error: "Failed updating auth user",
+            details: updateAuthUserError.message,
           },
           500
         );
+      }
+
+      authResult = await supabaseAuth.auth.signInWithPassword({
+        email: technicalEmail,
+        password: technicalPassword,
+      });
     }
-    
-    // 5) Generate session tokens directly using JWT
-    const tokens = await generateSupabaseTokens(
-      userId,
-      technicalEmail,
-      SUPABASE_JWT_SECRET
-    );
-    
-    // 6) Return session to the client
+
+    const { data: authData, error: signInError } = authResult;
+
+    if (signInError || !authData.session || !authData.user) {
+      return json(
+        {
+          error: "Failed creating Supabase session",
+          details: signInError?.message,
+        },
+        500
+      );
+    }
+
+    // 6) Return the real session to the client
     return json({
-      user: {
+      user: authData.user,
+      session: authData.session,
+      telegram_user: {
         id: userId,
         telegram_id,
         username,
@@ -529,25 +563,12 @@ Deno.serve(async (req: Request): Promise<Response> => {
         last_name,
         photo_url,
       },
-      session: {
-        access_token: tokens.access_token,
-        refresh_token: tokens.refresh_token,
-        expires_in: tokens.expires_in,
-        token_type: "bearer",
-      },
     });
   } catch (err) {
     console.error("auth-telegram error:", err);
-
-    // @ts-expect-error: Deno.env is provided by the Deno runtime
-    const env = Deno.env.toObject();
-    console.log(env);
-
-    const details = err instanceof Error ? err.message : String(err);
     return json(
       {
         error: "Internal server error",
-        details: details + " " + JSON.stringify(env, null, 2),
       },
       500
     );

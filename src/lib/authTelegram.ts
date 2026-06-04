@@ -1,5 +1,4 @@
 import type { User } from "@supabase/supabase-js";
-import { env } from "../env";
 import { supabase } from "./supabaseClient";
 
 export interface TelegramAuthResponse {
@@ -12,47 +11,35 @@ export interface TelegramAuthResponse {
   user: User;
 }
 
-export const authenticateWithTelegram = async (): Promise<boolean> => {
-  try {
-    console.log("Authenticating with Telegram...");
-    // 1. Initialise Telegram WebApp
-    if (!window.Telegram?.WebApp) {
-      console.error("Telegram WebApp not available");
-      return false;
-    }
-    window.Telegram.WebApp.ready();
-    const initData = window.Telegram.WebApp.initData;
+export const authenticateWithTelegram = async (): Promise<void> => {
+  console.log("Authenticating with Telegram...");
 
-    if (!initData) {
-      console.error("No initData available");
-      return false;
-    }
+  if (!window.Telegram?.WebApp) {
+    throw new Error("Telegram WebApp is not available.");
+  }
 
-    const { data: invokeData, error: invokeError } =
-      await supabase.functions.invoke<TelegramAuthResponse>("auth-telegram", {
-        body: { initData, isDev: env.isDev },
-      });
+  window.Telegram.WebApp.ready();
+  const initData = window.Telegram.WebApp.initData;
 
-    if (invokeError || !invokeData) {
-      console.error("Auth function failed:", invokeError);
-      console.log({ invokeData, invokeError });
-      return false;
-    }
+  if (!initData) {
+    throw new Error("Telegram authentication data is missing.");
+  }
 
-    // 3. Set Supabase Session
-    const { error: sessionError } = await supabase.auth.setSession({
-      access_token: invokeData.session.access_token,
-      refresh_token: invokeData.session.refresh_token,
+  const { data: invokeData, error: invokeError } =
+    await supabase.functions.invoke<TelegramAuthResponse>("auth-telegram", {
+      body: { initData },
     });
 
-    if (sessionError) {
-      console.error("Failed to set Supabase session:", sessionError);
-      return false;
-    }
+  if (invokeError || !invokeData?.session) {
+    throw invokeError ?? new Error("Telegram authentication failed.");
+  }
 
-    return true;
-  } catch (error) {
-    console.error("Authentication error:", error);
-    return false;
+  const { error: sessionError } = await supabase.auth.setSession({
+    access_token: invokeData.session.access_token,
+    refresh_token: invokeData.session.refresh_token,
+  });
+
+  if (sessionError) {
+    throw sessionError;
   }
 };

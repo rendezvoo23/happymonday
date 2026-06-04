@@ -7,6 +7,7 @@ import { MonthSelector } from "@/components/ui/MonthSelector";
 import { useDate } from "@/context/DateContext";
 import { useMonthTransactionsWithCategories } from "@/hooks/use-transactions-query";
 import { useCurrency } from "@/hooks/useCurrency";
+import { useTranslation } from "@/hooks/useTranslation";
 import { Route } from "@/routes/_authenticated/home";
 import { useCategoryStore } from "@/stores/categoryStore";
 import { useUIStore } from "@/stores/uiStore";
@@ -41,6 +42,7 @@ export function HomePage() {
   const { loadCategories } = useCategoryStore();
   const { setDate } = useDate();
   const { formatAmount } = useCurrency();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { month: urlMonth, mode: urlMode } = Route.useSearch();
 
@@ -298,6 +300,20 @@ export function HomePage() {
                 style={{ height: clusterHeight }}
               >
                 <Spinner size="lg" />
+              </div>
+            ) : currentMonthQuery.isError ? (
+              <div
+                className="text-gray-500 dark:text-gray-400 flex flex-col gap-4 items-center justify-center"
+                style={{ height: clusterHeight }}
+              >
+                <p>{t("errors.generic")}</p>
+                <button
+                  type="button"
+                  className="rounded-full bg-[var(--accent-color)] px-5 py-2 font-medium text-white"
+                  onClick={() => currentMonthQuery.refetch()}
+                >
+                  Try again
+                </button>
               </div>
             ) : (
               <div

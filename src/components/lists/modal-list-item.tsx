@@ -5,11 +5,13 @@ export function ModalListItem({
   onClick,
   position = "single",
   isSelected = false,
+  disabled = false,
 }: {
   children: React.ReactNode;
   onClick?: () => void;
   position?: "first" | "middle" | "last" | "single";
   isSelected?: boolean;
+  disabled?: boolean;
 }) {
   const getRoundedClass = () => {
     switch (position) {
@@ -32,7 +34,8 @@ export function ModalListItem({
     <button
       type="button"
       onClick={onClick}
-      className={`w-full flex items-center justify-between px-4 pl-12 py-3 bg-white dark:bg-[var(--background-level-1)] hover:bg-gray-50 dark:hover:bg-[var(--background-level-2)] transition-colors relative ${getRoundedClass()}`}
+      disabled={disabled}
+      className={`w-full flex items-center justify-between px-4 pl-12 py-3 bg-white dark:bg-[var(--background-level-1)] hover:bg-gray-50 dark:hover:bg-[var(--background-level-2)] transition-colors relative disabled:pointer-events-none disabled:opacity-50 ${getRoundedClass()}`}
     >
       {isSelected && (
         <CheckmarkIcon className="w-5 h-5 text-[var(--accent-color)] flex-shrink-0 absolute left-4" />
