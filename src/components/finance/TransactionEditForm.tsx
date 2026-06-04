@@ -20,7 +20,7 @@ interface TransactionEditFormProps {
     subcategoryId?: string | null;
     note: string;
     date: string;
-  }) => void;
+  }) => Promise<void> | void;
   initialData?: {
     type: TransactionType;
     amount: number;
@@ -64,6 +64,8 @@ export function TransactionEditForm({
   const dateInputRef = useRef<HTMLInputElement>(null);
   const categoryScrollRef = useRef<HTMLDivElement>(null);
   const [activeCategoryPanel, setActiveCategoryPanel] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const isSubmittingRef = useRef(false);
 
   const {
     isLoading: categoriesLoading,
@@ -147,9 +149,9 @@ export function TransactionEditForm({
       });
   }, [categoryId]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!amount || !categoryId) return;
+    if (!amount || !categoryId || isSubmittingRef.current) return;
 
     // Convert local date string back to ISO for submission
     // We append the time from the original date if possible, or just start of day
@@ -164,14 +166,24 @@ export function TransactionEditForm({
       );
     }
 
-    onSubmit({
-      type,
-      amount: Number.parseFloat(amount),
-      categoryId,
-      subcategoryId: subcategoryId || null,
-      note,
-      date: submissionDate.toISOString(),
-    });
+    isSubmittingRef.current = true;
+    setIsSubmitting(true);
+
+    try {
+      await onSubmit({
+        type,
+        amount: Number.parseFloat(amount),
+        categoryId,
+        subcategoryId: subcategoryId || null,
+        note,
+        date: submissionDate.toISOString(),
+      });
+    } catch (error) {
+      console.error("Failed to update transaction", error);
+    } finally {
+      isSubmittingRef.current = false;
+      setIsSubmitting(false);
+    }
   };
 
   // Get the selected category to pass its color to SubcategorySelector
@@ -337,13 +349,13 @@ export function TransactionEditForm({
         <Button
           type="submit"
           size="lg"
-          disabled={!amount}
+          disabled={!amount || !categoryId || isSubmitting}
           style={{
             backgroundColor: amount ? "var(--accent-color)" : undefined,
             color: amount ? "#00f3ff" : "var(--border-default)",
           }}
         >
-          {t("common.save")}
+          {isSubmitting ? <Spinner size="md" /> : t("common.save")}
         </Button>
       </div>
     </form>

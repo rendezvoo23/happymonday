@@ -130,3 +130,5 @@ Thumbs.db
 
 # Development build output
 dev-dist
+.vercel
+.env*

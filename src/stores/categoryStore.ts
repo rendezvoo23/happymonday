@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { retryAsync } from "../lib/retry";
 import { supabase } from "../lib/supabaseClient";
 import type { Category, TransactionType } from "../types";
 import type { Enums, Tables } from "../types/supabase";
@@ -59,33 +60,37 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
   loadCategories: async (type) => {
     set({ isLoading: true, error: null });
     try {
-      // Get current user
-      const { data: userData, error: userError } =
-        await supabase.auth.getUser();
-      if (userError) throw userError;
+      const categories = await retryAsync(async () => {
+        const { data: userData, error: userError } =
+          await supabase.auth.getUser();
+        if (userError) throw userError;
 
-      let query = supabase
-        .from("categories")
-        .select("*")
-        .eq("is_archived", false)
-        .order("sort_order", { ascending: true });
+        let query = supabase
+          .from("categories")
+          .select("*")
+          .eq("is_archived", false)
+          .order("sort_order", { ascending: true });
 
-      // Filter by user: include user-specific categories and global categories (user_id is null)
-      if (userData?.user?.id) {
-        query = query.or(`user_id.eq.${userData.user.id},user_id.is.null`);
-      } else {
-        // If no user, only get global categories
-        query = query.is("user_id", null);
-      }
+        if (userData?.user?.id) {
+          query = query.or(`user_id.eq.${userData.user.id},user_id.is.null`);
+        } else {
+          query = query.is("user_id", null);
+        }
 
-      if (type) {
-        query = query.eq("type", type);
-      }
+        if (type) {
+          query = query.eq("type", type);
+        }
 
-      const { data, error } = await query;
+        const { data, error } = await query;
+        if (error) throw error;
+        if (!type && !data?.length) {
+          throw new Error("No categories found");
+        }
 
-      if (error) throw error;
-      set({ categories: data || [], isLoading: false });
+        return data || [];
+      });
+
+      set({ categories, isLoading: false });
     } catch (err: unknown) {
       console.error("Failed to load categories", err);
       set({

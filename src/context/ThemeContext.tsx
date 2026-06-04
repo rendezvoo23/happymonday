@@ -39,14 +39,16 @@ function applyTheme(theme: "light" | "dark") {
   if (window.Telegram?.WebApp) {
     const tg = window.Telegram.WebApp;
 
-    if (theme === "dark") {
-      // For dark theme → black header
-      tg.setHeaderColor("#000000");
-      tg.setBackgroundColor("#000000");
-    } else {
-      // For light theme → white header
-      tg.setHeaderColor("#ffffff");
-      tg.setBackgroundColor("#ffffff");
+    try {
+      if (theme === "dark") {
+        tg.setHeaderColor("#000000");
+        tg.setBackgroundColor("#000000");
+      } else {
+        tg.setHeaderColor("#ffffff");
+        tg.setBackgroundColor("#ffffff");
+      }
+    } catch (error) {
+      console.warn("Telegram client does not support theme colors", error);
     }
   }
 }

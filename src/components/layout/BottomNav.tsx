@@ -55,18 +55,22 @@ export function BottomNav() {
         navigate({ to: "/settings/main" });
       };
 
-      // Show the settings button and register click handler
-      console.log("Showing settings button...");
-      settingsButton.show();
-      console.log("Registering onClick handler...");
-      settingsButton.onClick(handleSettingsButtonPressed);
-      console.log("Settings button setup complete");
+      try {
+        settingsButton.show();
+        settingsButton.onClick(handleSettingsButtonPressed);
+      } catch (error) {
+        console.warn("Telegram client does not support SettingsButton", error);
+        return;
+      }
 
       // Cleanup
       return () => {
-        console.log("Cleaning up settings button...");
-        settingsButton.offClick(handleSettingsButtonPressed);
-        settingsButton.hide();
+        try {
+          settingsButton.offClick(handleSettingsButtonPressed);
+          settingsButton.hide();
+        } catch (error) {
+          console.warn("Failed to clean up Telegram SettingsButton", error);
+        }
       };
     }
   }, [navigate]);

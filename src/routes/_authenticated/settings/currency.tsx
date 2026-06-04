@@ -7,7 +7,7 @@ import { useUserStore } from "@/stores/userStore";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "framer-motion";
 import { Search, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export const Route = createFileRoute("/_authenticated/settings/currency")({
   component: CurrencySettingsPage,
@@ -19,6 +19,8 @@ function CurrencySettingsPage() {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const isSavingRef = useRef(false);
 
   useTelegramBackButton();
 
@@ -31,8 +33,19 @@ function CurrencySettingsPage() {
   });
 
   const handleCurrencySelect = async (code: string) => {
-    await updateSettings({ default_currency: code });
-    navigate({ to: "/settings/main" });
+    if (isSavingRef.current) return;
+
+    isSavingRef.current = true;
+    setIsSaving(true);
+    try {
+      await updateSettings({ default_currency: code });
+      navigate({ to: "/settings/main" });
+    } catch (error) {
+      console.error("Failed to save currency", error);
+    } finally {
+      isSavingRef.current = false;
+      setIsSaving(false);
+    }
   };
 
   const handleSearchClick = () => {
@@ -130,6 +143,7 @@ function CurrencySettingsPage() {
                       : "middle"
                 }
                 isSelected={settings?.default_currency === currency.code}
+                disabled={isSaving}
               >
                 <div className="flex items-center justify-between w-full">
                   <div className="flex flex-col items-start">

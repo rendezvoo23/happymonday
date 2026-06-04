@@ -1,5 +1,6 @@
 import { endOfMonth, parseISO, startOfMonth } from "date-fns";
 import { useCallback, useState } from "react";
+import { v4 as uuidv4 } from "uuid";
 import * as api from "../lib/api";
 import type { Transaction } from "../types";
 
@@ -35,6 +36,7 @@ export function useTransactions() {
       setError(null);
       try {
         await api.createTransaction({
+          requestId: uuidv4(),
           amount: transaction.amount,
           categoryId: transaction.categoryId,
           date: transaction.date,

@@ -12,6 +12,14 @@ const getBrowserLanguage = (): string => {
   return supportedLanguages.includes(browserLang) ? browserLang : "en";
 };
 
+const getStoredLanguage = (): string | null => {
+  try {
+    return localStorage.getItem("language");
+  } catch {
+    return null;
+  }
+};
+
 i18n.use(initReactI18next).init({
   resources: Object.entries(translations).reduce(
     (acc, [lang, translation]) => {
@@ -20,7 +28,7 @@ i18n.use(initReactI18next).init({
     },
     {} as Record<string, { translation: typeof translations.en }>
   ),
-  lng: localStorage.getItem("language") || getBrowserLanguage(),
+  lng: getStoredLanguage() || getBrowserLanguage(),
   fallbackLng: "en",
   interpolation: {
     escapeValue: false, // React already escapes values

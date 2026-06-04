@@ -49,6 +49,7 @@ export const useUserStore = create<UserState>((set, get) => ({
         error: err instanceof Error ? err.message : "Failed to load profile",
         isLoading: false,
       });
+      throw err;
     }
   },
 
@@ -66,6 +67,7 @@ export const useUserStore = create<UserState>((set, get) => ({
         .maybeSingle();
 
       if (error) throw error;
+      if (!data) throw new Error("User settings not found");
       set({ settings: data, isLoading: false });
     } catch (err: unknown) {
       console.error("Failed to load settings", err);
@@ -73,6 +75,7 @@ export const useUserStore = create<UserState>((set, get) => ({
         error: err instanceof Error ? err.message : "Failed to load settings",
         isLoading: false,
       });
+      throw err;
     }
   },
 
@@ -86,6 +89,7 @@ export const useUserStore = create<UserState>((set, get) => ({
         .order("code");
 
       if (error) throw error;
+      if (!data?.length) throw new Error("No active currencies found");
       set({ currencies: data, isLoading: false });
     } catch (err: unknown) {
       console.error("Failed to load currencies", err);
@@ -93,6 +97,7 @@ export const useUserStore = create<UserState>((set, get) => ({
         error: err instanceof Error ? err.message : "Failed to load currencies",
         isLoading: false,
       });
+      throw err;
     }
   },
 
