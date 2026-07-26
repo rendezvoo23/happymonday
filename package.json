@@ -34,6 +34,7 @@
     "react-i18next": "^16.5.3",
     "recharts": "^2.12.2",
     "tailwind-merge": "^2.2.1",
+    "uuid": "^14.0.1",
     "vaul": "^1.1.2",
     "zustand": "^5.0.9"
   },
@@ -44,6 +45,7 @@
     "@types/node": "^20.11.24",
     "@types/react": "19",
     "@types/react-dom": "19",
+    "@types/uuid": "^11.0.0",
     "@vitejs/plugin-react": "^4.2.1",
     "autoprefixer": "^10.4.18",
     "baseline-browser-mapping": "^2.11.1",
