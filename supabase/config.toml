@@ -359,6 +359,26 @@ inspector_port = 8083
 # The Deno major version to use.
 deno_version = 2
 
+# Apple Shortcut uses its own narrowly scoped, revocable credential.
+[functions.shortcut-ingest]
+verify_jwt = false
+
+# Token issuance is available only to an already authenticated WhySpent user.
+[functions.shortcut-token]
+verify_jwt = true
+
+# Telegram WebApp login validates signed initData itself.
+[functions.auth-telegram]
+verify_jwt = false
+
+# Telegram authenticates this endpoint with X-Telegram-Bot-Api-Secret-Token.
+[functions.telegram-webhook]
+verify_jwt = false
+
+# Invoked by pg_cron and protected with a separate high-entropy secret.
+[functions.shortcut-reminders]
+verify_jwt = false
+
 # [edge_runtime.secrets]
 # secret_key = "env(SECRET_VALUE)"
 
