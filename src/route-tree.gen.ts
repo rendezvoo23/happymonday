@@ -9,34 +9,34 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as AuthenticatedStatisticsRouteImport } from './routes/_authenticated/statistics'
-import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/home'
-import { Route as AuthenticatedStatisticsIndexRouteImport } from './routes/_authenticated/statistics/index'
-import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated/settings/index'
-import { Route as AuthenticatedStatisticsHistoryRouteImport } from './routes/_authenticated/statistics/history'
-import { Route as AuthenticatedStatisticsMonthRouteImport } from './routes/_authenticated/statistics/$month'
-import { Route as AuthenticatedSettingsThemeRouteImport } from './routes/_authenticated/settings/theme'
-import { Route as AuthenticatedSettingsMainRouteImport } from './routes/_authenticated/settings/main'
-import { Route as AuthenticatedSettingsLanguageRouteImport } from './routes/_authenticated/settings/language'
-import { Route as AuthenticatedSettingsDonateRouteImport } from './routes/_authenticated/settings/donate'
-import { Route as AuthenticatedSettingsCurrencyRouteImport } from './routes/_authenticated/settings/currency'
+import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as AuthenticatedStatisticsRouteImport } from './routes/_authenticated/statistics'
 import { Route as AuthenticatedEditIdRouteImport } from './routes/_authenticated/edit/$id'
+import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated/settings/index'
+import { Route as AuthenticatedSettingsCurrencyRouteImport } from './routes/_authenticated/settings/currency'
+import { Route as AuthenticatedSettingsDonateRouteImport } from './routes/_authenticated/settings/donate'
+import { Route as AuthenticatedSettingsLanguageRouteImport } from './routes/_authenticated/settings/language'
+import { Route as AuthenticatedSettingsMainRouteImport } from './routes/_authenticated/settings/main'
+import { Route as AuthenticatedSettingsThemeRouteImport } from './routes/_authenticated/settings/theme'
+import { Route as AuthenticatedStatisticsIndexRouteImport } from './routes/_authenticated/statistics/index'
+import { Route as AuthenticatedStatisticsMonthRouteImport } from './routes/_authenticated/statistics/$month'
+import { Route as AuthenticatedStatisticsHistoryRouteImport } from './routes/_authenticated/statistics/history'
 
-const AuthenticatedRoute = AuthenticatedRouteImport.update({
-  id: '/_authenticated',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedStatisticsRoute = AuthenticatedStatisticsRouteImport.update({
-  id: '/statistics',
-  path: '/statistics',
+const AuthenticatedRoute = AuthenticatedRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedHomeRoute = AuthenticatedHomeRouteImport.update({
+  id: '/home',
+  path: '/home',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
@@ -44,57 +44,20 @@ const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedHomeRoute = AuthenticatedHomeRouteImport.update({
-  id: '/home',
-  path: '/home',
+const AuthenticatedStatisticsRoute = AuthenticatedStatisticsRouteImport.update({
+  id: '/statistics',
+  path: '/statistics',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedStatisticsIndexRoute =
-  AuthenticatedStatisticsIndexRouteImport.update({
-    id: '/',
-    path: '/',
-    getParentRoute: () => AuthenticatedStatisticsRoute,
-  } as any)
+const AuthenticatedEditIdRoute = AuthenticatedEditIdRouteImport.update({
+  id: '/edit/$id',
+  path: '/edit/$id',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedSettingsIndexRoute =
   AuthenticatedSettingsIndexRouteImport.update({
     id: '/',
     path: '/',
-    getParentRoute: () => AuthenticatedSettingsRoute,
-  } as any)
-const AuthenticatedStatisticsHistoryRoute =
-  AuthenticatedStatisticsHistoryRouteImport.update({
-    id: '/history',
-    path: '/history',
-    getParentRoute: () => AuthenticatedStatisticsRoute,
-  } as any)
-const AuthenticatedStatisticsMonthRoute =
-  AuthenticatedStatisticsMonthRouteImport.update({
-    id: '/$month',
-    path: '/$month',
-    getParentRoute: () => AuthenticatedStatisticsRoute,
-  } as any)
-const AuthenticatedSettingsThemeRoute =
-  AuthenticatedSettingsThemeRouteImport.update({
-    id: '/theme',
-    path: '/theme',
-    getParentRoute: () => AuthenticatedSettingsRoute,
-  } as any)
-const AuthenticatedSettingsMainRoute =
-  AuthenticatedSettingsMainRouteImport.update({
-    id: '/main',
-    path: '/main',
-    getParentRoute: () => AuthenticatedSettingsRoute,
-  } as any)
-const AuthenticatedSettingsLanguageRoute =
-  AuthenticatedSettingsLanguageRouteImport.update({
-    id: '/language',
-    path: '/language',
-    getParentRoute: () => AuthenticatedSettingsRoute,
-  } as any)
-const AuthenticatedSettingsDonateRoute =
-  AuthenticatedSettingsDonateRouteImport.update({
-    id: '/donate',
-    path: '/donate',
     getParentRoute: () => AuthenticatedSettingsRoute,
   } as any)
 const AuthenticatedSettingsCurrencyRoute =
@@ -103,11 +66,48 @@ const AuthenticatedSettingsCurrencyRoute =
     path: '/currency',
     getParentRoute: () => AuthenticatedSettingsRoute,
   } as any)
-const AuthenticatedEditIdRoute = AuthenticatedEditIdRouteImport.update({
-  id: '/edit/$id',
-  path: '/edit/$id',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
+const AuthenticatedSettingsDonateRoute =
+  AuthenticatedSettingsDonateRouteImport.update({
+    id: '/donate',
+    path: '/donate',
+    getParentRoute: () => AuthenticatedSettingsRoute,
+  } as any)
+const AuthenticatedSettingsLanguageRoute =
+  AuthenticatedSettingsLanguageRouteImport.update({
+    id: '/language',
+    path: '/language',
+    getParentRoute: () => AuthenticatedSettingsRoute,
+  } as any)
+const AuthenticatedSettingsMainRoute =
+  AuthenticatedSettingsMainRouteImport.update({
+    id: '/main',
+    path: '/main',
+    getParentRoute: () => AuthenticatedSettingsRoute,
+  } as any)
+const AuthenticatedSettingsThemeRoute =
+  AuthenticatedSettingsThemeRouteImport.update({
+    id: '/theme',
+    path: '/theme',
+    getParentRoute: () => AuthenticatedSettingsRoute,
+  } as any)
+const AuthenticatedStatisticsIndexRoute =
+  AuthenticatedStatisticsIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedStatisticsRoute,
+  } as any)
+const AuthenticatedStatisticsMonthRoute =
+  AuthenticatedStatisticsMonthRouteImport.update({
+    id: '/$month',
+    path: '/$month',
+    getParentRoute: () => AuthenticatedStatisticsRoute,
+  } as any)
+const AuthenticatedStatisticsHistoryRoute =
+  AuthenticatedStatisticsHistoryRouteImport.update({
+    id: '/history',
+    path: '/history',
+    getParentRoute: () => AuthenticatedStatisticsRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -214,13 +214,6 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/_authenticated': {
-      id: '/_authenticated'
-      path: ''
-      fullPath: '/'
-      preLoaderRoute: typeof AuthenticatedRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/': {
       id: '/'
       path: '/'
@@ -228,11 +221,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/statistics': {
-      id: '/_authenticated/statistics'
-      path: '/statistics'
-      fullPath: '/statistics'
-      preLoaderRoute: typeof AuthenticatedStatisticsRouteImport
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/home': {
+      id: '/_authenticated/home'
+      path: '/home'
+      fullPath: '/home'
+      preLoaderRoute: typeof AuthenticatedHomeRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/settings': {
@@ -242,67 +242,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/home': {
-      id: '/_authenticated/home'
-      path: '/home'
-      fullPath: '/home'
-      preLoaderRoute: typeof AuthenticatedHomeRouteImport
+    '/_authenticated/statistics': {
+      id: '/_authenticated/statistics'
+      path: '/statistics'
+      fullPath: '/statistics'
+      preLoaderRoute: typeof AuthenticatedStatisticsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/statistics/': {
-      id: '/_authenticated/statistics/'
-      path: '/'
-      fullPath: '/statistics/'
-      preLoaderRoute: typeof AuthenticatedStatisticsIndexRouteImport
-      parentRoute: typeof AuthenticatedStatisticsRoute
+    '/_authenticated/edit/$id': {
+      id: '/_authenticated/edit/$id'
+      path: '/edit/$id'
+      fullPath: '/edit/$id'
+      preLoaderRoute: typeof AuthenticatedEditIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/settings/': {
       id: '/_authenticated/settings/'
       path: '/'
       fullPath: '/settings/'
       preLoaderRoute: typeof AuthenticatedSettingsIndexRouteImport
-      parentRoute: typeof AuthenticatedSettingsRoute
-    }
-    '/_authenticated/statistics/history': {
-      id: '/_authenticated/statistics/history'
-      path: '/history'
-      fullPath: '/statistics/history'
-      preLoaderRoute: typeof AuthenticatedStatisticsHistoryRouteImport
-      parentRoute: typeof AuthenticatedStatisticsRoute
-    }
-    '/_authenticated/statistics/$month': {
-      id: '/_authenticated/statistics/$month'
-      path: '/$month'
-      fullPath: '/statistics/$month'
-      preLoaderRoute: typeof AuthenticatedStatisticsMonthRouteImport
-      parentRoute: typeof AuthenticatedStatisticsRoute
-    }
-    '/_authenticated/settings/theme': {
-      id: '/_authenticated/settings/theme'
-      path: '/theme'
-      fullPath: '/settings/theme'
-      preLoaderRoute: typeof AuthenticatedSettingsThemeRouteImport
-      parentRoute: typeof AuthenticatedSettingsRoute
-    }
-    '/_authenticated/settings/main': {
-      id: '/_authenticated/settings/main'
-      path: '/main'
-      fullPath: '/settings/main'
-      preLoaderRoute: typeof AuthenticatedSettingsMainRouteImport
-      parentRoute: typeof AuthenticatedSettingsRoute
-    }
-    '/_authenticated/settings/language': {
-      id: '/_authenticated/settings/language'
-      path: '/language'
-      fullPath: '/settings/language'
-      preLoaderRoute: typeof AuthenticatedSettingsLanguageRouteImport
-      parentRoute: typeof AuthenticatedSettingsRoute
-    }
-    '/_authenticated/settings/donate': {
-      id: '/_authenticated/settings/donate'
-      path: '/donate'
-      fullPath: '/settings/donate'
-      preLoaderRoute: typeof AuthenticatedSettingsDonateRouteImport
       parentRoute: typeof AuthenticatedSettingsRoute
     }
     '/_authenticated/settings/currency': {
@@ -312,12 +270,54 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsCurrencyRouteImport
       parentRoute: typeof AuthenticatedSettingsRoute
     }
-    '/_authenticated/edit/$id': {
-      id: '/_authenticated/edit/$id'
-      path: '/edit/$id'
-      fullPath: '/edit/$id'
-      preLoaderRoute: typeof AuthenticatedEditIdRouteImport
-      parentRoute: typeof AuthenticatedRoute
+    '/_authenticated/settings/donate': {
+      id: '/_authenticated/settings/donate'
+      path: '/donate'
+      fullPath: '/settings/donate'
+      preLoaderRoute: typeof AuthenticatedSettingsDonateRouteImport
+      parentRoute: typeof AuthenticatedSettingsRoute
+    }
+    '/_authenticated/settings/language': {
+      id: '/_authenticated/settings/language'
+      path: '/language'
+      fullPath: '/settings/language'
+      preLoaderRoute: typeof AuthenticatedSettingsLanguageRouteImport
+      parentRoute: typeof AuthenticatedSettingsRoute
+    }
+    '/_authenticated/settings/main': {
+      id: '/_authenticated/settings/main'
+      path: '/main'
+      fullPath: '/settings/main'
+      preLoaderRoute: typeof AuthenticatedSettingsMainRouteImport
+      parentRoute: typeof AuthenticatedSettingsRoute
+    }
+    '/_authenticated/settings/theme': {
+      id: '/_authenticated/settings/theme'
+      path: '/theme'
+      fullPath: '/settings/theme'
+      preLoaderRoute: typeof AuthenticatedSettingsThemeRouteImport
+      parentRoute: typeof AuthenticatedSettingsRoute
+    }
+    '/_authenticated/statistics/': {
+      id: '/_authenticated/statistics/'
+      path: '/'
+      fullPath: '/statistics/'
+      preLoaderRoute: typeof AuthenticatedStatisticsIndexRouteImport
+      parentRoute: typeof AuthenticatedStatisticsRoute
+    }
+    '/_authenticated/statistics/$month': {
+      id: '/_authenticated/statistics/$month'
+      path: '/$month'
+      fullPath: '/statistics/$month'
+      preLoaderRoute: typeof AuthenticatedStatisticsMonthRouteImport
+      parentRoute: typeof AuthenticatedStatisticsRoute
+    }
+    '/_authenticated/statistics/history': {
+      id: '/_authenticated/statistics/history'
+      path: '/history'
+      fullPath: '/statistics/history'
+      preLoaderRoute: typeof AuthenticatedStatisticsHistoryRouteImport
+      parentRoute: typeof AuthenticatedStatisticsRoute
     }
   }
 }

@@ -7,7 +7,7 @@ import { useTheme } from "@/context/ThemeContext";
 import { cn } from "@/lib/utils";
 import { useUserStore } from "@/stores/userStore";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { ChevronRight, HeartIcon } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import type * as React from "react";
 import { useEffect, useRef } from "react";
 
@@ -131,22 +131,6 @@ function MainSettingsPage() {
             onClick={() => navigate({ to: "/settings/currency" })}
             position="last"
           />
-        </div>
-
-        <div className="text-gray-500 dark:text-gray-400 space-y-2">
-          <div className="settings-group">
-            <SettingsRow
-              icon={HeartIcon}
-              iconColor="bg-pink-500"
-              label={t("settings.donate")}
-              value={<span className="text-yellow-500">⭐</span>}
-              onClick={() => navigate({ to: "/settings/donate" })}
-              position="single"
-            />
-          </div>
-          <p className="text-sm ml-4 text-balance opacity-50 pb-20">
-            {t("donate.description")}
-          </p>
         </div>
       </div>
     </>

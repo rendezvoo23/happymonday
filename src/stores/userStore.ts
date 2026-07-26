@@ -140,7 +140,7 @@ export const useUserStore = create<UserState>((set, get) => ({
               default_currency,
               language: updates.language || "en",
               timezone: updates.timezone || "UTC",
-              week_start: updates.week_start || 0,
+              week_start: updates.week_start ?? 1,
               created_at: new Date().toISOString(),
               updated_at: new Date().toISOString(),
               ...updates,

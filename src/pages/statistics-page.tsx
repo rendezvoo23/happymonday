@@ -12,6 +12,7 @@ import { useLocale } from "@/context/LocaleContext";
 import {
   useDeleteTransaction,
   useMonthTransactionsWithCategories,
+  useWeekTransactionsWithCategories,
   useYearTransactionsWithCategories,
 } from "@/hooks/use-transactions-query";
 import { useCategoryLabel } from "@/hooks/useCategoryLabel";
@@ -25,6 +26,7 @@ import {
   addYears,
   endOfWeek,
   format,
+  isSameDay,
   isSameMonth,
   isSameWeek,
   isSameYear,
@@ -74,6 +76,7 @@ export function StatisticsPage(props: StatisticsPageProps = {}) {
     month?: string;
     mode?: string;
     category?: string;
+    date?: string;
   };
   const urlMonth =
     search?.month && /^\d{4}-(0[1-9]|1[0-2])$/.test(search.month)
@@ -84,6 +87,7 @@ export function StatisticsPage(props: StatisticsPageProps = {}) {
       ? (search.mode as ChartMode)
       : undefined;
   const categoryParam = search?.category;
+  const urlDate = search?.date;
   const { selectedDate, setDate, prevMonth, nextMonth } = useDate();
   const { formatAmount } = useCurrency();
   const { t } = useTranslation();
@@ -106,9 +110,10 @@ export function StatisticsPage(props: StatisticsPageProps = {}) {
   // Fetch data with TanStack Query (includes full category and subcategory data)
   const isYearMode = chartMode === "year";
   const monthQuery = useMonthTransactionsWithCategories(selectedDate);
+  const weekQuery = useWeekTransactionsWithCategories(selectedDate);
   const yearQuery = useYearTransactionsWithCategories(selectedDate);
   const { data: transactionsData = [], isLoading: isTransactionsLoading } =
-    isYearMode ? yearQuery : monthQuery;
+    isYearMode ? yearQuery : chartMode === "week" ? weekQuery : monthQuery;
 
   // Sync URL <-> selected month & mode (for reload persistence)
   const updateUrl = useCallback(
@@ -117,6 +122,7 @@ export function StatisticsPage(props: StatisticsPageProps = {}) {
         to: "/statistics",
         search: {
           month: getMonthKey(date),
+          date: format(date, "yyyy-MM-dd"),
           mode,
           category: category ?? undefined,
         },
@@ -134,18 +140,26 @@ export function StatisticsPage(props: StatisticsPageProps = {}) {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       // When viewing current month, default to today so week/day mode shows current period
-      const initialDate = isSameMonth(parsed, today) ? today : parsed;
-      if (!isSameMonth(selectedDate, parsed)) {
+      const parsedUrlDate = urlDate ? new Date(`${urlDate}T00:00:00`) : null;
+      const initialDate =
+        parsedUrlDate &&
+        !Number.isNaN(parsedUrlDate.getTime()) &&
+        isSameMonth(parsedUrlDate, parsed)
+          ? parsedUrlDate
+          : isSameMonth(parsed, today)
+            ? today
+            : parsed;
+      if (!isSameDay(selectedDate, initialDate)) {
         setDate(initialDate);
       }
       // If we came from path param (propsMonth), normalize to search params
-      if (propsMonth && !urlMonth) {
+      if ((propsMonth && !urlMonth) || !urlDate) {
         updateUrl(initialDate, urlMode || chartMode, categoryParam);
       }
     } else {
       updateUrl(selectedDate, chartMode, categoryParam);
     }
-  }, [monthFromUrl]);
+  }, [monthFromUrl, urlDate]);
 
   useEffect(() => {
     if (urlMode && urlMode !== chartMode) {

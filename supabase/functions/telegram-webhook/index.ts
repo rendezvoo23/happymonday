@@ -1,207 +1,1196 @@
-// Telegram Webhook Edge Function for Supabase (Deno)
-// Handles updates including pre_checkout_query to confirm invoice payments.
-// @ts-expect-error: Deno.serve is provided by the Deno runtime
-const TELEGRAM_BOT_TOKEN = Deno.env.get('TELEGRAM_BOT_TOKEN'); 
-if (!TELEGRAM_BOT_TOKEN) {
-  console.error('[WEBHOOK] ERROR: TELEGRAM_BOT_TOKEN not set');
+// Telegram webhook for payments and Apple Shortcut access.
+// Required secrets: TELEGRAM_BOT_TOKEN, TELEGRAM_WEBHOOK_SECRET.
+// Payments additionally require PAYMENT_SUPPORT_CONTACT.
+// Shortcut commands additionally require SHORTCUT_TOKEN_PEPPER.
+
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.8";
+import {
+  escapeTelegramHtml,
+  generateShortcutToken,
+  hmacToken,
+} from "../_shared/shortcut.ts";
+
+function createAdminClient(url: string, serviceRoleKey: string) {
+  return createClient<any>(url, serviceRoleKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
 }
 
-console.log('[WEBHOOK] Telegram webhook function initialized');
-async function replyOk(body) {
-  return new Response(JSON.stringify(body), {
-    headers: {
-      'Content-Type': 'application/json'
-    }
-  });
+type AdminClient = ReturnType<typeof createAdminClient>;
+
+const SHORTCUT_TEMPLATE_URL =
+  "https://www.icloud.com/shortcuts/97d983fd4aee49c0806e46ad924697e5";
+const WHYSPENT_BOT_USERNAME = "WhySpentBot";
+const SHORTCUT_MONTH_STARS = 250;
+const SHORTCUT_MONTH_DAYS = 30;
+const TRIAL_HOURS = 24;
+const TRIAL_REQUEST_LIMIT = 10;
+const SHORTCUT_PAYMENT_PAYLOAD_PREFIX = "whyspent_shortcut_month_v2";
+const LEGACY_SHORTCUT_PAYMENT_PAYLOAD_PREFIX = "whyspent_shortcut_month";
+const PAYMENT_ORDER_MINUTES = 15;
+
+interface TelegramUser {
+  id: number;
 }
-// Confirm pre_checkout_query by answering via Telegram API
-async function answerPreCheckout(pre_checkout_query_id, ok = true, error_message?: string) {
-  const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/answerPreCheckoutQuery`;
-  const payload: {
-    pre_checkout_query_id: string;
-    ok: boolean;
-    error_message?: string;
-  } = {
-    pre_checkout_query_id,
-    ok
+
+interface TelegramChat {
+  id: number;
+}
+
+interface TelegramMessage {
+  chat: TelegramChat;
+  from?: TelegramUser;
+  text?: string;
+  caption?: string;
+  video?: {
+    file_id: string;
+    file_size?: number;
+    mime_type?: string;
   };
-  
-  if (!ok && error_message) {
-    payload.error_message = error_message;
+  animation?: {
+    file_id: string;
+    file_size?: number;
+    mime_type?: string;
+    file_name?: string;
+  };
+  successful_payment?: {
+    currency: string;
+    total_amount: number;
+    invoice_payload: string;
+    telegram_payment_charge_id: string;
+  };
+}
+
+interface TelegramCallbackQuery {
+  id: string;
+  from: TelegramUser;
+  message?: TelegramMessage;
+  data?: string;
+}
+
+interface TelegramUpdate {
+  update_id: number;
+  message?: TelegramMessage;
+  callback_query?: TelegramCallbackQuery;
+  pre_checkout_query?: {
+    id: string;
+    from: TelegramUser;
+    currency: string;
+    total_amount: number;
+    invoice_payload: string;
+  };
+}
+
+interface Profile {
+  id: string;
+  telegram_id: number;
+}
+
+interface ShortcutEntitlement {
+  trial_started_at: string | null;
+  trial_ends_at: string | null;
+  trial_request_limit: number;
+  paid_until: string | null;
+  bonus_request_credits: number;
+}
+
+interface ShortcutState {
+  entitlement: ShortcutEntitlement | null;
+  trialUsed: boolean;
+  trialActive: boolean;
+  trialRemaining: number;
+  paidActive: boolean;
+  paidUntil: string | null;
+  bonusCredits: number;
+  accessActive: boolean;
+}
+
+function env(name: string): string | null {
+  return Deno.env.get(name) ?? null;
+}
+
+function constantTimeEqual(left: string, right: string): boolean {
+  if (left.length !== right.length) return false;
+  let difference = 0;
+  for (let index = 0; index < left.length; index++) {
+    difference |= left.charCodeAt(index) ^ right.charCodeAt(index);
   }
-  
-  console.log('[WEBHOOK] Calling answerPreCheckoutQuery', {
-    pre_checkout_query_id,
+  return difference === 0;
+}
+
+function response(body = "ok", status = 200): Response {
+  return new Response(body, {
+    status,
+    headers: {
+      "Content-Type": "text/plain; charset=utf-8",
+      "Cache-Control": "no-store",
+      "X-Content-Type-Options": "nosniff",
+    },
+  });
+}
+
+function privateChatOnly(chatId: number, telegramId: number): boolean {
+  return chatId === telegramId;
+}
+
+function addHours(date: Date, hours: number): Date {
+  return new Date(date.getTime() + hours * 60 * 60 * 1000);
+}
+
+function formatDateTime(value: string): string {
+  return new Intl.DateTimeFormat("ru-RU", {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone: "Europe/Moscow",
+  }).format(new Date(value));
+}
+
+function shortcutPaymentPayload(telegramId: number): string {
+  return `${SHORTCUT_PAYMENT_PAYLOAD_PREFIX}:${telegramId}:${crypto.randomUUID()}`;
+}
+
+function parseShortcutPaymentPayload(
+  payload: string
+): { telegramId: number; requiresOrder: boolean } | null {
+  const [prefix, rawTelegramId, nonce, ...extra] = payload.split(":");
+  if (
+    extra.length > 0 ||
+    !nonce ||
+    (prefix !== SHORTCUT_PAYMENT_PAYLOAD_PREFIX &&
+      prefix !== LEGACY_SHORTCUT_PAYMENT_PAYLOAD_PREFIX)
+  ) {
+    return null;
+  }
+  const telegramId = Number(rawTelegramId);
+  if (!Number.isSafeInteger(telegramId) || telegramId <= 0) return null;
+  return {
+    telegramId,
+    requiresOrder: prefix === SHORTCUT_PAYMENT_PAYLOAD_PREFIX,
+  };
+}
+
+async function callTelegram(
+  botToken: string,
+  method: string,
+  payload: Record<string, unknown>
+): Promise<boolean> {
+  const result = await fetch(`https://api.telegram.org/bot${botToken}/${method}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+    signal: AbortSignal.timeout(8_000),
+  });
+  return result.ok;
+}
+
+async function sendMessage(
+  botToken: string,
+  chatId: number,
+  text: string,
+  replyMarkup?: Record<string, unknown>
+): Promise<boolean> {
+  const payload: Record<string, unknown> = {
+    chat_id: chatId,
+    text,
+    parse_mode: "HTML",
+    disable_web_page_preview: true,
+  };
+  if (replyMarkup) payload.reply_markup = replyMarkup;
+  return callTelegram(botToken, "sendMessage", payload);
+}
+
+async function sendVideo(
+  botToken: string,
+  chatId: number,
+  fileId: string,
+  caption: string,
+  replyMarkup: Record<string, unknown>
+): Promise<boolean> {
+  return callTelegram(botToken, "sendVideo", {
+    chat_id: chatId,
+    video: fileId,
+    supports_streaming: true,
+    caption,
+    parse_mode: "HTML",
+    reply_markup: replyMarkup,
+  });
+}
+
+async function sendAnimation(
+  botToken: string,
+  chatId: number,
+  fileId: string,
+  caption: string,
+  replyMarkup: Record<string, unknown>
+): Promise<boolean> {
+  return callTelegram(botToken, "sendAnimation", {
+    chat_id: chatId,
+    animation: fileId,
+    caption,
+    parse_mode: "HTML",
+    reply_markup: replyMarkup,
+  });
+}
+
+async function answerCallback(
+  botToken: string,
+  callbackId: string,
+  text?: string
+): Promise<void> {
+  await callTelegram(botToken, "answerCallbackQuery", {
+    callback_query_id: callbackId,
+    ...(text ? { text } : {}),
+  });
+}
+
+async function answerPreCheckout(
+  botToken: string,
+  preCheckoutQueryId: string,
+  ok: boolean,
+  errorMessage?: string
+): Promise<boolean> {
+  return callTelegram(botToken, "answerPreCheckoutQuery", {
+    pre_checkout_query_id: preCheckoutQueryId,
     ok,
-    error_message: error_message || 'none'
+    ...(ok ? {} : { error_message: errorMessage ?? "Платёж не прошёл" }),
   });
-  
-  try {
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(payload)
+}
+
+async function sendShortcutInvoice(options: {
+  botToken: string;
+  admin: AdminClient;
+  chatId: number;
+  userId: string;
+}): Promise<boolean> {
+  if (!env("PAYMENT_SUPPORT_CONTACT")) return false;
+  const payload = shortcutPaymentPayload(options.chatId);
+  const expiresAt = new Date(
+    Date.now() + PAYMENT_ORDER_MINUTES * 60_000
+  ).toISOString();
+  const { error: cancelError } = await options.admin
+    .from("shortcut_payment_orders")
+    .update({ status: "cancelled" })
+    .eq("user_id", options.userId)
+    .eq("product", "shortcut_30_days")
+    .eq("status", "pending");
+  if (cancelError) return false;
+
+  const { error: orderError } = await options.admin
+    .from("shortcut_payment_orders")
+    .insert({
+      user_id: options.userId,
+      payload,
+      product: "shortcut_30_days",
+      amount: SHORTCUT_MONTH_STARS,
+      currency: "XTR",
+      status: "pending",
+      expires_at: expiresAt,
     });
-    
-    const responseData = await res.json();
-    
-    console.log('[WEBHOOK] answerPreCheckoutQuery response', {
-      status: res.status,
-      ok: res.ok,
-      data: responseData
-    });
-    
-    if (!res.ok || !responseData.ok) {
-      console.error('[WEBHOOK] ERROR: answerPreCheckoutQuery failed', {
-        status: res.status,
-        description: responseData.description,
-        error_code: responseData.error_code
-      });
+  if (orderError) return false;
+
+  const sent = await callTelegram(options.botToken, "sendInvoice", {
+    chat_id: options.chatId,
+    title: "WhySpent Shortcut на месяц",
+    description: "Быстрое добавление расходов с iPhone через Apple Shortcut.",
+    payload,
+    provider_token: "",
+    currency: "XTR",
+    prices: [{ label: "Apple Shortcut, 30 дней", amount: SHORTCUT_MONTH_STARS }],
+  });
+  if (!sent) {
+    await options.admin
+      .from("shortcut_payment_orders")
+      .update({ status: "cancelled" })
+      .eq("payload", payload)
+      .eq("status", "pending");
+  }
+  return sent;
+}
+
+function mainKeyboard(): Record<string, unknown> {
+  return {
+    inline_keyboard: [
+      [{ text: "⚡ Apple Shortcut", callback_data: "shortcut" }],
+      [{ text: "🎁 Пригласить друга", callback_data: "referral" }],
+      [{ text: "💳 Подписка", callback_data: "subscription" }],
+      [{ text: "📱 Открыть WhySpent", url: `https://t.me/${WHYSPENT_BOT_USERNAME}` }],
+      [{ text: "❓ Помощь", callback_data: "help" }],
+    ],
+  };
+}
+
+function shortcutKeyboard(state: ShortcutState): Record<string, unknown> {
+  const rows: Array<Array<Record<string, string>>> = [
+    [{ text: "⬇️ Установить Shortcut", url: SHORTCUT_TEMPLATE_URL }],
+  ];
+
+  if (state.accessActive) {
+    rows.push([{ text: "🔐 Получить токен", callback_data: "shortcut_token" }]);
+  } else if (!state.trialUsed) {
+    rows.push([{ text: "🎁 Попробовать бесплатно", callback_data: "shortcut_trial" }]);
+  }
+
+  rows.push([{ text: "💳 Подписка", callback_data: "subscription" }]);
+  rows.push([{ text: "🛑 Отозвать токены", callback_data: "shortcut_revoke" }]);
+  rows.push([{ text: "← Главное меню", callback_data: "home" }]);
+  return { inline_keyboard: rows };
+}
+
+function subscriptionKeyboard(state: ShortcutState | null): Record<string, unknown> {
+  const rows: Array<Array<Record<string, string>>> = [];
+  if (state && !state.trialUsed && !state.accessActive) {
+    rows.push([{ text: "🎁 Попробовать бесплатно", callback_data: "shortcut_trial" }]);
+  }
+  rows.push([
+    {
+      text: `Оплатить ${SHORTCUT_MONTH_STARS} ⭐️ и принять условия`,
+      callback_data: "pay_stars",
+    },
+  ]);
+  rows.push([
+    { text: "Условия", callback_data: "terms" },
+    { text: "Поддержка", callback_data: "paysupport" },
+  ]);
+  rows.push([{ text: "← Главное меню", callback_data: "home" }]);
+  return { inline_keyboard: rows };
+}
+
+function tokenKeyboard(): Record<string, unknown> {
+  return {
+    inline_keyboard: [
+      [{ text: "⬇️ Установить Shortcut", url: SHORTCUT_TEMPLATE_URL }],
+      [{ text: "⚡ Раздел Shortcut", callback_data: "shortcut" }],
+    ],
+  };
+}
+
+function buildHomeMessage(): string {
+  return [
+    "👋 <b>WhySpent</b>",
+    "",
+    "Быстрый учёт денег в Telegram.",
+    "Записывайте расходы, доходы и смотрите, куда уходит бюджет.",
+    "",
+    "Самая быстрая фича — Apple Shortcut для iPhone.",
+  ].join("\n");
+}
+
+function buildHelpMessage(): string {
+  return [
+    "❓ <b>Помощь</b>",
+    "",
+    "/start — главное меню",
+    "/shortcut — Apple Shortcut",
+    "/referral — пригласить друга",
+    "/reminders_off — отключить напоминания",
+    "/subscription — подписка",
+    "/shortcut_revoke — отозвать токены",
+    "/terms — условия оплаты",
+    "/paysupport — помощь с платежом",
+    "",
+    "Если Shortcut не работает, получите новый токен в разделе /shortcut.",
+  ].join("\n");
+}
+
+function buildTermsMessage(): string {
+  return [
+    "📄 <b>Условия оплаты</b>",
+    "",
+    `250 ⭐️ дают доступ к Apple Shortcut на ${SHORTCUT_MONTH_DAYS} дней.`,
+    "Это разовая покупка без автоматического продления.",
+    "Срок прибавляется к уже оплаченному периоду.",
+    "",
+    "Оплачивая счёт, вы соглашаетесь с этими условиями.",
+    "По вопросам возврата: /paysupport.",
+  ].join("\n");
+}
+
+function buildPaySupportMessage(): string {
+  const contact = env("PAYMENT_SUPPORT_CONTACT");
+  return [
+    "🛟 <b>Поддержка по платежам</b>",
+    "",
+    contact
+      ? `Если оплата прошла, а доступ не появился, напишите: ${escapeTelegramHtml(contact)}.`
+      : "Контакт поддержки пока не настроен. Покупки временно недоступны.",
+    "Укажите дату платежа. Не отправляйте токен Shortcut.",
+  ].join("\n");
+}
+
+function buildShortcutMessage(state: ShortcutState): string {
+  if (state.accessActive) {
+    const details = state.paidActive
+      ? `Доступ активен до ${formatDateTime(state.paidUntil as string)}.`
+      : state.trialActive
+        ? `Пробный доступ активен. Осталось добавлений: ${state.trialRemaining}.`
+        : `Бонусных добавлений: ${state.bonusCredits}.`;
+    return [
+      "⚡ <b>Apple Shortcut</b>",
+      "",
+      "Добавляйте расходы с iPhone за пару секунд.",
+      details,
+      "",
+      "1. Установите Shortcut",
+      "2. Вставьте токен в первое поле",
+      "3. Напишите: <code>кофе 350</code>",
+      ...(state.bonusCredits > 0 && (state.paidActive || state.trialActive)
+        ? ["", `Бонусных добавлений в запасе: ${state.bonusCredits}.`]
+        : []),
+    ].join("\n");
+  }
+
+  if (!state.trialUsed) {
+    return [
+      "⚡ <b>Apple Shortcut</b>",
+      "",
+      "Быстрый ввод с iPhone.",
+      "Пробный доступ: 24 часа и 10 добавлений.",
+      "",
+      "Потом — 250 ⭐️ в месяц.",
+    ].join("\n");
+  }
+
+  return [
+    "⚡ <b>Apple Shortcut</b>",
+    "",
+    "Пробный доступ закончился.",
+    `Месяц доступа стоит ${SHORTCUT_MONTH_STARS} ⭐️.`,
+  ].join("\n");
+}
+
+function buildSubscriptionMessage(state: ShortcutState | null): string {
+  const lines = [
+    "💳 <b>Подписка</b>",
+    "",
+    `Apple Shortcut: ${SHORTCUT_MONTH_STARS} ⭐️ в месяц.`,
+    "Пробный доступ: 24 часа и 10 добавлений.",
+  ];
+  if (state?.paidActive && state.paidUntil) {
+    lines.push("", `Сейчас оплачено до ${formatDateTime(state.paidUntil)}.`);
+  }
+  lines.push("", "Оплачивая счёт, вы принимаете условия /terms.");
+  return lines.join("\n");
+}
+
+function buildTokenMessage(token: string): string {
+  return [
+    "🔐 <b>Ваш токен</b>",
+    "",
+    `<code>${escapeTelegramHtml(token)}</code>`,
+    "",
+    "Вставьте его в первое верхнее поле Shortcut.",
+    "Остальное уже настроено.",
+  ].join("\n");
+}
+
+function buildReferralMessage(options: {
+  rewarded: number;
+  pending: number;
+  bonusCredits: number;
+}): string {
+  return [
+    "🎁 <b>10 добавлений каждому</b>",
+    "",
+    "Пригласите друга. После его первой записи через Shortcut вы оба получите по 10 добавлений.",
+    "Бонусы не сгорают.",
+    "Награда для вас действует за первых 20 друзей — это до 200 добавлений.",
+    "",
+    `Приглашено: ${options.rewarded}`,
+    `Ожидают первую запись: ${options.pending}`,
+    `Ваш бонусный запас: ${options.bonusCredits}`,
+  ].join("\n");
+}
+
+function referralKeyboard(code: string, canInvite: boolean): Record<string, unknown> {
+  const referralUrl = `https://t.me/${WHYSPENT_BOT_USERNAME}?start=ref_${code}`;
+  const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(referralUrl)}&text=${encodeURIComponent(
+    "Попробуй WhySpent — расходы добавляются с iPhone за пару секунд. После первой записи мы оба получим по 10 добавлений."
+  )}`;
+  return {
+    inline_keyboard: [
+      ...(canInvite ? [[{ text: "Поделиться ссылкой", url: shareUrl }]] : []),
+      [{ text: "⚡ Apple Shortcut", callback_data: "shortcut" }],
+      [{ text: "← Главное меню", callback_data: "home" }],
+    ],
+  };
+}
+
+function profileMissingMessage(): string {
+  return [
+    "Сначала откройте WhySpent.",
+    "Так бот поймёт, к какому аккаунту подключить Shortcut.",
+  ].join("\n");
+}
+
+function accessAfterPaymentMessage(paidUntil: string): string {
+  return [
+    "✅ <b>Подписка активна</b>",
+    "",
+    `Shortcut доступен до ${formatDateTime(paidUntil)}.`,
+    "Теперь можно получить токен и добавить первый расход.",
+  ].join("\n");
+}
+
+function openAppKeyboard(): Record<string, unknown> {
+  return {
+    inline_keyboard: [
+      [{ text: "📱 Открыть WhySpent", url: `https://t.me/${WHYSPENT_BOT_USERNAME}` }],
+      [{ text: "← Главное меню", callback_data: "home" }],
+    ],
+  };
+}
+
+async function getProfile(
+  admin: AdminClient,
+  telegramId: number
+): Promise<Profile | null> {
+  const { data } = await admin
+    .from("profiles")
+    .select("id,telegram_id")
+    .eq("telegram_id", telegramId)
+    .maybeSingle();
+  return (data as Profile | null) ?? null;
+}
+
+async function loadShortcutState(
+  admin: AdminClient,
+  userId: string
+): Promise<ShortcutState> {
+  const { data } = await admin
+    .from("shortcut_entitlements")
+    .select("trial_started_at,trial_ends_at,trial_request_limit,paid_until,bonus_request_credits")
+    .eq("user_id", userId)
+    .maybeSingle();
+  const entitlement = (data as ShortcutEntitlement | null) ?? null;
+  const now = Date.now();
+  const paidActive = Boolean(entitlement?.paid_until && Date.parse(entitlement.paid_until) > now);
+  const trialUsed = Boolean(entitlement?.trial_started_at);
+  const bonusCredits = entitlement?.bonus_request_credits ?? 0;
+  let trialRemaining = entitlement?.trial_request_limit ?? TRIAL_REQUEST_LIMIT;
+
+  if (entitlement?.trial_started_at && entitlement.trial_ends_at) {
+    const { count } = await admin
+      .from("shortcut_ingestion_requests")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", userId)
+      .eq("counts_toward_quota", true)
+      .in("status", ["processing", "completed", "failed"])
+      .gte("created_at", entitlement.trial_started_at)
+      .lte("created_at", entitlement.trial_ends_at);
+    trialRemaining = Math.max(0, entitlement.trial_request_limit - (count ?? 0));
+  }
+
+  const trialActive = Boolean(
+    entitlement?.trial_ends_at &&
+      Date.parse(entitlement.trial_ends_at) > now &&
+      trialRemaining > 0
+  );
+
+  return {
+    entitlement,
+    trialUsed,
+    trialActive,
+    trialRemaining,
+    paidActive,
+    paidUntil: entitlement?.paid_until ?? null,
+    bonusCredits,
+    accessActive: paidActive || trialActive || bonusCredits > 0,
+  };
+}
+
+async function startTrial(
+  admin: AdminClient,
+  userId: string
+): Promise<ShortcutState> {
+  const state = await loadShortcutState(admin, userId);
+  if (state.trialUsed) return state;
+
+  const now = new Date();
+  await admin.from("shortcut_entitlements").upsert({
+    user_id: userId,
+    trial_started_at: now.toISOString(),
+    trial_ends_at: addHours(now, TRIAL_HOURS).toISOString(),
+    trial_request_limit: TRIAL_REQUEST_LIMIT,
+  });
+  return loadShortcutState(admin, userId);
+}
+
+async function rotateShortcutToken(options: {
+  admin: AdminClient;
+  pepper: string;
+  userId: string;
+}): Promise<{ ok: true; token: string } | { ok: false }> {
+  const plaintextToken = generateShortcutToken();
+  const tokenHash = await hmacToken(plaintextToken, options.pepper);
+  const { data: createdId, error: rotateError } = await options.admin.rpc(
+    "rotate_shortcut_access_token",
+    {
+      p_user_id: options.userId,
+      p_token_hash: tokenHash,
+      p_label: "Apple Shortcut",
     }
-    
-    return { success: res.ok && responseData.ok, response: responseData };
-  } catch (err) {
-    console.error('[WEBHOOK] ERROR: answerPreCheckoutQuery exception', err);
-    throw err;
+  );
+  if (rotateError || !createdId) return { ok: false };
+  return { ok: true, token: plaintextToken };
+}
+
+async function revokeShortcutTokens(options: {
+  admin: AdminClient;
+  telegramId: number;
+}): Promise<boolean> {
+  const profile = await getProfile(options.admin, options.telegramId);
+  if (!profile) return false;
+  const { error } = await options.admin.rpc("revoke_shortcut_access_tokens", {
+    p_user_id: profile.id,
+  });
+  return !error;
+}
+
+async function recordStarsPayment(options: {
+  admin: AdminClient;
+  userId: string;
+  payment: TelegramMessage["successful_payment"];
+}): Promise<{ paidUntil: string; duplicate: boolean } | null> {
+  if (!options.payment) return null;
+  if (options.payment.currency !== "XTR") return null;
+  if (options.payment.total_amount !== SHORTCUT_MONTH_STARS) return null;
+
+  const { data, error } = await options.admin.rpc(
+    "fulfill_shortcut_stars_payment",
+    {
+      p_user_id: options.userId,
+      p_provider_charge_id:
+        options.payment.telegram_payment_charge_id,
+      p_payload: options.payment.invoice_payload,
+      p_amount: options.payment.total_amount,
+      p_currency: options.payment.currency,
+      p_access_days: SHORTCUT_MONTH_DAYS,
+    }
+  );
+  if (error) return null;
+  const result = Array.isArray(data) ? data[0] : data;
+  if (!result?.paid_until) return null;
+  return {
+    paidUntil: result.paid_until as string,
+    duplicate: Boolean(result.duplicate),
+  };
+}
+
+async function sendShortcutSection(
+  botToken: string,
+  admin: AdminClient,
+  chatId: number,
+  telegramId: number
+): Promise<void> {
+  const profile = await getProfile(admin, telegramId);
+  if (!profile) {
+    await sendMessage(botToken, chatId, profileMissingMessage(), openAppKeyboard());
+    return;
+  }
+  const { data: demoSettings } = await admin
+    .from("bot_settings")
+    .select("key,value")
+    .in("key", [
+      "shortcut_demo_animation_file_id",
+      "shortcut_demo_video_file_id",
+    ]);
+  const animationFileId = demoSettings?.find(
+    (setting) => setting.key === "shortcut_demo_animation_file_id"
+  )?.value;
+  const legacyVideoFileId = demoSettings?.find(
+    (setting) => setting.key === "shortcut_demo_video_file_id"
+  )?.value;
+  const state = await loadShortcutState(admin, profile.id);
+  const message = buildShortcutMessage(state);
+  const keyboard = shortcutKeyboard(state);
+  let mediaSent = false;
+  if (animationFileId) {
+    mediaSent = await sendAnimation(
+      botToken,
+      chatId,
+      animationFileId,
+      message,
+      keyboard
+    );
+  } else if (legacyVideoFileId) {
+    mediaSent = await sendVideo(
+      botToken,
+      chatId,
+      legacyVideoFileId,
+      message,
+      keyboard
+    );
+  }
+  if (!mediaSent) {
+    await sendMessage(botToken, chatId, message, keyboard);
   }
 }
-function setCorsHeaders(headers) {
-  headers.set('Access-Control-Allow-Origin', '*');
-  headers.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  headers.set('Access-Control-Allow-Headers', 'Content-Type');
+
+async function sendReferralSection(
+  botToken: string,
+  admin: AdminClient,
+  chatId: number,
+  telegramId: number
+): Promise<void> {
+  const profile = await getProfile(admin, telegramId);
+  if (!profile) {
+    await sendMessage(botToken, chatId, profileMissingMessage(), openAppKeyboard());
+    return;
+  }
+  const [{ data: code, error: codeError }, { data: referrals }, state] = await Promise.all([
+    admin.rpc("get_or_create_shortcut_referral_code", { p_user_id: profile.id }),
+    admin
+      .from("shortcut_referrals")
+      .select("status")
+      .eq("inviter_user_id", profile.id),
+    loadShortcutState(admin, profile.id),
+  ]);
+  if (codeError || typeof code !== "string") {
+    await sendMessage(botToken, chatId, "Не удалось создать ссылку. Попробуйте позже.");
+    return;
+  }
+  const rows = (referrals ?? []) as Array<{ status: string }>;
+  const rewarded = rows.filter((item) => item.status === "rewarded").length;
+  await sendMessage(
+    botToken,
+    chatId,
+    buildReferralMessage({
+      rewarded,
+      pending: rows.filter((item) => item.status === "pending").length,
+      bonusCredits: state.bonusCredits,
+    }),
+    referralKeyboard(code, rewarded < 20)
+  );
 }
-// @ts-expect-error: Deno.serve is provided by the Deno runtime
-Deno.serve(async (req)=>{
-  const url = new URL(req.url);
-  // Allow preflight
-  if (req.method === 'OPTIONS') {
-    const headers = new Headers();
-    setCorsHeaders(headers);
-    return new Response(null, {
-      status: 204,
-      headers
-    });
+
+async function sendSubscriptionSection(
+  botToken: string,
+  admin: AdminClient,
+  chatId: number,
+  telegramId: number
+): Promise<void> {
+  const profile = await getProfile(admin, telegramId);
+  if (!profile) {
+    await sendMessage(botToken, chatId, profileMissingMessage(), openAppKeyboard());
+    return;
   }
-  const headers = new Headers();
-  setCorsHeaders(headers);
-  if (req.method !== 'POST') return new Response('Method Not Allowed', {
-    status: 405,
-    headers
-  });
-  let update;
+  const state = await loadShortcutState(admin, profile.id);
+  await sendMessage(botToken, chatId, buildSubscriptionMessage(state), subscriptionKeyboard(state));
+}
+
+Deno.serve(async (request: Request): Promise<Response> => {
+  if (request.method !== "POST") return response("Method not allowed", 405);
+
+  const botToken = env("TELEGRAM_BOT_TOKEN");
+  const webhookSecret = env("TELEGRAM_WEBHOOK_SECRET");
+  if (!botToken || !webhookSecret) return response("Server misconfiguration", 500);
+
+  const providedSecret = request.headers.get("x-telegram-bot-api-secret-token") ?? "";
+  if (!constantTimeEqual(providedSecret, webhookSecret)) return response("Unauthorized", 401);
+
+  const contentLength = Number(request.headers.get("content-length") ?? "0");
+  if (contentLength > 128_000) return response("Request too large", 413);
+
+  let update: TelegramUpdate;
   try {
-    update = await req.json();
-    console.log('[WEBHOOK] Received update', {
-      updateId: update.update_id,
-      hasPreCheckout: !!update.pre_checkout_query,
-      hasMessage: !!update.message,
-      hasSuccessfulPayment: !!update.message?.successful_payment
-    });
-  } catch (e) {
-    console.error('[WEBHOOK] ERROR: Failed to parse request body', e);
-    return new Response('Bad Request', {
-      status: 400,
-      headers
-    });
-  }
-  // Handle pre_checkout_query
-  if (update.pre_checkout_query) {
-    const pq = update.pre_checkout_query;
-    
-    console.log('[WEBHOOK] Processing pre_checkout_query', {
-      id: pq.id,
-      from: pq.from,
-      currency: pq.currency,
-      total_amount: pq.total_amount,
-      invoice_payload: pq.invoice_payload
-    });
-    
-    // TODO: validate amount, invoice payload, or check your DB records
-    // For now we always confirm if token exists
-    if (!TELEGRAM_BOT_TOKEN) {
-      console.error('[WEBHOOK] ERROR: TELEGRAM_BOT_TOKEN not configured, rejecting payment');
-      await answerPreCheckout(pq.id, false, 'Server misconfiguration');
-      return new Response('TELEGRAM_BOT_TOKEN not configured', {
-        status: 500,
-        headers
-      });
+    const raw = await request.text();
+    if (new TextEncoder().encode(raw).byteLength > 128_000) {
+      return response("Request too large", 413);
     }
-    
-    try {
-      const result = await answerPreCheckout(pq.id, true);
-      
-      if (!result.success) {
-        console.error('[WEBHOOK] ERROR: Failed to answer pre_checkout_query', result.response);
-        return new Response('Failed to confirm payment', {
-          status: 500,
-          headers
-        });
+    update = JSON.parse(raw) as TelegramUpdate;
+  } catch {
+    return response("Bad request", 400);
+  }
+
+  try {
+    const supabaseUrl = env("SUPABASE_URL");
+    const serviceRoleKey = env("SUPABASE_SERVICE_ROLE_KEY");
+    if (!supabaseUrl || !serviceRoleKey) return response("Server misconfiguration", 500);
+    const admin = createAdminClient(supabaseUrl, serviceRoleKey);
+
+    if (update.pre_checkout_query) {
+      const parsed = parseShortcutPaymentPayload(update.pre_checkout_query.invoice_payload);
+      let valid =
+        parsed?.telegramId === update.pre_checkout_query.from.id &&
+        update.pre_checkout_query.currency === "XTR" &&
+        update.pre_checkout_query.total_amount === SHORTCUT_MONTH_STARS;
+      if (valid && parsed?.requiresOrder) {
+        const profile = await getProfile(
+          admin,
+          update.pre_checkout_query.from.id
+        );
+        if (!profile) {
+          valid = false;
+        } else {
+          const { data: order, error: orderError } = await admin
+            .from("shortcut_payment_orders")
+            .select("user_id,amount,currency,status,expires_at")
+            .eq("payload", update.pre_checkout_query.invoice_payload)
+            .maybeSingle();
+          valid = Boolean(
+            !orderError &&
+              order &&
+              order.user_id === profile.id &&
+              order.amount === SHORTCUT_MONTH_STARS &&
+              order.currency === "XTR" &&
+              order.status === "pending" &&
+              Date.parse(order.expires_at) > Date.now()
+          );
+        }
       }
-      
-      console.log('[WEBHOOK] Successfully answered pre_checkout_query');
-      return new Response('pre_checkout_query answered', {
-        status: 200,
-        headers
-      });
-    } catch (err) {
-      console.error('[WEBHOOK] ERROR: Exception while answering pre_checkout_query', err);
-      return new Response('Internal Server Error', {
-        status: 500,
-        headers
-      });
+      const accepted = await answerPreCheckout(
+        botToken,
+        update.pre_checkout_query.id,
+        valid,
+        "Платёж не найден"
+      );
+      return response(accepted ? "ok" : "Telegram API error", accepted ? 200 : 502);
     }
-  }
-  // Handle normal messages or successful payments
-  if (update.message) {
-    // Example: handle successful_payment
-    if (update.message.successful_payment) {
-      const payment = update.message.successful_payment;
-      
-      console.log('[WEBHOOK] Successful payment received', {
-        currency: payment.currency,
-        total_amount: payment.total_amount,
-        invoice_payload: payment.invoice_payload,
-        telegram_payment_charge_id: payment.telegram_payment_charge_id,
-        provider_payment_charge_id: payment.provider_payment_charge_id,
-        from: update.message.from
-      });
-      
-      // process payment: save to DB, notify user, etc.
-      // Use background task
-      const task = (async ()=>{
-        // Implement your DB calls or notifications here
-        console.log('[WEBHOOK] Processing payment in background');
-        // TODO: Add database calls to record the payment
-      })();
-      // run in background
-      // @ts-ignore
-      globalThis.EdgeRuntime?.waitUntil?.(task);
-      
-      console.log('[WEBHOOK] Payment acknowledged');
-      return new Response('ok', {
-        status: 200,
-        headers
-      });
+
+    const callback = update.callback_query;
+    if (callback?.data && callback.message) {
+      await answerCallback(botToken, callback.id);
+      const chatId = callback.message.chat.id;
+      const telegramId = callback.from.id;
+
+      if (
+        !privateChatOnly(chatId, telegramId) &&
+        (callback.data === "shortcut" ||
+          callback.data === "referral" ||
+          callback.data === "subscription")
+      ) {
+        await sendMessage(botToken, chatId, "Напишите боту в личном чате.");
+        return response();
+      }
+
+      if (callback.data === "home") {
+        await sendMessage(botToken, chatId, buildHomeMessage(), mainKeyboard());
+        return response();
+      }
+      if (callback.data === "help") {
+        await sendMessage(botToken, chatId, buildHelpMessage(), mainKeyboard());
+        return response();
+      }
+      if (callback.data === "terms") {
+        await sendMessage(botToken, chatId, buildTermsMessage(), mainKeyboard());
+        return response();
+      }
+      if (callback.data === "paysupport") {
+        await sendMessage(
+          botToken,
+          chatId,
+          buildPaySupportMessage(),
+          mainKeyboard()
+        );
+        return response();
+      }
+      if (callback.data === "shortcut") {
+        await sendShortcutSection(botToken, admin, chatId, telegramId);
+        return response();
+      }
+      if (callback.data === "referral") {
+        await sendReferralSection(botToken, admin, chatId, telegramId);
+        return response();
+      }
+      if (callback.data === "subscription") {
+        await sendSubscriptionSection(botToken, admin, chatId, telegramId);
+        return response();
+      }
+
+      if (!privateChatOnly(chatId, telegramId)) {
+        await sendMessage(botToken, chatId, "Напишите боту в личном чате.");
+        return response();
+      }
+
+      const profile = await getProfile(admin, telegramId);
+      if (!profile) {
+        await sendMessage(botToken, chatId, profileMissingMessage(), openAppKeyboard());
+        return response();
+      }
+
+      if (callback.data === "reminders_off" || callback.data === "reminders_on") {
+        const enabled = callback.data === "reminders_on";
+        await admin.from("shortcut_reminder_state").upsert({
+          user_id: profile.id,
+          enabled,
+          ...(enabled
+            ? { last_activity_at: new Date().toISOString(), reminder_stage: 0, last_sent_at: null }
+            : {}),
+        });
+        await sendMessage(
+          botToken,
+          chatId,
+          enabled
+            ? "Напоминания включены. Писать будем редко и только по делу."
+            : "Напоминания отключены. Включить снова: /reminders_on",
+          mainKeyboard()
+        );
+        return response();
+      }
+
+      if (callback.data === "shortcut_trial") {
+        const state = await startTrial(admin, profile.id);
+        await sendMessage(
+          botToken,
+          chatId,
+          buildShortcutMessage(state),
+          shortcutKeyboard(state)
+        );
+        return response();
+      }
+
+      if (callback.data === "shortcut_token") {
+        const state = await loadShortcutState(admin, profile.id);
+        if (!state.accessActive) {
+          await sendMessage(
+            botToken,
+            chatId,
+            buildSubscriptionMessage(state),
+            subscriptionKeyboard(state)
+          );
+          return response();
+        }
+        const pepper = env("SHORTCUT_TOKEN_PEPPER");
+        if (!pepper) return response("Server misconfiguration", 500);
+        const issued = await rotateShortcutToken({ admin, pepper, userId: profile.id });
+        await sendMessage(
+          botToken,
+          chatId,
+          issued.ok ? buildTokenMessage(issued.token) : "Не удалось создать токен. Попробуйте позже.",
+          issued.ok ? tokenKeyboard() : shortcutKeyboard(state)
+        );
+        return response();
+      }
+
+      if (callback.data === "shortcut_revoke") {
+        const revoked = await revokeShortcutTokens({ admin, telegramId });
+        await sendMessage(
+          botToken,
+          chatId,
+          revoked ? "🛑 Токены отозваны." : "Не удалось отозвать токены.",
+          mainKeyboard()
+        );
+        return response();
+      }
+
+      if (callback.data === "pay_stars") {
+        const sent = await sendShortcutInvoice({
+          botToken,
+          admin,
+          chatId,
+          userId: profile.id,
+        });
+        if (!sent) {
+          await sendMessage(
+            botToken,
+            chatId,
+            "Не удалось создать счёт. Попробуйте ещё раз через минуту."
+          );
+        }
+        return response();
+      }
+
+      return response();
     }
-    // Echo message or ignore
-    console.log('[WEBHOOK] Received message (no action)', {
-      messageId: update.message.message_id,
-      from: update.message.from
-    });
-    return new Response('ok', {
-      status: 200,
-      headers
-    });
+
+    const message = update.message;
+    if (!message) return response();
+
+    if (message.successful_payment) {
+      const parsed = parseShortcutPaymentPayload(message.successful_payment.invoice_payload);
+      const telegramId = message.from?.id;
+      if (!telegramId || parsed?.telegramId !== telegramId) return response();
+      const profile = await getProfile(admin, telegramId);
+      if (!profile) return response();
+      const payment = await recordStarsPayment({
+        admin,
+        userId: profile.id,
+        payment: message.successful_payment,
+      });
+      if (!payment) {
+        // A non-2xx response makes Telegram retry the update. The database RPC
+        // is idempotent by telegram_payment_charge_id.
+        return response("Payment fulfillment failed", 503);
+      }
+      if (payment && !payment.duplicate) {
+        await sendMessage(
+          botToken,
+          message.chat.id,
+          accessAfterPaymentMessage(payment.paidUntil),
+          shortcutKeyboard({
+            entitlement: null,
+            trialUsed: true,
+            trialActive: false,
+            trialRemaining: 0,
+            paidActive: true,
+            paidUntil: payment.paidUntil,
+            bonusCredits: 0,
+            accessActive: true,
+          })
+        );
+      }
+      return response();
+    }
+
+    const rawCommandText = (message.text ?? message.caption ?? "").trim();
+    const command = rawCommandText.split(/\s+/u)[0]?.split("@")[0]?.toLowerCase();
+    const commandArgument = rawCommandText.split(/\s+/u)[1] ?? "";
+    const supportedCommands = new Set([
+      "/start",
+      "/help",
+      "/shortcut",
+      "/shortcut_setup",
+      "/shortcut_revoke",
+      "/subscription",
+      "/referral",
+      "/reminders_off",
+      "/reminders_on",
+      "/set_shortcut_video",
+      "/set_shortcut_gif",
+      "/terms",
+      "/paysupport",
+      "/support",
+    ]);
+    if (!command || !supportedCommands.has(command)) return response();
+
+    const chatId = message.chat.id;
+    const telegramId = message.from?.id;
+
+    if (command === "/set_shortcut_video" || command === "/set_shortcut_gif") {
+      const adminTelegramId = Number(env("BOT_ADMIN_TELEGRAM_ID"));
+      if (
+        !telegramId ||
+        !Number.isSafeInteger(adminTelegramId) ||
+        telegramId !== adminTelegramId ||
+        !privateChatOnly(chatId, telegramId)
+      ) {
+        return response();
+      }
+      if (
+        !message.animation?.file_id ||
+        (message.animation.file_size ?? 0) > 50_000_000
+      ) {
+        await sendMessage(
+          botToken,
+          chatId,
+          "Пришлите GIF-анимацию с подписью /set_shortcut_video"
+        );
+        return response();
+      }
+      const { error: saveVideoError } = await admin.from("bot_settings").upsert({
+        key: "shortcut_demo_animation_file_id",
+        value: message.animation.file_id,
+      });
+      await sendMessage(
+        botToken,
+        chatId,
+        saveVideoError ? "Не удалось сохранить GIF." : "✅ GIF для /shortcut обновлена."
+      );
+      return response();
+    }
+
+    if (command === "/start") {
+      let referralAccepted = false;
+      if (telegramId && privateChatOnly(chatId, telegramId) && commandArgument.startsWith("ref_")) {
+        const code = commandArgument.slice(4);
+        const { data: referralOutcome } = await admin.rpc("register_shortcut_referral", {
+          p_invitee_telegram_id: telegramId,
+          p_code: code,
+        });
+        referralAccepted = referralOutcome === "registered" || referralOutcome === "already_registered";
+      }
+      await sendMessage(
+        botToken,
+        chatId,
+        referralAccepted
+          ? `${buildHomeMessage()}\n\n🎁 После первой записи через Shortcut вы получите 10 бонусных добавлений.`
+          : buildHomeMessage(),
+        mainKeyboard()
+      );
+      return response();
+    }
+
+    if (command === "/help") {
+      await sendMessage(botToken, chatId, buildHelpMessage(), mainKeyboard());
+      return response();
+    }
+
+    if (command === "/terms") {
+      await sendMessage(botToken, chatId, buildTermsMessage(), mainKeyboard());
+      return response();
+    }
+
+    if (command === "/paysupport" || command === "/support") {
+      await sendMessage(
+        botToken,
+        chatId,
+        buildPaySupportMessage(),
+        mainKeyboard()
+      );
+      return response();
+    }
+
+    if (!telegramId) return response();
+
+    if (command === "/shortcut" || command === "/shortcut_setup") {
+      await sendShortcutSection(botToken, admin, chatId, telegramId);
+      return response();
+    }
+
+    if (command === "/subscription") {
+      await sendSubscriptionSection(botToken, admin, chatId, telegramId);
+      return response();
+    }
+
+    if (command === "/referral") {
+      await sendReferralSection(botToken, admin, chatId, telegramId);
+      return response();
+    }
+
+    if (command === "/reminders_off" || command === "/reminders_on") {
+      if (!privateChatOnly(chatId, telegramId)) return response();
+      const profile = await getProfile(admin, telegramId);
+      if (!profile) {
+        await sendMessage(botToken, chatId, profileMissingMessage(), openAppKeyboard());
+        return response();
+      }
+      const enabled = command === "/reminders_on";
+      await admin.from("shortcut_reminder_state").upsert({
+        user_id: profile.id,
+        enabled,
+        ...(enabled
+          ? { last_activity_at: new Date().toISOString(), reminder_stage: 0, last_sent_at: null }
+          : {}),
+      });
+      await sendMessage(
+        botToken,
+        chatId,
+        enabled
+          ? "Напоминания включены. Писать будем редко и только по делу."
+          : "Напоминания отключены. Включить снова: /reminders_on",
+        mainKeyboard()
+      );
+      return response();
+    }
+
+    if (command === "/shortcut_revoke") {
+      if (!privateChatOnly(chatId, telegramId)) {
+        await sendMessage(botToken, chatId, "Напишите боту в личном чате.");
+        return response();
+      }
+      const revoked = await revokeShortcutTokens({ admin, telegramId });
+      await sendMessage(
+        botToken,
+        chatId,
+        revoked ? "🛑 Токены отозваны." : "Не удалось отозвать токены.",
+        mainKeyboard()
+      );
+      return response();
+    }
+
+    return response();
+  } catch {
+    // Never log update bodies, Telegram users, credentials, or payment payloads.
+    return response("Internal server error", 500);
   }
-  console.log('[WEBHOOK] No handler for update type', {
-    updateId: update.update_id,
-    keys: Object.keys(update)
-  });
-  
-  return new Response('No handler for update', {
-    status: 200,
-    headers
-  });
 });
