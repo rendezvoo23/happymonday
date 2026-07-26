@@ -9,6 +9,7 @@ import {
   listTransactionsWithCategories,
   updateTransaction,
 } from "@/lib/api";
+import { getWeekIsoRange } from "@/lib/dateRanges";
 import type { Transaction, TransactionType } from "@/types";
 import {
   useInfiniteQuery,
@@ -60,6 +61,22 @@ export function useMonthTransactionsWithCategories(date: Date) {
 
   return useQuery({
     queryKey: [...transactionKeys.list(fromISO, toISO), "with-categories"],
+    queryFn: () => listTransactionsWithCategories(fromISO, toISO),
+    staleTime: DEFAULT_STALE_TIME,
+  });
+}
+
+// A calendar week may cross a month boundary. Fetch it independently so the
+// weekly charts never silently lose the first or last days of the week.
+export function useWeekTransactionsWithCategories(date: Date) {
+  const { fromISO, toISO } = getWeekIsoRange(date);
+
+  return useQuery({
+    queryKey: [
+      ...transactionKeys.list(fromISO, toISO),
+      "week",
+      "with-categories",
+    ],
     queryFn: () => listTransactionsWithCategories(fromISO, toISO),
     staleTime: DEFAULT_STALE_TIME,
   });

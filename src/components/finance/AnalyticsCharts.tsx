@@ -5,12 +5,16 @@ import { supabase } from "@/lib/supabaseClient";
 import { cn } from "@/lib/utils";
 import type { Tables } from "@/types/supabase";
 import {
+  addDays,
   eachDayOfInterval,
   eachMonthOfInterval,
-  endOfDay,
   format,
+  isSameDay,
+  isSameMonth,
+  startOfDay,
+  subDays,
+  subMilliseconds,
   subMonths,
-  subWeeks,
   subYears,
 } from "date-fns";
 import {
@@ -66,7 +70,7 @@ interface AnalyticsChartsProps {
   transactions: TransactionWithCategory[];
 }
 
-type TimeRange = "1W" | "1M" | "3M" | "6M" | "1Y" | "3Y" | "ALL";
+type TimeRange = "1W" | "1M" | "3M" | "6M" | "1Y" | "3Y";
 
 interface ChartDataPoint {
   label: string;
@@ -100,79 +104,59 @@ export function AnalyticsCharts({
       setIsLoading(true);
       // Use selectedDate as the reference point instead of current date
       const referenceDate = selectedDate;
+      const endExclusive = addDays(startOfDay(referenceDate), 1);
       let start: Date;
-      const end = endOfDay(referenceDate);
-      let prevStart: Date;
-      let prevEnd: Date;
       let groupBy: "day" | "month" = "day";
 
       // Calculate ranges
       switch (range) {
         case "1W":
-          start = subWeeks(referenceDate, 1);
-          prevEnd = start;
-          prevStart = subWeeks(start, 1);
+          start = subDays(endExclusive, 7);
           groupBy = "day";
           break;
         case "1M":
-          start = subMonths(referenceDate, 1);
-          prevEnd = start;
-          prevStart = subMonths(start, 1);
+          start = subMonths(endExclusive, 1);
           groupBy = "day";
           break;
         case "3M":
-          start = subMonths(referenceDate, 3);
-          prevEnd = start;
-          prevStart = subMonths(start, 3);
+          start = subMonths(endExclusive, 3);
           groupBy = "month";
           break;
         case "6M":
-          start = subMonths(referenceDate, 6);
-          prevEnd = start;
-          prevStart = subMonths(start, 6);
+          start = subMonths(endExclusive, 6);
           groupBy = "month";
           break;
         case "1Y":
-          start = subYears(referenceDate, 1);
-          prevEnd = start;
-          prevStart = subYears(start, 1);
+          start = subYears(endExclusive, 1);
           groupBy = "month";
           break;
         case "3Y":
-          start = subYears(referenceDate, 3);
-          prevEnd = start;
-          prevStart = subYears(start, 3);
-          groupBy = "month";
-          break;
-        case "ALL":
-          start = new Date(0); // 1970
-          prevEnd = referenceDate;
-          prevStart = new Date(0); // For ALL, comparison is tricky. Usually 0 or just ignore.
+          start = subYears(endExclusive, 3);
           groupBy = "month";
           break;
       }
+      const periodDuration = endExclusive.getTime() - start.getTime();
+      const prevEnd = start;
+      const prevStart = new Date(start.getTime() - periodDuration);
 
       // Fetch Current Range
       const { data: currentTx } = await supabase
         .from("transactions")
         .select("*")
         .gte("occurred_at", start.toISOString())
-        .lte("occurred_at", end.toISOString())
+        .lt("occurred_at", endExclusive.toISOString())
         .is("deleted_at", null)
         .eq("direction", "expense");
 
-      // Fetch Previous Range (if not ALL)
-      let prevTx: Transaction[] = [];
-      if (range !== "ALL") {
-        const { data } = await supabase
-          .from("transactions")
-          .select("*")
-          .gte("occurred_at", prevStart.toISOString())
-          .lt("occurred_at", prevEnd.toISOString())
-          .is("deleted_at", null)
-          .eq("direction", "expense");
-        prevTx = data || [];
-      }
+      // Fetch the immediately preceding range with the same duration.
+      const { data: previousTx } = await supabase
+        .from("transactions")
+        .select("*")
+        .gte("occurred_at", prevStart.toISOString())
+        .lt("occurred_at", prevEnd.toISOString())
+        .is("deleted_at", null)
+        .eq("direction", "expense");
+      const prevTx: Transaction[] = previousTx || [];
 
       // Process Data
       const currentExpenses = currentTx || [];
@@ -185,24 +169,25 @@ export function AnalyticsCharts({
       // Grouping
       let chartData: ChartDataPoint[] = [];
       if (groupBy === "day") {
-        const interval = eachDayOfInterval({ start, end });
-        const prevInterval =
-          range !== "ALL"
-            ? eachDayOfInterval({ start: prevStart, end: prevEnd })
-            : [];
+        const interval = eachDayOfInterval({
+          start,
+          end: subMilliseconds(endExclusive, 1),
+        });
+        const prevInterval = eachDayOfInterval({
+          start: prevStart,
+          end: subMilliseconds(prevEnd, 1),
+        });
 
         chartData = interval.map((date, i) => {
-          const dayStr = format(date, "yyyy-MM-dd");
           const curAmt = currentExpenses
-            .filter((t) => t.occurred_at.startsWith(dayStr))
+            .filter((t) => isSameDay(new Date(t.occurred_at), date))
             .reduce((acc, t) => acc + t.amount, 0);
 
           let prevAmt = 0;
           if (prevInterval[i]) {
             const prevDate = prevInterval[i];
-            const prevDayStr = format(prevDate, "yyyy-MM-dd");
             prevAmt = prevTx
-              .filter((t) => t.occurred_at.startsWith(prevDayStr))
+              .filter((t) => isSameDay(new Date(t.occurred_at), prevDate))
               .reduce((acc, t) => acc + t.amount, 0);
           }
 
@@ -211,36 +196,39 @@ export function AnalyticsCharts({
               locale: dateLocale,
             }),
             current: curAmt,
-            previous: range === "ALL" ? 0 : prevAmt,
+            previous: prevAmt,
             date: date.toISOString(),
           };
         });
       } else {
         // Monthly grouping
-        const interval = eachMonthOfInterval({ start, end });
-        const prevInterval =
-          range !== "ALL"
-            ? eachMonthOfInterval({ start: prevStart, end: prevEnd })
-            : [];
+        const interval = eachMonthOfInterval({
+          start,
+          end: subMilliseconds(endExclusive, 1),
+        });
+        const prevInterval = eachMonthOfInterval({
+          start: prevStart,
+          end: subMilliseconds(prevEnd, 1),
+        });
 
         chartData = interval.map((date, i) => {
-          const monthStr = format(date, "yyyy-MM");
           const curAmt = currentExpenses
-            .filter((t) => t.occurred_at.startsWith(monthStr))
+            .filter((t) => isSameMonth(new Date(t.occurred_at), date))
             .reduce((acc, t) => acc + t.amount, 0);
 
           let prevAmt = 0;
           if (prevInterval[i]) {
-            const prevMonthStr = format(prevInterval[i], "yyyy-MM");
             prevAmt = prevTx
-              .filter((t) => t.occurred_at.startsWith(prevMonthStr))
+              .filter((t) =>
+                isSameMonth(new Date(t.occurred_at), prevInterval[i])
+              )
               .reduce((acc, t) => acc + t.amount, 0);
           }
 
           return {
             label: format(date, "MMM", { locale: dateLocale }),
             current: curAmt,
-            previous: range === "ALL" ? 0 : prevAmt,
+            previous: prevAmt,
             date: date.toISOString(),
           };
         });
@@ -272,7 +260,7 @@ export function AnalyticsCharts({
     );
   if (!data) return null;
 
-  const ranges: TimeRange[] = ["1W", "1M", "3M", "6M", "1Y", "3Y", "ALL"];
+  const ranges: TimeRange[] = ["1W", "1M", "3M", "6M", "1Y", "3Y"];
 
   return (
     <div className="w-full space-y-4">
@@ -285,24 +273,22 @@ export function AnalyticsCharts({
               {t("statistics.totalExpenses")}
             </p>
             <p className="text-2xl font-bold">{formatAmount(data.current)}</p>
-            {range !== "ALL" && (
-              <div className="flex items-center gap-2 mt-1">
-                <span
-                  className={cn(
-                    "text-xs font-medium px-1.5 py-0.5 rounded",
-                    data.isIncrease
-                      ? "bg-red-100 text-red-600"
-                      : "bg-green-100 text-green-600"
-                  )}
-                >
-                  {data.isIncrease ? "+" : ""}
-                  {data.percentChange.toFixed(1)}%
-                </span>
-                <span className="text-xs text-gray-400">
-                  {t("statistics.vsPrevious")} {range}
-                </span>
-              </div>
-            )}
+            <div className="flex items-center gap-2 mt-1">
+              <span
+                className={cn(
+                  "text-xs font-medium px-1.5 py-0.5 rounded",
+                  data.isIncrease
+                    ? "bg-red-100 text-red-600"
+                    : "bg-green-100 text-green-600"
+                )}
+              >
+                {data.isIncrease ? "+" : ""}
+                {data.percentChange.toFixed(1)}%
+              </span>
+              <span className="text-xs text-gray-400">
+                {t("statistics.vsPrevious")} {range}
+              </span>
+            </div>
           </div>
 
           {/* Range Selector - Stocks Style (Pills) */}
@@ -329,25 +315,23 @@ export function AnalyticsCharts({
         </div>
 
         {/* Legend */}
-        {range !== "ALL" && (
-          <div className="flex items-center justify-center gap-6 mb-3">
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-0.5 bg-[#007AFF] rounded-full" />
-              <span className="text-xs text-gray-600">
-                {t("statistics.current")}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div
-                className="w-3 h-0.5 bg-gray-300 rounded-full"
-                style={{ borderStyle: "dashed" }}
-              />
-              <span className="text-xs text-gray-400">
-                {t("statistics.previous")}
-              </span>
-            </div>
+        <div className="flex items-center justify-center gap-6 mb-3">
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-0.5 bg-[#007AFF] rounded-full" />
+            <span className="text-xs text-gray-600">
+              {t("statistics.current")}
+            </span>
           </div>
-        )}
+          <div className="flex items-center gap-2">
+            <div
+              className="w-3 h-0.5 bg-gray-300 rounded-full"
+              style={{ borderStyle: "dashed" }}
+            />
+            <span className="text-xs text-gray-400">
+              {t("statistics.previous")}
+            </span>
+          </div>
+        </div>
 
         {/* Chart */}
         <div className="h-56 w-full">
@@ -395,20 +379,18 @@ export function AnalyticsCharts({
                 labelStyle={{ color: "#6B7280", marginBottom: "4px" }}
               />
               {/* Previous comparison line (dotted/gray) */}
-              {range !== "ALL" && (
-                <Area
-                  type="monotoneX"
-                  dataKey="previous"
-                  stroke="#D1D5DB"
-                  strokeWidth={1.5}
-                  fill="transparent"
-                  strokeDasharray="4 4"
-                  isAnimationActive={true}
-                  animationDuration={500}
-                  animationEasing="ease-in-out"
-                  baseValue={0}
-                />
-              )}
+              <Area
+                type="monotoneX"
+                dataKey="previous"
+                stroke="#D1D5DB"
+                strokeWidth={1.5}
+                fill="transparent"
+                strokeDasharray="4 4"
+                isAnimationActive={true}
+                animationDuration={500}
+                animationEasing="ease-in-out"
+                baseValue={0}
+              />
               <Area
                 type="monotoneX"
                 dataKey="current"

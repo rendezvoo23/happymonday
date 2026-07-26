@@ -4,7 +4,14 @@ const modeSchema = ["day", "week", "month", "year"] as const;
 type ChartMode = (typeof modeSchema)[number];
 
 export const Route = createFileRoute("/_authenticated/statistics/")({
-  validateSearch: (search: Record<string, unknown>) => {
+  validateSearch: (
+    search: Record<string, unknown>
+  ): {
+    month?: string;
+    mode?: ChartMode;
+    category?: string;
+    date?: string;
+  } => {
     const month =
       typeof search.month === "string" &&
       /^\d{4}-(0[1-9]|1[0-2])$/.test(search.month)
@@ -19,7 +26,13 @@ export const Route = createFileRoute("/_authenticated/statistics/")({
       typeof search.category === "string" && search.category.length > 0
         ? search.category
         : undefined;
-    return { month, mode, category };
+    const date =
+      typeof search.date === "string" &&
+      /^\d{4}-(0[1-9]|1[0-2])-([0-2]\d|3[01])$/.test(search.date) &&
+      !Number.isNaN(new Date(`${search.date}T00:00:00`).getTime())
+        ? search.date
+        : undefined;
+    return { month, mode, category, date };
   },
   component: lazyRouteComponent(() =>
     import("@/pages/statistics-page").then((m) => ({
