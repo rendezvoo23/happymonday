@@ -161,9 +161,13 @@ test("schema exposes opaque category keys, not database ids", () => {
   expect(serialized).toContain("sub_0");
   expect(serialized).not.toContain("expense-id");
   expect(serialized).not.toContain("coffee-id");
+  const direction = (
+    schema as { properties: { direction: { enum: string[] } } }
+  ).properties.direction;
+  expect(direction.enum).toEqual(["expense"]);
 });
 
-test("semantic validation rejects a direction/category mismatch", () => {
+test("semantic validation rejects income", () => {
   const error = validateParsedTransaction(
     {
       valid: true,
@@ -181,7 +185,7 @@ test("semantic validation rejects a direction/category mismatch", () => {
     subcategories,
     ["RUB"]
   );
-  expect(error).toBe("invalid_category");
+  expect(error).toBe("income_not_supported");
 });
 
 test("semantic validation rejects a subcategory from another category", () => {
@@ -292,6 +296,19 @@ test("mock parser supports development without external API calls", () => {
   expect(parsed.amount).toBe(1250);
   expect(parsed.category_key).toBe("cat_0");
   expect(parsed.subcategory_key).toBeNull();
+});
+
+test("mock parser explains that Shortcut accepts expenses only", () => {
+  const parsed = createMockParse({
+    text: "Получил зарплату 100000 рублей",
+    now: new Date("2026-07-08T10:00:00.000Z"),
+    defaultCurrency: "RUB",
+    categories,
+    subcategories,
+  });
+  expect(parsed.valid).toBe(false);
+  expect(parsed.direction).toBe("expense");
+  expect(parsed.clarification).toBe("Shortcut добавляет только расходы");
 });
 
 test("Telegram HTML escaping prevents markup injection", () => {

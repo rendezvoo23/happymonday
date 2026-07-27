@@ -34,6 +34,7 @@ interface ShortcutEntitlement {
   trial_ends_at: string | null;
   trial_request_limit: number;
   paid_until: string | null;
+  referral_access_until: string | null;
   bonus_request_credits: number;
 }
 
@@ -78,7 +79,9 @@ async function checkShortcutAccess(options: {
 > {
   const { data: entitlement, error } = await options.supabase
     .from("shortcut_entitlements")
-    .select("trial_started_at,trial_ends_at,trial_request_limit,paid_until,bonus_request_credits")
+    .select(
+      "trial_started_at,trial_ends_at,trial_request_limit,paid_until,referral_access_until,bonus_request_credits"
+    )
     .eq("user_id", options.userId)
     .maybeSingle();
   const shortcutEntitlement = entitlement as ShortcutEntitlement | null;
@@ -93,6 +96,13 @@ async function checkShortcutAccess(options: {
 
   const now = Date.now();
   if (shortcutEntitlement.paid_until && Date.parse(shortcutEntitlement.paid_until) > now) {
+    return { ok: true };
+  }
+
+  if (
+    shortcutEntitlement.referral_access_until &&
+    Date.parse(shortcutEntitlement.referral_access_until) > now
+  ) {
     return { ok: true };
   }
 
@@ -218,22 +228,20 @@ async function notifyTelegram(options: {
   telegramId: number;
   amount: number;
   currency: string;
-  direction: "expense" | "income";
   category: string;
   subcategory: string | null;
   note: string;
   occurredAt: string;
   timezone: string;
 }): Promise<boolean> {
-  const icon = options.direction === "expense" ? "✅" : "💰";
-  const title = options.direction === "expense" ? "Расход добавлен" : "Доход добавлен";
+  const title = "Расход добавлен";
   const date = new Intl.DateTimeFormat("ru-RU", {
     dateStyle: "medium",
     timeStyle: "short",
     timeZone: options.timezone,
   }).format(new Date(options.occurredAt));
   const lines = [
-    `${icon} <b>${title}</b>`,
+    `<b>${title}</b>`,
     "",
     `<b>${options.amount.toLocaleString("ru-RU")} ${escapeTelegramHtml(options.currency)}</b>`,
     escapeTelegramHtml(
@@ -342,6 +350,7 @@ Deno.serve(async (request: Request): Promise<Response> => {
           .from("categories")
           .select("id,name,type,sort_order")
           .or(`user_id.is.null,user_id.eq.${accessToken.user_id}`)
+          .eq("type", "expense")
           .eq("is_archived", false)
           .order("sort_order")
           .limit(MAX_CATEGORY_OPTIONS + 1),
@@ -484,6 +493,17 @@ Deno.serve(async (request: Request): Promise<Response> => {
     const semanticError = validateParsedTransaction(parsed, categories, subcategories, currencies);
     if (semanticError) {
       await markRequestFailed(supabase, requestRowId, semanticError);
+      if (semanticError === "income_not_supported") {
+        return json(
+          {
+            ok: false,
+            needs_clarification: true,
+            error_code: semanticError,
+            clarification: "Shortcut добавляет только расходы",
+          },
+          422
+        );
+      }
       return json(
         {
           error: "Unable to validate parsed transaction",
@@ -509,7 +529,7 @@ Deno.serve(async (request: Request): Promise<Response> => {
       ? subcategories.find((item) => item.key === parsed.subcategory_key)
       : null;
     const safeResult = {
-      direction: parsed.direction,
+      direction: "expense" as const,
       amount: parsed.amount as number,
       currency: parsed.currency as string,
       category: category.name,
@@ -576,7 +596,6 @@ Deno.serve(async (request: Request): Promise<Response> => {
             telegramId: profile.telegram_id,
             amount: safeResult.amount,
             currency: safeResult.currency,
-            direction: safeResult.direction,
             category: safeResult.category,
             subcategory: safeResult.subcategory,
             note: safeResult.note,
@@ -597,7 +616,7 @@ Deno.serve(async (request: Request): Promise<Response> => {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                   chat_id: referralResult.inviter_telegram_id,
-                  text: "🎁 Друг добавил первую запись. Вам начислено 10 бонусных добавлений через Shortcut.",
+                  text: "Друг добавил первый расход. Вам добавлено 7 дней доступа к Shortcut.",
                 }),
                 signal: AbortSignal.timeout(8_000),
               }
@@ -611,7 +630,7 @@ Deno.serve(async (request: Request): Promise<Response> => {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                   chat_id: referralResult.invitee_telegram_id,
-                  text: "🎁 Первая запись готова. Вам начислено 10 бонусных добавлений через Shortcut.",
+                  text: "Первый расход добавлен. Вам открыт доступ к Shortcut на 7 дней.",
                 }),
                 signal: AbortSignal.timeout(8_000),
               }

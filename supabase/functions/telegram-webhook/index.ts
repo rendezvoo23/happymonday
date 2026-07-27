@@ -23,6 +23,9 @@ const SHORTCUT_TEMPLATE_URL =
 const WHYSPENT_BOT_USERNAME = "WhySpentBot";
 const SHORTCUT_MONTH_STARS = 250;
 const SHORTCUT_MONTH_DAYS = 30;
+const SUBSCRIPTION_RENEWAL_WINDOW_DAYS = 7;
+const REFERRAL_REWARD_DAYS = 7;
+const MAX_REWARDED_REFERRALS = 20;
 const TRIAL_HOURS = 24;
 const TRIAL_REQUEST_LIMIT = 10;
 const SHORTCUT_PAYMENT_PAYLOAD_PREFIX = "whyspent_shortcut_month_v2";
@@ -91,6 +94,7 @@ interface ShortcutEntitlement {
   trial_ends_at: string | null;
   trial_request_limit: number;
   paid_until: string | null;
+  referral_access_until: string | null;
   bonus_request_credits: number;
 }
 
@@ -101,6 +105,9 @@ interface ShortcutState {
   trialRemaining: number;
   paidActive: boolean;
   paidUntil: string | null;
+  referralActive: boolean;
+  referralUntil: string | null;
+  accessUntil: string | null;
   bonusCredits: number;
   accessActive: boolean;
 }
@@ -135,6 +142,23 @@ function privateChatOnly(chatId: number, telegramId: number): boolean {
 
 function addHours(date: Date, hours: number): Date {
   return new Date(date.getTime() + hours * 60 * 60 * 1000);
+}
+
+function latestDate(...values: Array<string | null | undefined>): string | null {
+  const valid = values
+    .filter(
+      (value): value is string =>
+        typeof value === "string" && !Number.isNaN(Date.parse(value))
+    )
+    .sort((left, right) => Date.parse(right) - Date.parse(left));
+  return valid[0] ?? null;
+}
+
+function canRenewSubscription(state: ShortcutState | null): boolean {
+  if (!state?.paidActive || !state.paidUntil) return true;
+  const renewalWindowMs = SUBSCRIPTION_RENEWAL_WINDOW_DAYS * 24 * 60 * 60 * 1000;
+  const activeUntil = latestDate(state.paidUntil, state.referralUntil) ?? state.paidUntil;
+  return Date.parse(activeUntil) - Date.now() <= renewalWindowMs;
 }
 
 function formatDateTime(value: string): string {
@@ -310,28 +334,28 @@ async function sendShortcutInvoice(options: {
 function mainKeyboard(): Record<string, unknown> {
   return {
     inline_keyboard: [
-      [{ text: "⚡ Apple Shortcut", callback_data: "shortcut" }],
-      [{ text: "🎁 Пригласить друга", callback_data: "referral" }],
-      [{ text: "💳 Подписка", callback_data: "subscription" }],
-      [{ text: "📱 Открыть WhySpent", url: `https://t.me/${WHYSPENT_BOT_USERNAME}` }],
-      [{ text: "❓ Помощь", callback_data: "help" }],
+      [{ text: "Apple Shortcut", callback_data: "shortcut" }],
+      [{ text: "Подписка", callback_data: "subscription" }],
+      [{ text: "Пригласить друга", callback_data: "referral" }],
+      [{ text: "Открыть WhySpent", url: `https://t.me/${WHYSPENT_BOT_USERNAME}` }],
+      [{ text: "Помощь", callback_data: "help" }],
     ],
   };
 }
 
 function shortcutKeyboard(state: ShortcutState): Record<string, unknown> {
   const rows: Array<Array<Record<string, string>>> = [
-    [{ text: "⬇️ Установить Shortcut", url: SHORTCUT_TEMPLATE_URL }],
+    [{ text: "Установить Shortcut", url: SHORTCUT_TEMPLATE_URL }],
   ];
 
   if (state.accessActive) {
-    rows.push([{ text: "🔐 Получить токен", callback_data: "shortcut_token" }]);
+    rows.push([{ text: "Получить токен", callback_data: "shortcut_token" }]);
   } else if (!state.trialUsed) {
-    rows.push([{ text: "🎁 Попробовать бесплатно", callback_data: "shortcut_trial" }]);
+    rows.push([{ text: "Попробовать бесплатно", callback_data: "shortcut_trial" }]);
   }
 
-  rows.push([{ text: "💳 Подписка", callback_data: "subscription" }]);
-  rows.push([{ text: "🛑 Отозвать токены", callback_data: "shortcut_revoke" }]);
+  rows.push([{ text: "Подписка", callback_data: "subscription" }]);
+  rows.push([{ text: "Отозвать токен", callback_data: "shortcut_revoke" }]);
   rows.push([{ text: "← Главное меню", callback_data: "home" }]);
   return { inline_keyboard: rows };
 }
@@ -339,14 +363,18 @@ function shortcutKeyboard(state: ShortcutState): Record<string, unknown> {
 function subscriptionKeyboard(state: ShortcutState | null): Record<string, unknown> {
   const rows: Array<Array<Record<string, string>>> = [];
   if (state && !state.trialUsed && !state.accessActive) {
-    rows.push([{ text: "🎁 Попробовать бесплатно", callback_data: "shortcut_trial" }]);
+    rows.push([{ text: "Попробовать бесплатно", callback_data: "shortcut_trial" }]);
   }
-  rows.push([
-    {
-      text: `Оплатить ${SHORTCUT_MONTH_STARS} ⭐️ и принять условия`,
-      callback_data: "pay_stars",
-    },
-  ]);
+  if (canRenewSubscription(state)) {
+    rows.push([
+      {
+        text: state?.paidActive
+          ? `Продлить на 30 дней · ${SHORTCUT_MONTH_STARS} ⭐️`
+          : `Оформить на 30 дней · ${SHORTCUT_MONTH_STARS} ⭐️`,
+        callback_data: "pay_stars",
+      },
+    ]);
+  }
   rows.push([
     { text: "Условия", callback_data: "terms" },
     { text: "Поддержка", callback_data: "paysupport" },
@@ -358,32 +386,32 @@ function subscriptionKeyboard(state: ShortcutState | null): Record<string, unkno
 function tokenKeyboard(): Record<string, unknown> {
   return {
     inline_keyboard: [
-      [{ text: "⬇️ Установить Shortcut", url: SHORTCUT_TEMPLATE_URL }],
-      [{ text: "⚡ Раздел Shortcut", callback_data: "shortcut" }],
+      [{ text: "Установить Shortcut", url: SHORTCUT_TEMPLATE_URL }],
+      [{ text: "Назад к Shortcut", callback_data: "shortcut" }],
     ],
   };
 }
 
 function buildHomeMessage(): string {
   return [
-    "👋 <b>WhySpent</b>",
+    "<b>WhySpent</b>",
     "",
-    "Быстрый учёт денег в Telegram.",
-    "Записывайте расходы, доходы и смотрите, куда уходит бюджет.",
+    "Учёт расходов без лишних действий.",
+    "Добавляйте покупки с iPhone и следите за бюджетом в Telegram.",
     "",
-    "Самая быстрая фича — Apple Shortcut для iPhone.",
+    "Начните с Apple Shortcut или откройте приложение.",
   ].join("\n");
 }
 
 function buildHelpMessage(): string {
   return [
-    "❓ <b>Помощь</b>",
+    "<b>Помощь</b>",
     "",
     "/start — главное меню",
     "/shortcut — Apple Shortcut",
+    "/subscription — подписка",
     "/referral — пригласить друга",
     "/reminders_off — отключить напоминания",
-    "/subscription — подписка",
     "/shortcut_revoke — отозвать токены",
     "/terms — условия оплаты",
     "/paysupport — помощь с платежом",
@@ -394,7 +422,7 @@ function buildHelpMessage(): string {
 
 function buildTermsMessage(): string {
   return [
-    "📄 <b>Условия оплаты</b>",
+    "<b>Условия оплаты</b>",
     "",
     `250 ⭐️ дают доступ к Apple Shortcut на ${SHORTCUT_MONTH_DAYS} дней.`,
     "Это разовая покупка без автоматического продления.",
@@ -408,7 +436,7 @@ function buildTermsMessage(): string {
 function buildPaySupportMessage(): string {
   const contact = env("PAYMENT_SUPPORT_CONTACT");
   return [
-    "🛟 <b>Поддержка по платежам</b>",
+    "<b>Поддержка по платежам</b>",
     "",
     contact
       ? `Если оплата прошла, а доступ не появился, напишите: ${escapeTelegramHtml(contact)}.`
@@ -419,62 +447,99 @@ function buildPaySupportMessage(): string {
 
 function buildShortcutMessage(state: ShortcutState): string {
   if (state.accessActive) {
-    const details = state.paidActive
-      ? `Доступ активен до ${formatDateTime(state.paidUntil as string)}.`
+    const details = (state.paidActive || state.referralActive) && state.accessUntil
+      ? `Доступ активен до ${formatDateTime(state.accessUntil)}.`
       : state.trialActive
-        ? `Пробный доступ активен. Осталось добавлений: ${state.trialRemaining}.`
-        : `Бонусных добавлений: ${state.bonusCredits}.`;
+        ? `Пробный доступ: осталось ${state.trialRemaining} добавлений.`
+        : `Ранее начисленный бонус: ${state.bonusCredits} добавлений.`;
     return [
-      "⚡ <b>Apple Shortcut</b>",
+      "<b>Apple Shortcut</b>",
       "",
-      "Добавляйте расходы с iPhone за пару секунд.",
+      "Добавляйте расходы с iPhone одной строкой.",
       details,
       "",
       "1. Установите Shortcut",
       "2. Вставьте токен в первое поле",
       "3. Напишите: <code>кофе 350</code>",
-      ...(state.bonusCredits > 0 && (state.paidActive || state.trialActive)
-        ? ["", `Бонусных добавлений в запасе: ${state.bonusCredits}.`]
-        : []),
     ].join("\n");
   }
 
   if (!state.trialUsed) {
     return [
-      "⚡ <b>Apple Shortcut</b>",
+      "<b>Apple Shortcut</b>",
       "",
-      "Быстрый ввод с iPhone.",
-      "Пробный доступ: 24 часа и 10 добавлений.",
-      "",
-      "Потом — 250 ⭐️ в месяц.",
+      "Добавляйте расходы с iPhone одной строкой.",
+      "Попробуйте бесплатно: 24 часа и 10 добавлений.",
     ].join("\n");
   }
 
   return [
-    "⚡ <b>Apple Shortcut</b>",
+    "<b>Apple Shortcut</b>",
     "",
-    "Пробный доступ закончился.",
-    `Месяц доступа стоит ${SHORTCUT_MONTH_STARS} ⭐️.`,
+    "Бесплатный период закончился.",
+    `Доступ на 30 дней — ${SHORTCUT_MONTH_STARS} ⭐️.`,
   ].join("\n");
 }
 
 function buildSubscriptionMessage(state: ShortcutState | null): string {
-  const lines = [
-    "💳 <b>Подписка</b>",
-    "",
-    `Apple Shortcut: ${SHORTCUT_MONTH_STARS} ⭐️ в месяц.`,
-    "Пробный доступ: 24 часа и 10 добавлений.",
-  ];
   if (state?.paidActive && state.paidUntil) {
-    lines.push("", `Сейчас оплачено до ${formatDateTime(state.paidUntil)}.`);
+    const lines = [
+      "<b>Подписка активна</b>",
+      "",
+      `Оплачено до ${formatDateTime(state.paidUntil)}.`,
+    ];
+    if (
+      state.referralActive &&
+      state.referralUntil &&
+      Date.parse(state.referralUntil) > Date.parse(state.paidUntil)
+    ) {
+      lines.push(`С учётом приглашений доступ продлён до ${formatDateTime(state.referralUntil)}.`);
+    }
+    lines.push(
+      "",
+      canRenewSubscription(state)
+        ? `Можно продлить ещё на 30 дней за ${SHORTCUT_MONTH_STARS} ⭐️.`
+        : `Продление появится за ${SUBSCRIPTION_RENEWAL_WINDOW_DAYS} дней до конца доступа.`
+    );
+    if (canRenewSubscription(state)) {
+      lines.push("Оплата означает согласие с условиями /terms.");
+    }
+    return lines.join("\n");
   }
-  lines.push("", "Оплачивая счёт, вы принимаете условия /terms.");
-  return lines.join("\n");
+
+  if (state?.referralActive && state.referralUntil) {
+    return [
+      "<b>Бесплатный доступ активен</b>",
+      "",
+      `Shortcut работает до ${formatDateTime(state.referralUntil)}.`,
+      `После этого 30 дней доступа стоят ${SHORTCUT_MONTH_STARS} ⭐️.`,
+      "Оплата означает согласие с условиями /terms.",
+    ].join("\n");
+  }
+
+  if (state?.trialActive && state.entitlement?.trial_ends_at) {
+    return [
+      "<b>Пробный доступ активен</b>",
+      "",
+      `Осталось добавлений: ${state.trialRemaining}.`,
+      `После пробного периода 30 дней доступа стоят ${SHORTCUT_MONTH_STARS} ⭐️.`,
+      "Оплата означает согласие с условиями /terms.",
+    ].join("\n");
+  }
+
+  return [
+    "<b>Подписка</b>",
+    "",
+    `30 дней доступа к Shortcut — ${SHORTCUT_MONTH_STARS} ⭐️.`,
+    ...(state && !state.trialUsed ? ["Первый запуск: 24 часа и 10 добавлений бесплатно."] : []),
+    "",
+    "Оплачивая счёт, вы принимаете условия /terms.",
+  ].join("\n");
 }
 
 function buildTokenMessage(token: string): string {
   return [
-    "🔐 <b>Ваш токен</b>",
+    "<b>Токен для Shortcut</b>",
     "",
     `<code>${escapeTelegramHtml(token)}</code>`,
     "",
@@ -486,30 +551,28 @@ function buildTokenMessage(token: string): string {
 function buildReferralMessage(options: {
   rewarded: number;
   pending: number;
-  bonusCredits: number;
 }): string {
   return [
-    "🎁 <b>10 добавлений каждому</b>",
+    "<b>7 дней каждому</b>",
     "",
-    "Пригласите друга. После его первой записи через Shortcut вы оба получите по 10 добавлений.",
-    "Бонусы не сгорают.",
-    "Награда для вас действует за первых 20 друзей — это до 200 добавлений.",
+    "Отправьте другу вашу ссылку.",
+    `После его первого расхода через Shortcut вы оба получите по ${REFERRAL_REWARD_DAYS} дней доступа.`,
+    `Вам начисляются дни за первых ${MAX_REWARDED_REFERRALS} друзей.`,
     "",
-    `Приглашено: ${options.rewarded}`,
-    `Ожидают первую запись: ${options.pending}`,
-    `Ваш бонусный запас: ${options.bonusCredits}`,
+    `Получили доступ: ${options.rewarded}`,
+    `Ещё не добавили расход: ${options.pending}`,
   ].join("\n");
 }
 
 function referralKeyboard(code: string, canInvite: boolean): Record<string, unknown> {
   const referralUrl = `https://t.me/${WHYSPENT_BOT_USERNAME}?start=ref_${code}`;
   const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(referralUrl)}&text=${encodeURIComponent(
-    "Попробуй WhySpent — расходы добавляются с iPhone за пару секунд. После первой записи мы оба получим по 10 добавлений."
+    `Попробуй WhySpent — расходы добавляются с iPhone одной строкой. После первого расхода мы оба получим по ${REFERRAL_REWARD_DAYS} дней доступа.`
   )}`;
   return {
     inline_keyboard: [
       ...(canInvite ? [[{ text: "Поделиться ссылкой", url: shareUrl }]] : []),
-      [{ text: "⚡ Apple Shortcut", callback_data: "shortcut" }],
+      [{ text: "Apple Shortcut", callback_data: "shortcut" }],
       [{ text: "← Главное меню", callback_data: "home" }],
     ],
   };
@@ -524,7 +587,7 @@ function profileMissingMessage(): string {
 
 function accessAfterPaymentMessage(paidUntil: string): string {
   return [
-    "✅ <b>Подписка активна</b>",
+    "<b>Подписка активна</b>",
     "",
     `Shortcut доступен до ${formatDateTime(paidUntil)}.`,
     "Теперь можно получить токен и добавить первый расход.",
@@ -534,7 +597,7 @@ function accessAfterPaymentMessage(paidUntil: string): string {
 function openAppKeyboard(): Record<string, unknown> {
   return {
     inline_keyboard: [
-      [{ text: "📱 Открыть WhySpent", url: `https://t.me/${WHYSPENT_BOT_USERNAME}` }],
+      [{ text: "Открыть WhySpent", url: `https://t.me/${WHYSPENT_BOT_USERNAME}` }],
       [{ text: "← Главное меню", callback_data: "home" }],
     ],
   };
@@ -558,12 +621,17 @@ async function loadShortcutState(
 ): Promise<ShortcutState> {
   const { data } = await admin
     .from("shortcut_entitlements")
-    .select("trial_started_at,trial_ends_at,trial_request_limit,paid_until,bonus_request_credits")
+    .select(
+      "trial_started_at,trial_ends_at,trial_request_limit,paid_until,referral_access_until,bonus_request_credits"
+    )
     .eq("user_id", userId)
     .maybeSingle();
   const entitlement = (data as ShortcutEntitlement | null) ?? null;
   const now = Date.now();
   const paidActive = Boolean(entitlement?.paid_until && Date.parse(entitlement.paid_until) > now);
+  const referralActive = Boolean(
+    entitlement?.referral_access_until && Date.parse(entitlement.referral_access_until) > now
+  );
   const trialUsed = Boolean(entitlement?.trial_started_at);
   const bonusCredits = entitlement?.bonus_request_credits ?? 0;
   let trialRemaining = entitlement?.trial_request_limit ?? TRIAL_REQUEST_LIMIT;
@@ -593,8 +661,15 @@ async function loadShortcutState(
     trialRemaining,
     paidActive,
     paidUntil: entitlement?.paid_until ?? null,
+    referralActive,
+    referralUntil: entitlement?.referral_access_until ?? null,
+    accessUntil: latestDate(
+      paidActive ? entitlement?.paid_until : null,
+      referralActive ? entitlement?.referral_access_until : null,
+      trialActive ? entitlement?.trial_ends_at : null
+    ),
     bonusCredits,
-    accessActive: paidActive || trialActive || bonusCredits > 0,
+    accessActive: paidActive || referralActive || trialActive || bonusCredits > 0,
   };
 }
 
@@ -737,13 +812,12 @@ async function sendReferralSection(
     await sendMessage(botToken, chatId, profileMissingMessage(), openAppKeyboard());
     return;
   }
-  const [{ data: code, error: codeError }, { data: referrals }, state] = await Promise.all([
+  const [{ data: code, error: codeError }, { data: referrals }] = await Promise.all([
     admin.rpc("get_or_create_shortcut_referral_code", { p_user_id: profile.id }),
     admin
       .from("shortcut_referrals")
       .select("status")
       .eq("inviter_user_id", profile.id),
-    loadShortcutState(admin, profile.id),
   ]);
   if (codeError || typeof code !== "string") {
     await sendMessage(botToken, chatId, "Не удалось создать ссылку. Попробуйте позже.");
@@ -757,9 +831,8 @@ async function sendReferralSection(
     buildReferralMessage({
       rewarded,
       pending: rows.filter((item) => item.status === "pending").length,
-      bonusCredits: state.bonusCredits,
     }),
-    referralKeyboard(code, rewarded < 20)
+    referralKeyboard(code, rewarded < MAX_REWARDED_REFERRALS)
   );
 }
 
@@ -967,13 +1040,23 @@ Deno.serve(async (request: Request): Promise<Response> => {
         await sendMessage(
           botToken,
           chatId,
-          revoked ? "🛑 Токены отозваны." : "Не удалось отозвать токены.",
+          revoked ? "Токены отозваны." : "Не удалось отозвать токены.",
           mainKeyboard()
         );
         return response();
       }
 
       if (callback.data === "pay_stars") {
+        const state = await loadShortcutState(admin, profile.id);
+        if (!canRenewSubscription(state)) {
+          await sendMessage(
+            botToken,
+            chatId,
+            buildSubscriptionMessage(state),
+            subscriptionKeyboard(state)
+          );
+          return response();
+        }
         const sent = await sendShortcutInvoice({
           botToken,
           admin,
@@ -1024,6 +1107,9 @@ Deno.serve(async (request: Request): Promise<Response> => {
             trialRemaining: 0,
             paidActive: true,
             paidUntil: payment.paidUntil,
+            referralActive: false,
+            referralUntil: null,
+            accessUntil: payment.paidUntil,
             bonusCredits: 0,
             accessActive: true,
           })
@@ -1084,7 +1170,7 @@ Deno.serve(async (request: Request): Promise<Response> => {
       await sendMessage(
         botToken,
         chatId,
-        saveVideoError ? "Не удалось сохранить GIF." : "✅ GIF для /shortcut обновлена."
+        saveVideoError ? "Не удалось сохранить GIF." : "GIF для /shortcut обновлена."
       );
       return response();
     }
@@ -1103,7 +1189,7 @@ Deno.serve(async (request: Request): Promise<Response> => {
         botToken,
         chatId,
         referralAccepted
-          ? `${buildHomeMessage()}\n\n🎁 После первой записи через Shortcut вы получите 10 бонусных добавлений.`
+          ? `${buildHomeMessage()}\n\nПо этой ссылке вы получите 7 дней доступа после первого расхода через Shortcut.`
           : buildHomeMessage(),
         mainKeyboard()
       );
@@ -1182,7 +1268,7 @@ Deno.serve(async (request: Request): Promise<Response> => {
       await sendMessage(
         botToken,
         chatId,
-        revoked ? "🛑 Токены отозваны." : "Не удалось отозвать токены.",
+        revoked ? "Токены отозваны." : "Не удалось отозвать токены.",
         mainKeyboard()
       );
       return response();
