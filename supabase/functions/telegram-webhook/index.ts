@@ -334,11 +334,11 @@ async function sendShortcutInvoice(options: {
 function mainKeyboard(): Record<string, unknown> {
   return {
     inline_keyboard: [
-      [{ text: "Apple Shortcut", callback_data: "shortcut" }],
-      [{ text: "Подписка", callback_data: "subscription" }],
+      [{ text: "Подключить Apple Shortcut", callback_data: "shortcut" }],
+      [{ text: "Доступ и подписка", callback_data: "subscription" }],
       [{ text: "Пригласить друга", callback_data: "referral" }],
+      [{ text: "Помощь и настройки", callback_data: "help" }],
       [{ text: "Открыть WhySpent", url: `https://t.me/${WHYSPENT_BOT_USERNAME}` }],
-      [{ text: "Помощь", callback_data: "help" }],
     ],
   };
 }
@@ -354,8 +354,8 @@ function shortcutKeyboard(state: ShortcutState): Record<string, unknown> {
     rows.push([{ text: "Попробовать бесплатно", callback_data: "shortcut_trial" }]);
   }
 
-  rows.push([{ text: "Подписка", callback_data: "subscription" }]);
-  rows.push([{ text: "Отозвать токен", callback_data: "shortcut_revoke" }]);
+  rows.push([{ text: "Доступ и подписка", callback_data: "subscription" }]);
+  rows.push([{ text: "Управление токеном", callback_data: "shortcut_manage" }]);
   rows.push([{ text: "← Главное меню", callback_data: "home" }]);
   return { inline_keyboard: rows };
 }
@@ -388,6 +388,61 @@ function tokenKeyboard(): Record<string, unknown> {
     inline_keyboard: [
       [{ text: "Установить Shortcut", url: SHORTCUT_TEMPLATE_URL }],
       [{ text: "Назад к Shortcut", callback_data: "shortcut" }],
+      [{ text: "← Главное меню", callback_data: "home" }],
+    ],
+  };
+}
+
+function shortcutManagementKeyboard(): Record<string, unknown> {
+  return {
+    inline_keyboard: [
+      [{ text: "Получить новый токен", callback_data: "shortcut_token" }],
+      [{ text: "Отозвать все токены", callback_data: "shortcut_revoke_confirm" }],
+      [{ text: "← Назад к Shortcut", callback_data: "shortcut" }],
+      [{ text: "← Главное меню", callback_data: "home" }],
+    ],
+  };
+}
+
+function shortcutRevokeConfirmKeyboard(): Record<string, unknown> {
+  return {
+    inline_keyboard: [
+      [{ text: "Да, отозвать токены", callback_data: "shortcut_revoke" }],
+      [{ text: "← Не отзывать", callback_data: "shortcut_manage" }],
+      [{ text: "← Главное меню", callback_data: "home" }],
+    ],
+  };
+}
+
+function helpKeyboard(remindersEnabled: boolean): Record<string, unknown> {
+  return {
+    inline_keyboard: [
+      [
+        {
+          text: remindersEnabled ? "Отключить напоминания" : "Включить напоминания",
+          callback_data: remindersEnabled ? "reminders_off" : "reminders_on",
+        },
+      ],
+      [{ text: "Поддержка по оплате", callback_data: "paysupport" }],
+      [{ text: "← Главное меню", callback_data: "home" }],
+    ],
+  };
+}
+
+function termsKeyboard(): Record<string, unknown> {
+  return {
+    inline_keyboard: [
+      [{ text: "← Назад к подписке", callback_data: "subscription" }],
+      [{ text: "← Главное меню", callback_data: "home" }],
+    ],
+  };
+}
+
+function paymentSupportKeyboard(): Record<string, unknown> {
+  return {
+    inline_keyboard: [
+      [{ text: "← Назад к подписке", callback_data: "subscription" }],
+      [{ text: "← Главное меню", callback_data: "home" }],
     ],
   };
 }
@@ -396,27 +451,19 @@ function buildHomeMessage(): string {
   return [
     "<b>WhySpent</b>",
     "",
-    "Учёт расходов без лишних действий.",
-    "Добавляйте покупки с iPhone и следите за бюджетом в Telegram.",
+    "Учёт расходов, который не отвлекает.",
+    "Добавляйте покупки с iPhone и следите за бюджетом в приложении.",
     "",
-    "Начните с Apple Shortcut или откройте приложение.",
+    "Выберите нужный раздел ниже.",
   ].join("\n");
 }
 
 function buildHelpMessage(): string {
   return [
-    "<b>Помощь</b>",
+    "<b>Помощь и настройки</b>",
     "",
-    "/start — главное меню",
-    "/shortcut — Apple Shortcut",
-    "/subscription — подписка",
-    "/referral — пригласить друга",
-    "/reminders_off — отключить напоминания",
-    "/shortcut_revoke — отозвать токены",
-    "/terms — условия оплаты",
-    "/paysupport — помощь с платежом",
-    "",
-    "Если Shortcut не работает, получите новый токен в разделе /shortcut.",
+    "Здесь можно настроить редкие напоминания или обратиться по вопросу оплаты.",
+    "Если Shortcut не работает, откройте «Подключить Apple Shortcut» и получите новый токен.",
   ].join("\n");
 }
 
@@ -429,7 +476,7 @@ function buildTermsMessage(): string {
     "Срок прибавляется к уже оплаченному периоду.",
     "",
     "Оплачивая счёт, вы соглашаетесь с этими условиями.",
-    "По вопросам возврата: /paysupport.",
+    "По вопросам оплаты используйте кнопку «Поддержка».",
   ].join("\n");
 }
 
@@ -548,6 +595,24 @@ function buildTokenMessage(token: string): string {
   ].join("\n");
 }
 
+function buildShortcutManagementMessage(): string {
+  return [
+    "<b>Управление токеном</b>",
+    "",
+    "Новый токен сразу отключит предыдущий.",
+    "Отзыв отключит все токены на ваших устройствах.",
+  ].join("\n");
+}
+
+function buildRevokeTokenMessage(): string {
+  return [
+    "<b>Отозвать все токены?</b>",
+    "",
+    "Shortcut перестанет добавлять расходы на всех устройствах.",
+    "Позже можно получить новый токен.",
+  ].join("\n");
+}
+
 function buildReferralMessage(options: {
   rewarded: number;
   pending: number;
@@ -613,6 +678,18 @@ async function getProfile(
     .eq("telegram_id", telegramId)
     .maybeSingle();
   return (data as Profile | null) ?? null;
+}
+
+async function remindersEnabledForUser(
+  admin: AdminClient,
+  userId: string
+): Promise<boolean> {
+  const { data } = await admin
+    .from("shortcut_reminder_state")
+    .select("enabled")
+    .eq("user_id", userId)
+    .maybeSingle();
+  return data?.enabled !== false;
 }
 
 async function loadShortcutState(
@@ -820,7 +897,12 @@ async function sendReferralSection(
       .eq("inviter_user_id", profile.id),
   ]);
   if (codeError || typeof code !== "string") {
-    await sendMessage(botToken, chatId, "Не удалось создать ссылку. Попробуйте позже.");
+    await sendMessage(
+      botToken,
+      chatId,
+      "Не удалось создать ссылку. Попробуйте позже.",
+      mainKeyboard()
+    );
     return;
   }
   const rows = (referrals ?? []) as Array<{ status: string }>;
@@ -849,6 +931,21 @@ async function sendSubscriptionSection(
   }
   const state = await loadShortcutState(admin, profile.id);
   await sendMessage(botToken, chatId, buildSubscriptionMessage(state), subscriptionKeyboard(state));
+}
+
+async function sendHelpSection(
+  botToken: string,
+  admin: AdminClient,
+  chatId: number,
+  telegramId: number
+): Promise<void> {
+  const profile = await getProfile(admin, telegramId);
+  if (!profile) {
+    await sendMessage(botToken, chatId, buildHelpMessage(), mainKeyboard());
+    return;
+  }
+  const remindersEnabled = await remindersEnabledForUser(admin, profile.id);
+  await sendMessage(botToken, chatId, buildHelpMessage(), helpKeyboard(remindersEnabled));
 }
 
 Deno.serve(async (request: Request): Promise<Response> => {
@@ -930,7 +1027,8 @@ Deno.serve(async (request: Request): Promise<Response> => {
         !privateChatOnly(chatId, telegramId) &&
         (callback.data === "shortcut" ||
           callback.data === "referral" ||
-          callback.data === "subscription")
+          callback.data === "subscription" ||
+          callback.data === "help")
       ) {
         await sendMessage(botToken, chatId, "Напишите боту в личном чате.");
         return response();
@@ -941,11 +1039,11 @@ Deno.serve(async (request: Request): Promise<Response> => {
         return response();
       }
       if (callback.data === "help") {
-        await sendMessage(botToken, chatId, buildHelpMessage(), mainKeyboard());
+        await sendHelpSection(botToken, admin, chatId, telegramId);
         return response();
       }
       if (callback.data === "terms") {
-        await sendMessage(botToken, chatId, buildTermsMessage(), mainKeyboard());
+        await sendMessage(botToken, chatId, buildTermsMessage(), termsKeyboard());
         return response();
       }
       if (callback.data === "paysupport") {
@@ -953,7 +1051,7 @@ Deno.serve(async (request: Request): Promise<Response> => {
           botToken,
           chatId,
           buildPaySupportMessage(),
-          mainKeyboard()
+          paymentSupportKeyboard()
         );
         return response();
       }
@@ -995,8 +1093,28 @@ Deno.serve(async (request: Request): Promise<Response> => {
           chatId,
           enabled
             ? "Напоминания включены. Писать будем редко и только по делу."
-            : "Напоминания отключены. Включить снова: /reminders_on",
-          mainKeyboard()
+            : "Напоминания отключены.",
+          helpKeyboard(enabled)
+        );
+        return response();
+      }
+
+      if (callback.data === "shortcut_manage") {
+        await sendMessage(
+          botToken,
+          chatId,
+          buildShortcutManagementMessage(),
+          shortcutManagementKeyboard()
+        );
+        return response();
+      }
+
+      if (callback.data === "shortcut_revoke_confirm") {
+        await sendMessage(
+          botToken,
+          chatId,
+          buildRevokeTokenMessage(),
+          shortcutRevokeConfirmKeyboard()
         );
         return response();
       }
@@ -1037,11 +1155,12 @@ Deno.serve(async (request: Request): Promise<Response> => {
 
       if (callback.data === "shortcut_revoke") {
         const revoked = await revokeShortcutTokens({ admin, telegramId });
+        const state = await loadShortcutState(admin, profile.id);
         await sendMessage(
           botToken,
           chatId,
           revoked ? "Токены отозваны." : "Не удалось отозвать токены.",
-          mainKeyboard()
+          shortcutKeyboard(state)
         );
         return response();
       }
@@ -1064,10 +1183,12 @@ Deno.serve(async (request: Request): Promise<Response> => {
           userId: profile.id,
         });
         if (!sent) {
+          const state = await loadShortcutState(admin, profile.id);
           await sendMessage(
             botToken,
             chatId,
-            "Не удалось создать счёт. Попробуйте ещё раз через минуту."
+            "Не удалось создать счёт. Попробуйте ещё раз через минуту.",
+            subscriptionKeyboard(state)
           );
         }
         return response();
@@ -1197,12 +1318,13 @@ Deno.serve(async (request: Request): Promise<Response> => {
     }
 
     if (command === "/help") {
-      await sendMessage(botToken, chatId, buildHelpMessage(), mainKeyboard());
+      if (!telegramId) return response();
+      await sendHelpSection(botToken, admin, chatId, telegramId);
       return response();
     }
 
     if (command === "/terms") {
-      await sendMessage(botToken, chatId, buildTermsMessage(), mainKeyboard());
+      await sendMessage(botToken, chatId, buildTermsMessage(), termsKeyboard());
       return response();
     }
 
@@ -1211,7 +1333,7 @@ Deno.serve(async (request: Request): Promise<Response> => {
         botToken,
         chatId,
         buildPaySupportMessage(),
-        mainKeyboard()
+        paymentSupportKeyboard()
       );
       return response();
     }
@@ -1264,12 +1386,11 @@ Deno.serve(async (request: Request): Promise<Response> => {
         await sendMessage(botToken, chatId, "Напишите боту в личном чате.");
         return response();
       }
-      const revoked = await revokeShortcutTokens({ admin, telegramId });
       await sendMessage(
         botToken,
         chatId,
-        revoked ? "Токены отозваны." : "Не удалось отозвать токены.",
-        mainKeyboard()
+        buildRevokeTokenMessage(),
+        shortcutRevokeConfirmKeyboard()
       );
       return response();
     }
