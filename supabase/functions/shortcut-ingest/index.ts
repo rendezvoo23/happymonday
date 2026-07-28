@@ -1,5 +1,5 @@
 // Secure text-only Apple Shortcut ingestion endpoint.
-// Required secrets: GROQ_API_KEY, SHORTCUT_TOKEN_PEPPER, TELEGRAM_BOT_TOKEN.
+// Required secrets: OPENAI_API_KEY, SHORTCUT_TOKEN_PEPPER, TELEGRAM_BOT_TOKEN.
 // Set SHORTCUT_AI_MODE=mock to test without sending text to an external model.
 // Deploy with JWT verification disabled: this endpoint uses a scoped, revocable token.
 
@@ -90,7 +90,7 @@ async function checkShortcutAccess(options: {
       ok: false,
       status: 402,
       errorCode: "shortcut_access_required",
-      message: "Откройте /shortcut в боте и включите пробный доступ",
+      message: "Откройте раздел Apple Shortcut в боте и включите пробный доступ",
     };
   }
 
@@ -115,7 +115,7 @@ async function checkShortcutAccess(options: {
       ok: false,
       status: 402,
       errorCode: "shortcut_access_required",
-      message: "Откройте /shortcut в боте и включите пробный доступ",
+      message: "Откройте раздел Apple Shortcut в боте и включите пробный доступ",
     };
   }
 
@@ -124,7 +124,7 @@ async function checkShortcutAccess(options: {
       ok: false,
       status: 402,
       errorCode: "trial_limit_reached",
-      message: "Пробный доступ закончился. Откройте /shortcut в боте",
+      message: "Пробный доступ закончился. Откройте раздел Apple Shortcut в боте",
     };
   }
 
@@ -142,14 +142,14 @@ async function checkShortcutAccess(options: {
       ok: false,
       status: 402,
       errorCode: "trial_limit_reached",
-      message: "10 пробных добавлений закончились. Откройте /shortcut в боте",
+      message: "10 пробных добавлений закончились. Откройте раздел Apple Shortcut в боте",
     };
   }
 
   return { ok: true };
 }
 
-async function parseWithGroq(options: {
+async function parseWithOpenAI(options: {
   apiKey: string;
   text: string;
   timezone: string;
@@ -161,10 +161,9 @@ async function parseWithGroq(options: {
 }): Promise<ParsedTransaction> {
   const now = new Date();
   const requestBody = JSON.stringify({
-    model: env("GROQ_MODEL") || "openai/gpt-oss-20b",
-    reasoning_effort: "low",
+    model: env("OPENAI_MODEL") || "gpt-4o-mini",
     temperature: 0,
-    max_completion_tokens: 400,
+    max_tokens: 400,
     messages: buildParserMessages({
       text: options.text,
       now: now.toISOString(),
@@ -190,7 +189,7 @@ async function parseWithGroq(options: {
 
   let response: Response | null = null;
   for (let attempt = 0; attempt < 2; attempt += 1) {
-    response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${options.apiKey}`,
@@ -277,14 +276,14 @@ Deno.serve(async (request: Request): Promise<Response> => {
   const supabaseUrl = env("SUPABASE_URL");
   const serviceRoleKey = env("SUPABASE_SERVICE_ROLE_KEY");
   const tokenPepper = env("SHORTCUT_TOKEN_PEPPER");
-  const aiMode = env("SHORTCUT_AI_MODE") === "mock" ? "mock" : "groq";
-  const groqApiKey = env("GROQ_API_KEY");
+  const aiMode = env("SHORTCUT_AI_MODE") === "mock" ? "mock" : "openai";
+  const openaiApiKey = env("OPENAI_API_KEY");
   const telegramBotToken = env("TELEGRAM_BOT_TOKEN");
 
   if (!supabaseUrl || !serviceRoleKey || !tokenPepper) {
     return json({ error: "Server misconfiguration" }, 500);
   }
-  if (aiMode === "groq" && !groqApiKey) {
+  if (aiMode === "openai" && !openaiApiKey) {
     return json({ error: "AI provider is not configured" }, 503);
   }
 
@@ -452,8 +451,8 @@ Deno.serve(async (request: Request): Promise<Response> => {
               : "shortcut_access_required",
           message:
             reservation.outcome === "trial_limit_reached"
-              ? "Пробный доступ закончился. Откройте /shortcut в боте"
-              : "Откройте /shortcut в боте и включите доступ",
+              ? "Пробный доступ закончился. Откройте раздел Apple Shortcut в боте"
+              : "Откройте раздел Apple Shortcut в боте и включите доступ",
         },
         402
       );
@@ -475,8 +474,8 @@ Deno.serve(async (request: Request): Promise<Response> => {
               categories,
               subcategories,
             })
-          : await parseWithGroq({
-              apiKey: groqApiKey as string,
+          : await parseWithOpenAI({
+              apiKey: openaiApiKey as string,
               text: body.value.text,
               timezone: userTimezone,
               locale: body.value.locale,
