@@ -1319,6 +1319,10 @@ Deno.serve(async (request: Request): Promise<Response> => {
 
     if (command === "/help") {
       if (!telegramId) return response();
+      if (!privateChatOnly(chatId, telegramId)) {
+        await sendMessage(botToken, chatId, "Напишите боту в личном чате.");
+        return response();
+      }
       await sendHelpSection(botToken, admin, chatId, telegramId);
       return response();
     }
