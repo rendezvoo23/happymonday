@@ -187,6 +187,87 @@ export function generateShortcutToken(): string {
   return `${SHORTCUT_TOKEN_PREFIX}${encoded}`;
 }
 
+const TELEGRAM_HTML_ENTITY_MAP: Record<string, string> = {
+  "&amp;": "&",
+  "&lt;": "<",
+  "&gt;": ">",
+  "&quot;": '"',
+  "&#39;": "'",
+};
+
+/** Escapes plain text for Telegram's MarkdownV2 parse mode. */
+export function escapeTelegramMarkdownV2(value: string): string {
+  return value.replace(/[\\_*\[\]()~`>#+\-=|{}.!]/gu, "\\$&");
+}
+
+function decodeTelegramHtmlEntities(value: string): string {
+  return value.replace(/&(amp|lt|gt|quot|#39);/gu, (entity) =>
+    TELEGRAM_HTML_ENTITY_MAP[entity] ?? entity
+  );
+}
+
+function escapeTelegramRichMarkdown(value: string): string {
+  return value.replace(/[\\`*_{}\[\]()#+\-.!|]/gu, "\\$&");
+}
+
+/**
+ * Converts the small, controlled HTML subset used by existing bot templates
+ * into MarkdownV2. User-provided text stays escaped rather than becoming markup.
+ */
+export function htmlToTelegramMarkdownV2(value: string): string {
+  let insideCode = false;
+  return value
+    .split(/(<\/?(?:b|code)>)/gu)
+    .map((part) => {
+      if (part === "<b>" || part === "</b>") return "*";
+      if (part === "<code>") {
+        insideCode = true;
+        return "`";
+      }
+      if (part === "</code>") {
+        insideCode = false;
+        return "`";
+      }
+      if (insideCode) {
+        return decodeTelegramHtmlEntities(part).replace(/[\\`]/gu, "\\$&");
+      }
+      return escapeTelegramMarkdownV2(decodeTelegramHtmlEntities(part));
+    })
+    .join("");
+}
+
+/**
+ * Converts the existing controlled HTML bot templates to Telegram Rich
+ * Markdown. This is intentionally separate from MarkdownV2: Rich Messages
+ * use GitHub-flavoured Markdown and support blocks such as slideshows.
+ */
+export function htmlToTelegramRichMarkdown(value: string): string {
+  const title = value.match(/^<b>([^<>]+)<\/b>(?:\n\n|$)/u);
+  if (title) {
+    const rest = value.slice(title[0].length);
+    return `# ${escapeTelegramRichMarkdown(title[1])}${rest ? `\n\n${htmlToTelegramRichMarkdown(rest)}` : ""}`;
+  }
+  let insideCode = false;
+  return value
+    .split(/(<\/?(?:b|code)>)/gu)
+    .map((part) => {
+      if (part === "<b>") return "**";
+      if (part === "</b>") return "**";
+      if (part === "<code>") {
+        insideCode = true;
+        return "`";
+      }
+      if (part === "</code>") {
+        insideCode = false;
+        return "`";
+      }
+      return insideCode
+        ? part.replace(/[\\`]/gu, "\\$&")
+        : escapeTelegramRichMarkdown(part);
+    })
+    .join("");
+}
+
 export function buildTransactionSchema(
   categories: CategoryOption[],
   subcategories: SubcategoryOption[],
@@ -300,9 +381,12 @@ export function normalizeParsedTransactionDate(options: {
   userText: string;
   now: Date;
 }): ParsedTransaction {
+  // The provider receives the current instant in UTC plus a separate IANA
+  // timezone. Some models occasionally reinterpret the UTC clock component as
+  // local time. When the user did not mention any date or time, the only safe
+  // source of truth is the server clock.
   if (
     options.parsed.valid &&
-    (!options.parsed.occurred_at || Number.isNaN(Date.parse(options.parsed.occurred_at))) &&
     !userTextMentionsDateOrTime(options.userText)
   ) {
     return { ...options.parsed, occurred_at: options.now.toISOString() };

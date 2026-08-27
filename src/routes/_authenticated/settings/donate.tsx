@@ -41,8 +41,6 @@ function DonateSettingsPage() {
     try {
       if (window.Telegram?.WebApp?.openInvoice) {
         // Step 1: Create invoice link via Supabase edge function
-        console.log("Creating invoice for", amount, "stars...");
-
         let invoiceUrl: string;
 
         try {
@@ -69,18 +67,14 @@ function DonateSettingsPage() {
 
           // Step 2: Get the invoice link
           invoiceUrl = data.result;
-          console.log("Invoice created:", invoiceUrl);
         } catch (invoiceError) {
           console.error("Invoice creation error:", invoiceError);
           // In dev mode or if edge function fails, use mock invoice URL
           invoiceUrl = `mock://telegram/invoice/${amount}`;
-          console.log("Using mock invoice URL:", invoiceUrl);
         }
 
         // Step 3: Open the invoice in the Mini App
         window.Telegram.WebApp.openInvoice(invoiceUrl, (status) => {
-          console.log("Payment status:", status);
-
           if (status === "paid") {
             if (window.Telegram?.WebApp?.HapticFeedback) {
               window.Telegram.WebApp.HapticFeedback.notificationOccurred(
@@ -104,7 +98,6 @@ function DonateSettingsPage() {
         });
       } else {
         // Fallback to opening bot with start parameter
-        console.log("openInvoice not available, using fallback");
         const fallbackUrl = `${BASE_DONATE_URL}_${amount}`;
         if (window.Telegram?.WebApp?.openTelegramLink) {
           window.Telegram.WebApp.openTelegramLink(fallbackUrl);

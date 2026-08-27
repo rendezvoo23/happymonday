@@ -2,6 +2,7 @@
 // Invoke once daily with X-WhySpent-Reminder-Secret.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.110.8";
+import { htmlToTelegramMarkdownV2 } from "../_shared/shortcut.ts";
 
 function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -39,7 +40,8 @@ async function sendReminder(options: {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         chat_id: options.telegramId,
-        text,
+        text: htmlToTelegramMarkdownV2(text),
+        parse_mode: "MarkdownV2",
         reply_markup: {
           inline_keyboard: [
             [{ text: "Отключить напоминания", callback_data: "reminders_off" }],
