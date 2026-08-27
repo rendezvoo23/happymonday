@@ -16,7 +16,9 @@
 // @ts-expect-error: Deno edge function types are provided by the runtime
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const ALLOWED_ORIGIN = "*";
+// @ts-expect-error: Deno.env is provided by the Edge Runtime
+const ALLOWED_ORIGIN = (Deno.env.get("AUTH_ALLOWED_ORIGIN") ||
+  "https://happymonday-ten.vercel.app").replace(/\/$/, "");
 
 function corsHeaders(
   extra: Record<string, string> = {}
@@ -95,7 +97,7 @@ async function validateTelegramInitData(
   isDev = false
 ): Promise<
   | { ok: true; params: URLSearchParams }
-  | { ok: false; error: string; dataCheckString?: string }
+  | { ok: false; error: string }
 > {
   const params = new URLSearchParams(initData);
 
@@ -172,7 +174,6 @@ async function validateTelegramInitData(
     return {
       ok: false,
       error: "Invalid Telegram initData signature",
-      dataCheckString,
     };
   }
   return {
@@ -249,15 +250,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
     if (req.method === "OPTIONS") {
       return new Response(null, {
         status: 204,
-        headers: {
-          "Access-Control-Allow-Origin": req.headers.get("Origin") ?? "*",
-          "Access-Control-Allow-Methods": "POST, OPTIONS",
-          "Access-Control-Allow-Headers":
-            req.headers.get("Access-Control-Request-Headers") ??
-            "content-type, apikey, x-client-info, authorization",
-          "Access-Control-Max-Age": "600",
-          Vary: "Origin",
-        },
+        headers: corsHeaders(),
       });
     }
     if (req.method !== "POST") {
@@ -303,13 +296,6 @@ Deno.serve(async (req: Request): Promise<Response> => {
       return json(
         {
           error: "Server misconfiguration",
-          missing: {
-            SUPABASE_URL: !SUPABASE_URL,
-            SUPABASE_SERVICE_ROLE_KEY: !SUPABASE_SERVICE_ROLE_KEY,
-            SUPABASE_ANON_KEY: !SUPABASE_ANON_KEY,
-            SUPABASE_JWT_SECRET: !SUPABASE_JWT_SECRET,
-            TELEGRAM_BOT_TOKEN: !allowDevAuth && !TELEGRAM_BOT_TOKEN,
-          },
         },
         500
       );
@@ -324,12 +310,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
     if (!v.ok) {
       return json(
         {
-          error: v.error,
-          ...(v.dataCheckString
-            ? {
-                dataCheckString: v.dataCheckString,
-              }
-            : {}),
+          error: "Unauthorized",
         },
         401
       );

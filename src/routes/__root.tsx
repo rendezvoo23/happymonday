@@ -192,7 +192,6 @@ function RootComponent() {
         if (!sbUser) throw new Error("Authenticated user not found");
 
         const telegramUser = window?.Telegram?.WebApp?.initDataUnsafe?.user;
-        console.log("telegramUser", telegramUser);
         if (!cancelled) {
           setUser({
             name:

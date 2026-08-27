@@ -12,6 +12,8 @@ import {
   buildTransactionSchema,
   createMockParse,
   escapeTelegramHtml,
+  htmlToTelegramRichMarkdown,
+  htmlToTelegramMarkdownV2,
   hmacToken,
   normalizeParsedTransactionDate,
   readBearerToken,
@@ -25,6 +27,9 @@ import {
 
 const MAX_REQUEST_BYTES = 16_384;
 const RATE_LIMIT_PER_MINUTE = 15;
+const USER_DAILY_LIMIT = 100;
+const GLOBAL_RATE_LIMIT_PER_MINUTE = 120;
+const GLOBAL_DAILY_LIMIT = 2_000;
 const MIN_AUTO_SAVE_CONFIDENCE = 0.85;
 const MAX_CATEGORY_OPTIONS = 50;
 const MAX_SUBCATEGORY_OPTIONS = 250;
@@ -233,7 +238,7 @@ async function notifyTelegram(options: {
   occurredAt: string;
   timezone: string;
 }): Promise<boolean> {
-  const title = "Расход добавлен";
+  const title = "✅ Расход добавлен";
   const date = new Intl.DateTimeFormat("ru-RU", {
     dateStyle: "medium",
     timeStyle: "short",
@@ -250,6 +255,24 @@ async function notifyTelegram(options: {
   ];
   if (options.note) lines.push(escapeTelegramHtml(options.note));
 
+  const fallbackText = lines.join("\n");
+  const richResponse = await fetch(
+    `https://api.telegram.org/bot${options.botToken}/sendRichMessage`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chat_id: options.telegramId,
+        rich_message: {
+          markdown: htmlToTelegramRichMarkdown(fallbackText),
+          skip_entity_detection: true,
+        },
+      }),
+      signal: AbortSignal.timeout(8_000),
+    }
+  );
+  if (richResponse.ok) return true;
+
   const response = await fetch(
     `https://api.telegram.org/bot${options.botToken}/sendMessage`,
     {
@@ -257,8 +280,8 @@ async function notifyTelegram(options: {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         chat_id: options.telegramId,
-        text: lines.join("\n"),
-        parse_mode: "HTML",
+        text: htmlToTelegramMarkdownV2(fallbackText),
+        parse_mode: "MarkdownV2",
         disable_web_page_preview: true,
       }),
       signal: AbortSignal.timeout(8_000),
@@ -277,6 +300,7 @@ Deno.serve(async (request: Request): Promise<Response> => {
   const serviceRoleKey = env("SUPABASE_SERVICE_ROLE_KEY");
   const tokenPepper = env("SHORTCUT_TOKEN_PEPPER");
   const aiMode = env("SHORTCUT_AI_MODE") === "mock" ? "mock" : "openai";
+  const aiEnabled = env("SHORTCUT_AI_ENABLED") !== "false";
   const openaiApiKey = env("OPENAI_API_KEY");
   const telegramBotToken = env("TELEGRAM_BOT_TOKEN");
 
@@ -285,6 +309,15 @@ Deno.serve(async (request: Request): Promise<Response> => {
   }
   if (aiMode === "openai" && !openaiApiKey) {
     return json({ error: "AI provider is not configured" }, 503);
+  }
+  if (!aiEnabled) {
+    return json(
+      {
+        error: "Shortcut is temporarily unavailable",
+        error_code: "shortcut_temporarily_disabled",
+      },
+      503
+    );
   }
 
   let rawBody: unknown;
@@ -416,6 +449,9 @@ Deno.serve(async (request: Request): Promise<Response> => {
         // Never trust the client-controlled dry_run flag as a free-quota bypass.
         p_counts_toward_quota: true,
         p_rate_limit_per_minute: RATE_LIMIT_PER_MINUTE,
+        p_user_daily_limit: USER_DAILY_LIMIT,
+        p_global_rate_limit_per_minute: GLOBAL_RATE_LIMIT_PER_MINUTE,
+        p_global_daily_limit: GLOBAL_DAILY_LIMIT,
       });
     if (reservationError) {
       return json({ error: "Unable to start request" }, 500);
@@ -436,7 +472,34 @@ Deno.serve(async (request: Request): Promise<Response> => {
       return json({ error: "Request is already being processed" }, 409);
     }
     if (reservation.outcome === "rate_limited") {
-      return json({ error: "Too many requests" }, 429);
+      return json(
+        {
+          error: "Too many requests",
+          error_code: "minute_limit_reached",
+          message: "Слишком много запросов. Попробуйте через минуту",
+        },
+        429
+      );
+    }
+    if (reservation.outcome === "daily_limit_reached") {
+      return json(
+        {
+          error: "Daily limit reached",
+          error_code: "daily_limit_reached",
+          message: "Дневной лимит Shortcut исчерпан. Попробуйте позже",
+        },
+        429
+      );
+    }
+    if (reservation.outcome === "capacity_limited") {
+      return json(
+        {
+          error: "Shortcut capacity limit reached",
+          error_code: "capacity_limited",
+          message: "Shortcut временно перегружен. Попробуйте позже",
+        },
+        503
+      );
     }
     if (
       reservation.outcome === "access_required" ||
@@ -484,9 +547,19 @@ Deno.serve(async (request: Request): Promise<Response> => {
               subcategories,
               currencies,
             });
-    } catch {
+    } catch (error) {
+      // Keep provider responses private: they can contain user text. The status
+      // itself is sufficient to diagnose credentials, quota and rate limits.
+      const providerError = error instanceof Error ? error.message : "AI_UNKNOWN_ERROR";
+      console.error("shortcut_ai_provider_failed", { providerError });
       await markRequestFailed(supabase, requestRowId, "ai_provider_error");
-      return json({ error: "Unable to parse transaction" }, 503);
+      return json(
+        {
+          error: "Unable to parse transaction",
+          error_code: providerError,
+        },
+        503
+      );
     }
 
     const semanticError = validateParsedTransaction(parsed, categories, subcategories, currencies);
@@ -615,7 +688,10 @@ Deno.serve(async (request: Request): Promise<Response> => {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                   chat_id: referralResult.inviter_telegram_id,
-                  text: "Друг добавил первый расход. Вам добавлено 7 дней доступа к Shortcut.",
+                  text: htmlToTelegramMarkdownV2(
+                    "Друг добавил первый расход. Вам добавлено 7 дней WhySpent Plus."
+                  ),
+                  parse_mode: "MarkdownV2",
                 }),
                 signal: AbortSignal.timeout(8_000),
               }
@@ -629,7 +705,10 @@ Deno.serve(async (request: Request): Promise<Response> => {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                   chat_id: referralResult.invitee_telegram_id,
-                  text: "Первый расход добавлен. Вам открыт доступ к Shortcut на 7 дней.",
+                  text: htmlToTelegramMarkdownV2(
+                    "Первый расход добавлен. Вам открыт WhySpent Plus на 7 дней."
+                  ),
+                  parse_mode: "MarkdownV2",
                 }),
                 signal: AbortSignal.timeout(8_000),
               }

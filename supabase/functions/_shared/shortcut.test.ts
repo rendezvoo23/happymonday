@@ -2,6 +2,8 @@ import { describe, expect, test } from "bun:test";
 import {
   buildTransactionSchema,
   canonicalizeShortcutRequestId,
+  htmlToTelegramRichMarkdown,
+  htmlToTelegramMarkdownV2,
   createMockParse,
   escapeTelegramHtml,
   generateShortcutToken,
@@ -251,7 +253,7 @@ test("semantic validation rejects amounts outside the database range", () => {
   expect(error).toBe("invalid_amount");
 });
 
-test("date normalization defaults missing dates only when user did not mention time", () => {
+test("date normalization always uses server time when user did not mention time", () => {
   const now = new Date("2026-07-09T07:45:00.000Z");
   const base = {
     valid: true,
@@ -270,7 +272,7 @@ test("date normalization defaults missing dates only when user did not mention t
   expect(userTextMentionsDateOrTime("Вчера кофе 350 рублей")).toBe(true);
   expect(
     normalizeParsedTransactionDate({
-      parsed: base,
+      parsed: { ...base, occurred_at: "2026-07-09T07:45:00+03:00" },
       userText: "Кофе 350 рублей",
       now,
     }).occurred_at
@@ -313,4 +315,26 @@ test("mock parser explains that Shortcut accepts expenses only", () => {
 
 test("Telegram HTML escaping prevents markup injection", () => {
   expect(escapeTelegramHtml("<b>A&B</b>")).toBe("&lt;b&gt;A&amp;B&lt;/b&gt;");
+});
+
+test("Telegram MarkdownV2 conversion preserves controlled formatting and escapes text", () => {
+  expect(
+    htmlToTelegramMarkdownV2(
+      "<b>WhySpent+</b>\n<code>wsp_sk_test</code>\nЦена: 250 ⭐️."
+    )
+  ).toBe("*WhySpent\\+*\n`wsp_sk_test`\nЦена: 250 ⭐️\\.");
+  expect(htmlToTelegramMarkdownV2("&lt;b&gt;не разметка&lt;/b&gt;")).toBe(
+    "<b\\>не разметка</b\\>"
+  );
+});
+
+test("Telegram Rich Markdown conversion preserves controlled formatting and escapes text", () => {
+  expect(
+    htmlToTelegramRichMarkdown(
+      "<b>WhySpent+</b>\n<code>wsp_sk_test</code>\nЦена: 250 ⭐️."
+    )
+  ).toBe("**WhySpent\\+**\n`wsp_sk_test`\nЦена: 250 ⭐️\\.");
+  expect(htmlToTelegramRichMarkdown("&lt;b&gt;не разметка&lt;/b&gt;")).toBe(
+    "&lt;b&gt;не разметка&lt;/b&gt;"
+  );
 });

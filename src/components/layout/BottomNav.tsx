@@ -36,19 +36,11 @@ export function BottomNav() {
 
   // Setup Telegram Settings Button - navigate to settings page instead of drawer
   useEffect(() => {
-    console.log("BottomNav: Setting up Telegram Settings Button");
-    console.log("Telegram WebApp exists:", !!window.Telegram?.WebApp);
-    console.log(
-      "SettingsButton exists:",
-      !!window.Telegram?.WebApp?.SettingsButton
-    );
-
     if (window.Telegram?.WebApp?.SettingsButton) {
       const settingsButton = window.Telegram.WebApp.SettingsButton;
 
       // Create handler for settings button
       const handleSettingsButtonPressed = () => {
-        console.log("✅ Settings button pressed handler called!");
         if (window.Telegram?.WebApp?.HapticFeedback) {
           window.Telegram.WebApp.HapticFeedback.impactOccurred("light");
         }

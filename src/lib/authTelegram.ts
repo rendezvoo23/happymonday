@@ -12,8 +12,6 @@ export interface TelegramAuthResponse {
 }
 
 export const authenticateWithTelegram = async (): Promise<void> => {
-  console.log("Authenticating with Telegram...");
-
   if (!window.Telegram?.WebApp) {
     throw new Error("Telegram WebApp is not available.");
   }
